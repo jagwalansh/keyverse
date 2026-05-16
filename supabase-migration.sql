@@ -1,6 +1,7 @@
 -- Create profiles table
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
   username TEXT UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -86,8 +87,8 @@ ALTER TABLE scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE songs ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for profiles
-CREATE POLICY "Profiles are viewable by everyone" 
-  ON profiles FOR SELECT USING (true);
+CREATE POLICY "Users can view their own profile"
+  ON profiles FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Users can update their own profile"
   ON profiles FOR UPDATE USING (auth.uid() = id);
@@ -113,8 +114,15 @@ CREATE POLICY "Songs are viewable by everyone"
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.profiles (id, username)
-  VALUES (new.id, new.email);
+  INSERT INTO public.profiles (id, email, username)
+  VALUES (
+    new.id,
+    new.email,
+    COALESCE(
+      NULLIF(new.raw_user_meta_data->>'username', ''),
+      split_part(new.email, '@', 1) || '_' || substr(new.id::text, 1, 8)
+    )
+  );
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -123,3 +131,21 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Keep profile email in sync if the auth email changes later
+CREATE OR REPLACE FUNCTION public.handle_user_email_update()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE public.profiles
+  SET email = new.email,
+      updated_at = NOW()
+  WHERE id = new.id;
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_email_updated
+  AFTER UPDATE OF email ON auth.users
+  FOR EACH ROW
+  WHEN (old.email IS DISTINCT FROM new.email)
+  EXECUTE FUNCTION public.handle_user_email_update();
