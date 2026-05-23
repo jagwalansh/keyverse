@@ -2,6 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as Tabs from "@radix-ui/react-tabs";
 import { Chrome, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { motion } from "motion/react";
 import { useAuth } from "@/lib/auth-context";
 import { useModal } from "@/lib/modal-context";
 import { Button } from "@/components/ui/button";
@@ -117,8 +118,8 @@ export function AuthModal() {
   return (
     <Dialog.Root open={modalOpen} onOpenChange={handleOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
               <Dialog.Title className="text-xl font-semibold tracking-tight">
@@ -144,18 +145,32 @@ export function AuthModal() {
             }}
             className="w-full"
           >
-            <Tabs.List className="mb-5 grid grid-cols-2 rounded-md bg-muted p-1">
+            <Tabs.List className="relative mb-5 grid grid-cols-2 rounded-md bg-muted p-1">
               <Tabs.Trigger
                 value="signIn"
-                className="rounded-sm px-3 py-2 text-sm font-medium text-muted-foreground transition-colors data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="relative rounded-sm px-3 py-2 text-sm font-medium text-muted-foreground transition-colors data-[state=active]:text-foreground z-10 cursor-pointer"
               >
-                Sign in
+                {authMode === "signIn" && (
+                  <motion.div
+                    layoutId="active-auth-tab"
+                    className="absolute inset-0 rounded-sm bg-background shadow-sm"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Sign in</span>
               </Tabs.Trigger>
               <Tabs.Trigger
                 value="signUp"
-                className="rounded-sm px-3 py-2 text-sm font-medium text-muted-foreground transition-colors data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                className="relative rounded-sm px-3 py-2 text-sm font-medium text-muted-foreground transition-colors data-[state=active]:text-foreground z-10 cursor-pointer"
               >
-                Sign up
+                {authMode === "signUp" && (
+                  <motion.div
+                    layoutId="active-auth-tab"
+                    className="absolute inset-0 rounded-sm bg-background shadow-sm"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <span className="relative z-10">Sign up</span>
               </Tabs.Trigger>
             </Tabs.List>
 
