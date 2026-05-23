@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Navbar } from "@/components/ui/navbar";
 import { fetchSyncedLyrics, type LyricLine } from "@/lib/lrc";
 
 interface Search {
@@ -9,7 +10,7 @@ interface Search {
   art: string;
 }
 
-const SHOW_TYPING_ERRORS = false;
+const SHOW_TYPING_ERRORS = true;
 
 export const Route = createFileRoute("/play/$trackId")({
   validateSearch: (s: Record<string, unknown>): Search => ({
@@ -42,14 +43,12 @@ function PlayPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lyricsRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-
   const [audioType, setAudioType] = useState("");
   const [playing, setPlaying] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [audioErr, setAudioErr] = useState<string | null>(null);
   const [previewSupported, setPreviewSupported] = useState(true);
   const [currentLineIdx, setCurrentLineIdx] = useState(0);
-  const [youtubeVideoId, setYoutubeVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,26 +73,7 @@ function PlayPage() {
     }
   }, [preview]);
 
-  // Search for YouTube video
-  useEffect(() => {
-    const searchYouTube = async () => {
-      try {
-        const query = `${artist} ${track} official`;
-        const response = await fetch(`/api/youtube-search?q=${encodeURIComponent(query)}`);
-        if (response.ok) {
-          const data = (await response.json()) as { videoId?: string };
-          if (data.videoId) {
-            setYoutubeVideoId(data.videoId);
-          }
-        }
-      } catch (error) {
-        console.error("YouTube search failed:", error);
-      }
-    };
-    if (artist && track) {
-      searchYouTube();
-    }
-  }, [artist, track]);
+  // YouTube search has been removed to use fallback audio directly
 
   const fullText = useMemo(() => {
     if (!lines) return "";
@@ -183,46 +163,25 @@ function PlayPage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-background text-foreground font-sans">
-      {/* YouTube Background Video */}
-      {youtubeVideoId && (
-        <div className="absolute inset-0 z-0 opacity-40">
-          <iframe
-            width="100%"
-            height="100%"
-            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=0&controls=0&modestbranding=1&loop=1&playlist=${youtubeVideoId}`}
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
-      {/* Semi-transparent overlay for better text readability when video is visible */}
-      {youtubeVideoId && <div className="absolute inset-0 z-10 bg-black/40" />}
+    <main className="relative min-h-screen bg-background text-foreground font-sans flex flex-col items-center">
+      <Navbar />
 
       {/* Content Overlay */}
-      <div className="relative z-20 mx-auto max-w-4xl px-6 py-10">
-        <Link to="/" className="font-mono text-xs text-muted-foreground hover:text-foreground">
-          ← back
-        </Link>
+      <div className="relative z-20 w-full max-w-6xl px-6 pb-10">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <Link to="/" className="font-mono text-xs text-muted-foreground hover:text-foreground">
+            ← back
+          </Link>
 
-        <div className="mt-6 flex items-center gap-4">
-          {art && <img src={art} alt="" className="h-16 w-16 rounded" />}
-          <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl font-semibold">{track}</h1>
-            <p className="truncate text-sm text-muted-foreground">{artist}</p>
-          </div>
-          <div className="text-right font-mono text-sm">
+          <div className="flex items-center gap-6 font-mono text-sm border border-border/40 bg-card/45 backdrop-blur-md shadow-sm rounded-full px-5 py-2">
             <div>
-              <span className="text-primary">{wpm}</span>{" "}
-              <span className="text-muted-foreground">wpm</span>
+              <span className="text-primary font-bold text-base">{wpm}</span>{" "}
+              <span className="text-muted-foreground text-xs">wpm</span>
             </div>
+            <div className="w-px h-4 bg-border/40" />
             <div>
-              <span className="text-primary">{accuracy}%</span>{" "}
-              <span className="text-muted-foreground">acc</span>
+              <span className="text-primary font-bold text-base">{accuracy}%</span>{" "}
+              <span className="text-muted-foreground text-xs">acc</span>
             </div>
           </div>
         </div>
@@ -240,99 +199,121 @@ function PlayPage() {
         )}
 
         {lines && (
-          <>
-            {/* Spotify-style lyrics display */}
-            <div
-              ref={lyricsRef}
-              className="relative mt-12 h-96 overflow-hidden rounded-lg bg-gradient px-6 py-12"
-              onClick={() => inputRef.current?.focus()}
-            >
-              {lines.map((line, idx) => {
-                const isCurrentLine = idx === currentLineIdx;
-                const isPassed = idx < currentLineIdx;
-                const lineText = line.text;
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+            {/* Left Column: Song Information Card & How to Play */}
+            <div className="flex flex-col gap-4">
+              <div className="relative w-full  aspect-video rounded-xl overflow-hidden border border-border/40 shadow-lg bg-muted/10 flex flex-col items-center justify-center p-6 text-center">
+                {art ? (
+                  <img src={art} alt="" className="h-28 w-28 rounded-lg shadow-md mb-4" />
+                ) : (
+                  <div className="h-28 w-28 rounded-lg bg-muted mb-4 animate-pulse" />
+                )}
+                <h2 className="text-xl font-bold tracking-tight text-foreground">{track}</h2>
+                <p className="text-sm text-muted-foreground mt-1">{artist}</p>
+              </div>
 
-                return (
-                  <div
-                    key={idx}
-                    data-line-idx={idx}
-                    className={`mb-8 text-center transition-all duration-300 ${
-                      isCurrentLine ? "scale-110" : "scale-95"
-                    } ${isPassed ? "opacity-40" : "opacity-100"}`}
-                  >
-                    <div className="text-3xl font-bold leading-relaxed">
-                      {isCurrentLine
-                        ? // Display current line with character-by-character feedback
-                          lineText.split("").map((ch, charIdx) => {
-                            const typedChar = typed[charIdx];
-                            let className = "text-muted-foreground";
+              {/* <div className="rounded-xl border border-border/40 bg-card/45 backdrop-blur-md p-4 shadow-sm">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">How to Play</h3>
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                  Start the music by clicking <strong>Play</strong>. Focus the screen and start typing what you hear. Press <strong>Enter</strong> to advance to the next line.
+                </p>
+              </div> */}
+            </div>
 
-                            if (charIdx < typed.length) {
-                              const isCorrect = typedChar?.toLowerCase() === ch.toLowerCase();
-                              if (isCorrect) {
-                                className = "text-correct font-semibold";
-                              } else if (!SHOW_TYPING_ERRORS) {
-                                className = "text-correct font-semibold";
-                              } else if (SHOW_TYPING_ERRORS) {
-                                className =
-                                  "text-incorrect underline decoration-incorrect font-semibold";
+            {/* Right Column: Game and Lyrics */}
+            <div className="flex flex-col gap-6">
+              {/* Spotify-style lyrics display */}
+              <div
+                ref={lyricsRef}
+                className="relative h-[360px] overflow-hidden rounded-xl bg-gradient border border-border/40 shadow-inner px-6 py-10 cursor-pointer"
+                onClick={() => inputRef.current?.focus()}
+              >
+                {lines.map((line, idx) => {
+                  const isCurrentLine = idx === currentLineIdx;
+                  const isPassed = idx < currentLineIdx;
+                  const lineText = line.text;
+
+                  return (
+                    <div
+                      key={idx}
+                      data-line-idx={idx}
+                      className={`mb-8 text-center transition-all duration-300 ${
+                        isCurrentLine ? "scale-105" : "scale-95"
+                      } ${isPassed ? "opacity-35" : "opacity-100"}`}
+                    >
+                      <div className="text-2xl font-bold leading-relaxed">
+                        {isCurrentLine
+                          ? // Display current line with character-by-character feedback
+                            lineText.split("").map((ch, charIdx) => {
+                              const typedChar = typed[charIdx];
+                              let className = "text-muted-foreground";
+
+                              if (charIdx < typed.length) {
+                                const isCorrect = typedChar?.toLowerCase() === ch.toLowerCase();
+                                if (isCorrect) {
+                                  className = "text-correct font-semibold";
+                                } else if (!SHOW_TYPING_ERRORS) {
+                                  className = "text-correct font-semibold";
+                                } else if (SHOW_TYPING_ERRORS) {
+                                  className =
+                                    "text-incorrect underline decoration-incorrect font-semibold";
+                                }
+                              } else if (charIdx === typed.length) {
+                                className = "text-foreground animate-pulse";
                               }
-                            } else if (charIdx === typed.length) {
-                              className = "text-foreground animate-pulse";
-                            }
 
-                            return (
-                              <span key={charIdx} className={className}>
-                                {ch}
-                              </span>
-                            );
-                          })
-                        : // Display other lines as-is
-                          lineText}
+                              return (
+                                <span key={charIdx} className={className}>
+                                  {ch}
+                                </span>
+                              );
+                            })
+                          : // Display other lines as-is
+                            lineText}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
 
-            {/* Hidden input for capturing keyboard events */}
-            <input
-              ref={inputRef}
-              value={typed}
-              onChange={onChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  setTyped("");
-                  setCurrentLineIdx((idx) => Math.min(idx + 1, lines.length - 1));
-                }
-              }}
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-              autoCapitalize="off"
-              autoCorrect="off"
-              className="sr-only"
-            />
+              {/* Hidden input for capturing keyboard events */}
+              <input
+                ref={inputRef}
+                value={typed}
+                onChange={onChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    setTyped("");
+                    setCurrentLineIdx((idx) => Math.min(idx + 1, lines.length - 1));
+                  }
+                }}
+                autoFocus
+                spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                className="sr-only"
+              />
 
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <button
-                onClick={togglePlay}
-                disabled={!preview || !previewSupported || !audioReady}
-                className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-              >
-                {playing ? "Pause" : "Play"}
-              </button>
-              <button
-                onClick={restart}
-                className="rounded-md border border-border px-6 py-2 text-sm font-medium transition-colors hover:bg-muted"
-              >
-                Restart
-              </button>
-            </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={togglePlay}
+                  disabled={!preview || !previewSupported || !audioReady}
+                  className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center"
+                >
+                  {playing ? "Pause" : "Play"}
+                </button>
+                <button
+                  onClick={restart}
+                  className="rounded-lg border border-border/40 bg-card/45 backdrop-blur-sm py-2.5 px-6 text-sm font-semibold hover:bg-muted transition-colors cursor-pointer"
+                >
+                  Restart
+                </button>
+              </div>
 
-            {preview ? (
-              previewSupported ? (
+              {/* Render fallback html audio element if no youtube video is playing */}
+              {preview && previewSupported && (
                 <>
                   <audio
                     ref={audioRef}
@@ -349,40 +330,35 @@ function PlayPage() {
                       setPlaying(false);
                     }}
                     onLoadedData={() => {
-                      console.log("audio loaded data");
                       setAudioErr(null);
                       setAudioReady(true);
                     }}
                     onCanPlayThrough={() => {
-                      console.log("audio can play through");
                       setAudioReady(true);
                     }}
                   />
                   {audioErr && (
-                    <p className="mt-4 text-center text-xs text-incorrect">{audioErr}</p>
+                    <p className="text-center text-xs text-incorrect">{audioErr}</p>
                   )}
                   {!audioReady && !audioErr && (
-                    <p className="mt-4 text-center text-xs text-muted-foreground">
+                    <p className="text-center text-xs text-muted-foreground animate-pulse">
                       Loading audio preview…
                     </p>
                   )}
                 </>
-              ) : (
-                <p className="mt-4 text-center text-xs text-incorrect">
-                  Audio preview format is not supported by the browser.
-                </p>
-              )
-            ) : (
-              <p className="mt-4 text-center text-xs text-incorrect">
-                No audio preview available — type at your own pace.
-              </p>
-            )}
+              )}
 
-            <p className="mt-6 text-center font-mono text-xs text-muted-foreground">
-              Just start typing — press <span className="font-bold">Enter</span> to go to the next
-              line
-            </p>
-          </>
+              {!preview && (
+                <p className="text-center text-xs text-incorrect">
+                  No audio preview available — type at your own pace.
+                </p>
+              )}
+
+              <p className="text-center font-mono text-xs text-muted-foreground leading-relaxed">
+                Just start typing — press <span className="font-bold border border-border/40 px-1 py-0.5 rounded shadow-sm bg-muted/40">Enter</span> to go to the next line.
+              </p>
+            </div>
+          </div>
         )}
       </div>
     </main>
