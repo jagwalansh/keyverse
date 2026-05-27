@@ -203,7 +203,7 @@ function Index() {
             variants={formVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col justify-start w-120 max-w-full shrink-0"
+            className="flex flex-col justify-start w-120 max-w-full shrink-0 md:mt-[75px]"
           >
             <form onSubmit={onSearch} className="flex flex-col border-primary border-b gap-2 py-2">
               <div className="grid grid-cols-[1fr_42px] items-start gap-2">

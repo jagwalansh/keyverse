@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RecommendedRouteImport } from './routes/recommended'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTrackIdRouteImport } from './routes/play.$trackId'
 
+const RecommendedRoute = RecommendedRouteImport.update({
+  id: '/recommended',
+  path: '/recommended',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const PlayTrackIdRoute = PlayTrackIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/recommended': typeof RecommendedRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/recommended': typeof RecommendedRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/recommended': typeof RecommendedRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/play/$trackId'
+  fullPaths: '/' | '/recommended' | '/play/$trackId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/play/$trackId'
-  id: '__root__' | '/' | '/play/$trackId'
+  to: '/' | '/recommended' | '/play/$trackId'
+  id: '__root__' | '/' | '/recommended' | '/play/$trackId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RecommendedRoute: typeof RecommendedRoute
   PlayTrackIdRoute: typeof PlayTrackIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/recommended': {
+      id: '/recommended'
+      path: '/recommended'
+      fullPath: '/recommended'
+      preLoaderRoute: typeof RecommendedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RecommendedRoute: RecommendedRoute,
   PlayTrackIdRoute: PlayTrackIdRoute,
 }
 export const routeTree = rootRouteImport

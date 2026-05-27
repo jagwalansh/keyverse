@@ -5,8 +5,11 @@ import { Github, Heart, Coffee, ExternalLink, Youtube, Instagram } from "lucide-
 export function Footer() {
   return (
     <div className="w-full max-w-4xl mx-auto mt-24 px-6 flex flex-col gap-8">
-      {/* Bug Report Mail Option */}
-      <div className="flex justify-end text-[10px] text-muted-foreground font-mono -mb-5 px-2 select-none">
+      {/* Footer Top Links */}
+      <div className="flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center text-[10px] text-muted-foreground font-mono -mb-5 px-2 select-none">
+        <Link to="/recommended" className="text-primary hover:text-primary/80 transition-colors font-medium border-b border-primary/20 hover:border-primary flex items-center gap-1.5">
+          ✨ Recommended Songs to Play
+        </Link>
         <span>Found a bug? Mail us at <a href="mailto:bugs@lyrictype.com" className="text-primary hover:text-primary/80 transition-colors font-medium border-b border-primary/20 hover:border-primary">bugs@lyrictype.com</a></span>
       </div>
 
