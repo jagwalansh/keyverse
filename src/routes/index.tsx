@@ -247,6 +247,68 @@ function Index() {
               </div>
             </form>
 
+            {results.length === 0 && !loading && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.95, duration: 0.4 }}
+                className="mt-4 flex flex-wrap items-center gap-2 text-xs font-mono text-muted-foreground/80 select-none"
+              >
+                <span className="flex items-center gap-1 shrink-0">
+                  💡 Recommended:
+                </span>
+                
+                <Link
+                  to="/play/$trackId"
+                  params={{ trackId: "1743852427" }}
+                  search={{
+                    artist: "Ravyn Lenae",
+                    track: "Love Me Not",
+                    art: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/07/8c/6c/078c6c94-d38d-0451-d57b-23e957b569f8/075679660893.jpg/100x100bb.jpg",
+                    duration: 213
+                  }}
+                  className="px-2.5 py-1 rounded-full border border-border/40 bg-card/25 hover:bg-primary/10 hover:border-primary/40 hover:text-foreground transition-all flex items-center gap-1 shadow-sm"
+                >
+                  Love Me Not ⚡
+                </Link>
+
+                <Link
+                  to="/play/$trackId"
+                  params={{ trackId: "1579787410" }}
+                  search={{
+                    artist: "The Kid LAROI & Justin Bieber",
+                    track: "STAY",
+                    art: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a8/3a/22/a83a22f7-af18-7ef6-a7de-74816c532a44/886449475421.jpg/100x100bb.jpg",
+                    duration: 142
+                  }}
+                  className="px-2.5 py-1 rounded-full border border-border/40 bg-card/25 hover:bg-primary/10 hover:border-primary/40 hover:text-foreground transition-all flex items-center gap-1 shadow-sm"
+                >
+                  STAY 🎵
+                </Link>
+
+                <Link
+                  to="/play/$trackId"
+                  params={{ trackId: "1193701400" }}
+                  search={{
+                    artist: "Ed Sheeran",
+                    track: "Perfect",
+                    art: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/100x100bb.jpg",
+                    duration: 263
+                  }}
+                  className="px-2.5 py-1 rounded-full border border-border/40 bg-card/25 hover:bg-primary/10 hover:border-primary/40 hover:text-foreground transition-all flex items-center gap-1 shadow-sm"
+                >
+                  Perfect ☘️
+                </Link>
+
+                <Link
+                  to="/recommended"
+                  className="text-primary font-semibold hover:opacity-85 transition-opacity ml-1 flex items-center gap-0.5 border-b border-primary/20 hover:border-primary"
+                >
+                  View All &rarr;
+                </Link>
+              </motion.div>
+            )}
+
             {err && <p className="mt-4 text-sm text-incorrect">{err}</p>}
 
             <div>
