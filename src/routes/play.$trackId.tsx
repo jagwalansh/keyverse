@@ -874,6 +874,7 @@ function PlayPage() {
                     >
                       Restart
                     </button>
+                    {/*
                     <button
                       onClick={() => {
                         if (ytPlayerRef.current && lines) {
@@ -893,6 +894,7 @@ function PlayPage() {
                     >
                       ⏩ +10s
                     </button>
+                    */}
                   </div>
 
                   <p className="text-center font-mono text-xs text-muted-foreground leading-relaxed">
