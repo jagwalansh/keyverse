@@ -3,6 +3,9 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { CUSTOM_LYRICS } from "./lib/custom-lyrics";
+import { POST as saveScoreHandler } from "./server/api/save-score";
+import { GET as leaderboardHandler } from "./server/api/leaderboard";
+import { GET as profileHandler } from "./server/api/profile";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -97,6 +100,17 @@ export default {
     try {
       // Handle API proxy requests
       const url = new URL(request.url);
+
+      if (url.pathname === "/api/save-score") {
+        return await saveScoreHandler(request);
+      }
+      if (url.pathname === "/api/leaderboard") {
+        return await leaderboardHandler(request);
+      }
+      if (url.pathname === "/api/profile") {
+        return await profileHandler();
+      }
+
       if (url.pathname === "/api/lyrics") {
         const artist = url.searchParams.get("artist");
         const track = url.searchParams.get("track");

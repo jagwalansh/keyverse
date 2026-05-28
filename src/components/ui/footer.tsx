@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Github, Heart, Coffee, ExternalLink, Youtube, Instagram } from "lucide-react";
+import { Github, Heart, Coffee, ExternalLink, Instagram } from "lucide-react";
 
 export function Footer() {
   return (
-    <div className="w-full max-w-4xl mx-auto mt-auto px-6 pt-12 pb-8">
+    <div className="w-full max-w-4xl mx-auto mt-auto px-6 pt-12 pb-10">
       {/* Glassmorphic Footer Wrapper */}
       <footer className="w-full border border-border/40 bg-card/65 dark:bg-card/45 py-10 px-8 rounded-2xl backdrop-blur-md shadow-sm dark:shadow-[0_8px_32px_oklch(0_0_0_/_20%)]">
         <div className="flex flex-col gap-8">
@@ -98,7 +98,7 @@ export function Footer() {
               <motion.a
                 whileHover={{ scale: 1.15, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                href="https://github.com"
+                href="https://github.com/jagwalansh/updated-lyrictype"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors text-muted-foreground"
@@ -109,18 +109,7 @@ export function Footer() {
               <motion.a
                 whileHover={{ scale: 1.15, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                href="https://youtube.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors text-muted-foreground"
-                title="YouTube"
-              >
-                <Youtube className="h-[18px] w-[18px]" />
-              </motion.a>
-              <motion.a
-                whileHover={{ scale: 1.15, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                href="https://instagram.com"
+                href="https://www.instagram.com/lyric_type"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors text-muted-foreground"
@@ -131,7 +120,7 @@ export function Footer() {
               <motion.a
                 whileHover={{ scale: 1.15, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                href="https://x.com"
+                href="https://x.com/jagwalansh"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors text-muted-foreground"

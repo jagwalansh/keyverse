@@ -17,7 +17,8 @@ export async function GET(req: Request) {
     .from(view)
     .select("*")
     .eq("song_id", songId)
-    .order("best_score", { ascending: false });
+    .order("best_score", { ascending: false })
+    .limit(50);
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {

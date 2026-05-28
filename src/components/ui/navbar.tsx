@@ -111,16 +111,65 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
     ? (isScrolled ? shrinkWidth : baseWidth)
     : 160;
 
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setIsDark(false);
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setIsDark(true);
+  const toggleTheme = (event: React.MouseEvent) => {
+    const isDarkNow = document.documentElement.classList.contains("dark");
+    
+    const applyTheme = () => {
+      if (isDarkNow) {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+        setIsDark(false);
+      } else {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+        setIsDark(true);
+      }
+    };
+
+    if (!("startViewTransition" in document)) {
+      applyTheme();
+      return;
     }
+
+    const x = event.clientX;
+    const y = event.clientY;
+
+    const endRadius = Math.hypot(
+      Math.max(x, innerWidth - x),
+      Math.max(y, innerHeight - y)
+    );
+
+    if (isDarkNow) {
+      document.documentElement.classList.add("dark-to-light-transition");
+    }
+
+    const transition = (document as any).startViewTransition(() => {
+      applyTheme();
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`
+      ];
+
+      document.documentElement.animate(
+        {
+          clipPath: isDarkNow ? [...clipPath].reverse() : clipPath,
+        },
+        {
+          duration: 400,
+          easing: "ease-in-out",
+          pseudoElement: isDarkNow
+            ? "::view-transition-old(root)"
+            : "::view-transition-new(root)",
+        }
+      );
+    });
+
+    transition.finished.then(() => {
+      document.documentElement.classList.remove("dark-to-light-transition");
+    });
   };
 
   return (
@@ -155,69 +204,42 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
               <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
+              className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
             >
               <Link to="/" className="font-mono text-xl font-medium tracking-tight">
-                <div className="relative w-[18px] h-[18px]">
-                  <HomeIcon className="text-foreground transition-colors duration-300" />
-                  <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                    <HomeIcon className="text-primary max-w-none w-[18px] h-[18px]" />
-                  </div>
-                </div>
+                <HomeIcon className="text-foreground hover:text-primary transition-colors duration-200" />
               </Link>
              </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setSearchOpen(true)}
-              className="group py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50 h-8 flex items-center justify-center"
+              className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50 h-8 flex items-center justify-center"
               title="Search Songs"
             >
-              <div className="relative w-[18px] h-[18px]">
-                <Search className="h-[18px] w-[18px] text-foreground transition-colors duration-300" />
-                <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                  <Search className="h-[18px] w-[18px] text-primary max-w-none" fill="currentColor" />
-                </div>
-              </div>
+              <Search className="h-[18px] w-[18px] text-foreground hover:text-primary transition-colors duration-200" />
             </motion.button>
               <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
+              className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
             >
-              <Link to="/" className="font-mono text-xl font-medium tracking-tight">
-                <div className="relative w-[18px] h-[18px]">
-                  <LeaderboardIcon className="text-foreground transition-colors duration-300" />
-                  <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                    <LeaderboardIcon className="text-primary max-w-none w-[18px] h-[18px]" />
-                  </div>
-                </div>
+              <Link to="/leaderboard" className="font-mono text-xl font-medium tracking-tight">
+                <LeaderboardIcon className="text-foreground hover:text-primary transition-colors duration-200" />
               </Link>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="group border border-border/40 bg-card/50 shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center relative z-50"
+              className="border border-border/40 bg-card/50 shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center relative z-50"
               title="Toggle Theme"
             >
-              <div className="relative w-4 h-4">
-                {isDark ? (
-                  <>
-                    <Sun className="h-4 w-4 text-foreground transition-colors duration-300" />
-                    <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                      <Sun className="h-4 w-4 text-primary max-w-none" fill="currentColor" />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 text-foreground transition-colors duration-300" />
-                    <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                      <Moon className="h-4 w-4 text-primary max-w-none" fill="currentColor" />
-                    </div>
-                  </>
-                )}
-              </div>
+              {isDark ? (
+                <Sun className="h-4 w-4 text-foreground hover:text-primary transition-colors duration-200" />
+              ) : (
+                <Moon className="h-4 w-4 text-foreground hover:text-primary transition-colors duration-200" />
+              )}
             </motion.button>
             <div className="flex min-w-0 items-center gap-3">
               {authLoading ? (
@@ -227,31 +249,20 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setAccountOpen(true)}
-                  className="group border border-input bg-background shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center relative z-50"
+                  className="border border-input bg-background shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center relative z-50"
                 >
-                  <div className="relative w-4 h-4">
-                    <UserRound className="h-4 w-4 text-foreground transition-colors duration-300" aria-hidden="true" />
-                    <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full">
-                      <UserRound className="h-4 w-4 text-primary max-w-none" aria-hidden="true" />
-                    </div>
-                  </div>
+                  <UserRound className="h-4 w-4 text-foreground hover:text-primary transition-colors duration-200" aria-hidden="true" />
                 </motion.button>
               ) : (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setModalOpen(true)}
-                  className="group py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer flex items-center justify-center h-8 relative z-50"
+                  className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer flex items-center justify-center h-8 relative z-50"
                 >
-                  <div className="relative flex items-center gap-1.5">
-                    <div className="flex items-center gap-1.5 text-foreground transition-colors duration-300 text-xs font-medium shrink-0">
-                      <LogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span className="shrink-0">Sign in</span>
-                    </div>
-                    <div className="absolute inset-0 w-0 overflow-hidden transition-all duration-300 group-hover:w-full flex items-center gap-1.5 text-primary max-w-none whitespace-nowrap text-xs font-medium shrink-0">
-                      <LogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      <span className="shrink-0">Sign in</span>
-                    </div>
+                  <div className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors duration-200 text-xs font-medium shrink-0">
+                    <LogIn className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="shrink-0">Sign in</span>
                   </div>
                 </motion.button>
               )}

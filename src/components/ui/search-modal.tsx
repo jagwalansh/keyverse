@@ -73,6 +73,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
         track: t.trackName,
         art: t.artworkUrl100 || "",
         duration: t.duration,
+        from: typeof window !== "undefined" ? window.location.pathname : "/",
       },
     });
   };
@@ -80,8 +81,8 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/45 backdrop-blur-md duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[101] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border/40 bg-card/95 backdrop-blur-md p-6 shadow-xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95">
+        <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-[101] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/[0.08] dark:border-white/[0.03] bg-card/65 dark:bg-card/45 backdrop-blur-2xl p-6 shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-95 data-[state=closed]:zoom-out-95">
           
           {/* Header & Close */}
           <div className="mb-4 flex items-center justify-between gap-4">
@@ -108,7 +109,7 @@ export function SearchModal({ open, onOpenChange }: SearchModalProps) {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Type track name or artist..."
-              className="w-full bg-background/50 hover:bg-background/80 focus:bg-background/95 border border-border/40 focus:border-primary/50 text-sm font-mono rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all duration-300 text-foreground"
+              className="w-full bg-white/[0.03] hover:bg-white/[0.05] focus:bg-white/[0.07] border-b border-white/[0.06] dark:border-white/[0.03] focus:border-primary/45 focus:ring-1 focus:ring-primary/20 text-sm font-mono rounded-xl pl-10 pr-4 py-2.5 outline-none transition-all duration-300 text-foreground shadow-inner"
             />
             <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
           </div>

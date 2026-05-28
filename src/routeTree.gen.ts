@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as RecommendedRouteImport } from './routes/recommended'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTrackIdRouteImport } from './routes/play.$trackId'
 
@@ -22,6 +23,11 @@ const SupportRoute = SupportRouteImport.update({
 const RecommendedRoute = RecommendedRouteImport.update({
   id: '/recommended',
   path: '/recommended',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const PlayTrackIdRoute = PlayTrackIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/play/$trackId': typeof PlayTrackIdRoute
@@ -50,20 +58,33 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/recommended' | '/support' | '/play/$trackId'
+  fullPaths:
+    | '/'
+    | '/leaderboard'
+    | '/recommended'
+    | '/support'
+    | '/play/$trackId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/recommended' | '/support' | '/play/$trackId'
-  id: '__root__' | '/' | '/recommended' | '/support' | '/play/$trackId'
+  to: '/' | '/leaderboard' | '/recommended' | '/support' | '/play/$trackId'
+  id:
+    | '__root__'
+    | '/'
+    | '/leaderboard'
+    | '/recommended'
+    | '/support'
+    | '/play/$trackId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   RecommendedRoute: typeof RecommendedRoute
   SupportRoute: typeof SupportRoute
   PlayTrackIdRoute: typeof PlayTrackIdRoute
@@ -85,6 +106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RecommendedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +132,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LeaderboardRoute: LeaderboardRoute,
   RecommendedRoute: RecommendedRoute,
   SupportRoute: SupportRoute,
   PlayTrackIdRoute: PlayTrackIdRoute,

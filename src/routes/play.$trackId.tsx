@@ -1,16 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Navbar } from "@/components/ui/navbar";
 import { fetchSyncedLyrics, type LyricLine } from "@/lib/lrc";
 import YouTube, { type YouTubePlayer } from "react-youtube";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/lib/auth-context";
+import { useModal } from "@/lib/modal-context";
+import { supabase } from "@/lib/supabase";
+import { Music, RotateCcw, Trophy, Home, Award, CheckCircle2, AlertCircle, Loader2, Sparkles, FastForward } from "lucide-react";
 
 interface Search {
   artist: string;
   track: string;
   art: string;
   duration?: number;
+  q?: string;
+  from?: string;
 }
 
 function formatTime(sec: number): string {
@@ -40,12 +46,23 @@ export const Route = createFileRoute("/play/$trackId")({
     track: String(s.track ?? ""),
     art: String(s.art ?? ""),
     duration: s.duration ? Number(s.duration) : undefined,
+    q: typeof s.q === "string" ? s.q : undefined,
+    from: typeof s.from === "string" ? s.from : undefined,
   }),
   component: PlayPage,
 });
 
 function PlayPage() {
-  const { artist, track, art, duration } = Route.useSearch();
+  const { artist, track, art, duration, q, from } = Route.useSearch();
+  const { user } = useAuth();
+  const { setModalOpen } = useModal();
+  const { trackId } = Route.useParams();
+
+  const [savingScore, setSavingScore] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [saveAttempted, setSaveAttempted] = useState(false);
+
   const [lines, setLines] = useState<LyricLine[] | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
@@ -58,6 +75,7 @@ function PlayPage() {
   
   // Game state
   const [combo, setCombo] = useState(0);
+  const [maxCombo, setMaxCombo] = useState(0);
   const [score, setScore] = useState(0);
   const [hitFeedback, setHitFeedback] = useState<{ id: number, text: string, type: string } | null>(null);
   const [particles, setParticles] = useState<Array<{ id: number, text: string, type: 'hit' | 'miss', charIdx: number, createdAt: number }>>([]);
@@ -77,6 +95,7 @@ function PlayPage() {
   const [ytAuthor, setYtAuthor] = useState<string | null>(null);
   const [ytLoading, setYtLoading] = useState(true);
   const [songEnded, setSongEnded] = useState(false);
+  const [songEndedAt, setSongEndedAt] = useState<number | null>(null);
   const [showBlurOverlay, setShowBlurOverlay] = useState(false);
   const showBlurOverlayRef = useRef(false);
 
@@ -118,7 +137,9 @@ function PlayPage() {
 
         // 2. Fetch YouTube Video ID
         setYtLoading(true);
-        const ytResponse = await fetch(`/api/youtube-search?q=${encodeURIComponent(artist + " " + track + " audio")}&duration=${expectedDuration}`);
+        const useEditVideo = typeof window !== "undefined" ? localStorage.getItem("useEditVideo") === "true" : false;
+        const searchQuery = artist + " " + track + (useEditVideo ? " edit" : " audio");
+        const ytResponse = await fetch(`/api/youtube-search?q=${encodeURIComponent(searchQuery)}&duration=${expectedDuration}`);
         const d = await ytResponse.json();
         
         if (cancelled) return;
@@ -235,6 +256,19 @@ function PlayPage() {
     setCurrentLineIdx(idx => Math.min(idx + 1, lines.length - 1));
   }, [lines, currentLineIdx]);
 
+  const endSong = useCallback(() => {
+    setPlaying(false);
+    setSongEnded(true);
+    setSongEndedAt(Date.now());
+    if (ytPlayerRef.current) {
+      try {
+        ytPlayerRef.current.pauseVideo();
+      } catch (e) {
+        console.error("Failed to pause video", e);
+      }
+    }
+  }, []);
+
   // High precision time sync and animation loop
   const updateTime = useCallback(() => {
     if (ytPlayerRef.current && playing) {
@@ -316,7 +350,11 @@ function PlayPage() {
               setCombo(0);
             }
             
-            handleLineComplete(true);
+            if (currentLineIdx === lines.length - 1) {
+              endSong();
+            } else {
+              handleLineComplete(true);
+            }
           }
         } else if (charIdxRef.current >= line.text.length && currentTimeRef.current < nextLineTime) {
             // Waiting for next line
@@ -329,7 +367,7 @@ function PlayPage() {
       
       rafRef.current = requestAnimationFrame(updateTime);
     }
-  }, [playing, lines, currentLineIdx, handleLineComplete]);
+  }, [playing, lines, currentLineIdx, handleLineComplete, endSong]);
 
   useEffect(() => {
     if (playing) {
@@ -395,6 +433,7 @@ function PlayPage() {
     if (isHit) {
         const newCombo = combo + 1;
         setCombo(newCombo);
+        setMaxCombo(m => Math.max(m, newCombo));
         
         let multiplier = 1;
         if (newCombo >= 100) multiplier = 5;
@@ -433,12 +472,68 @@ function PlayPage() {
 
     if (nextIdx >= line.text.length) {
         setLineComplete(true);
+        if (currentLineIdx === lines.length - 1) {
+            endSong();
+        }
     }
   }
 
-  const accuracy = stats.total ? Math.round((stats.correct / stats.total) * 100) : 100;
-  const elapsed = stats.started ? (Date.now() - stats.started) / 1000 / 60 : 0;
+  const accuracy = stats.total ? Math.round((stats.correct / stats.total) * 100) : 0;
+  const elapsed = stats.started ? ((songEndedAt || Date.now()) - stats.started) / 1000 / 60 : 0;
   const wpm = elapsed > 0 ? Math.round(stats.correct / 5 / elapsed) : 0;
+
+  // Save score when song ends
+  useEffect(() => {
+    if (songEnded && user && !scoreSaved && !savingScore && !saveAttempted) {
+      const saveScore = async () => {
+        setSavingScore(true);
+        setSaveError(null);
+        setSaveAttempted(true);
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+
+          const res = await fetch("/api/save-score", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({
+              songId: trackId,
+              artist,
+              track,
+              score,
+              accuracy,
+              consistency: accuracy,
+              previewUrl: null,
+              artUrl: art,
+            }),
+          });
+          if (!res.ok) {
+            const data = await res.json();
+            throw new Error(data.error || "Failed to save score");
+          }
+          setScoreSaved(true);
+        } catch (err: any) {
+          console.error(err);
+          setSaveError(err.message || "Failed to save score");
+        } finally {
+          setSavingScore(false);
+        }
+      };
+      saveScore();
+    }
+  }, [songEnded, user, scoreSaved, savingScore, saveAttempted, trackId, artist, track, score, accuracy, art]);
+
+  const grade = useMemo(() => {
+    if (accuracy >= 98) return { letter: "S", color: "text-amber-400 bg-amber-400/10 border-amber-400/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]" };
+    if (accuracy >= 95) return { letter: "A", color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/30 shadow-[0_0_20px_rgba(52,211,153,0.15)]" };
+    if (accuracy >= 90) return { letter: "B", color: "text-blue-400 bg-blue-400/10 border-blue-400/30 shadow-[0_0_20px_rgba(96,165,250,0.15)]" };
+    if (accuracy >= 80) return { letter: "C", color: "text-purple-400 bg-purple-400/10 border-purple-400/30 shadow-[0_0_20px_rgba(192,132,252,0.15)]" };
+    if (accuracy >= 70) return { letter: "D", color: "text-orange-400 bg-orange-400/10 border-orange-400/30 shadow-[0_0_20px_rgba(251,146,60,0.15)]" };
+    return { letter: "F", color: "text-rose-400 bg-rose-400/10 border-rose-400/30 shadow-[0_0_20px_rgba(248,113,113,0.15)]" };
+  }, [accuracy]);
 
   function togglePlay() {
     const player = ytPlayerRef.current;
@@ -462,14 +557,20 @@ function PlayPage() {
     setCurrentLineIdx(0);
     setStats({ correct: 0, total: 0, started: 0 });
     setCombo(0);
+    setMaxCombo(0);
     setScore(0);
     setHitFeedback(null);
     setParticles([]);
     currentTimeRef.current = 0;
     lastCompletedLineRef.current = -1;
     setSongEnded(false);
+    setSongEndedAt(null);
     showBlurOverlayRef.current = false;
     setShowBlurOverlay(false);
+    setSavingScore(false);
+    setSaveError(null);
+    setScoreSaved(false);
+    setSaveAttempted(false);
 
     // Reset Spotify bar DOM elements
     const currentEl = document.getElementById('spotify-current-time');
@@ -506,13 +607,17 @@ function PlayPage() {
       <Navbar disableEntranceAnimation />
 
       {/* Content Overlay */}
-      <div className="relative z-20 w-full max-w-6xl px-6 pb-10">
-        <div className="flex items-center justify-between gap-4 mb-6">
-          <Link to="/" className="font-mono text-xs text-muted-foreground hover:text-foreground">
+      <div className="relative z-20 w-full max-w-5xl px-6 pt-24 pb-8">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <Link
+            to={from === "/recommended" ? "/recommended" : "/"}
+            search={from !== "/recommended" && q ? { q } : undefined}
+            className="font-mono text-xs text-muted-foreground hover:text-foreground"
+          >
             ← back
           </Link>
 
-          <div className="flex items-center gap-6 font-mono text-sm border border-border/40 bg-card/45 backdrop-blur-md shadow-sm rounded-full px-5 py-2">
+          <div className="flex items-center gap-6 font-mono text-sm border border-border/40 bg-card/45 backdrop-blur-md shadow-sm rounded-full px-6 py-3">
             <div>
               <span className="text-primary font-bold text-base">{score.toLocaleString()}</span>{" "}
               <span className="text-muted-foreground text-xs">score</span>
@@ -535,10 +640,10 @@ function PlayPage() {
           </div>
         </div>
 
-        {loadErr && (
+        {loadErr ? (
           <div className="mt-10 max-w-lg mx-auto rounded-xl border border-border/40 bg-card/60 backdrop-blur-md p-10 text-center shadow-lg">
             <div className="w-16 h-16 mx-auto bg-muted/30 rounded-full flex items-center justify-center mb-6">
-              <span className="text-3xl">🔕</span>
+              <Music className="h-6 w-6 text-muted-foreground/60" />
             </div>
             <h2 className="text-xl font-semibold mb-2">Lyrics Not Found</h2>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
@@ -552,13 +657,11 @@ function PlayPage() {
               Go back to search
             </Link>
           </div>
-        )}
-
-        {(!lines || ytLoading) && !loadErr && (
-          <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+        ) : (!lines || ytLoading) ? (
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
             {/* Left Column Skeleton */}
             <div className="flex flex-col gap-4">
-              <div className="relative w-full h-[450px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-card/45 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center">
+              <div className="relative w-full h-[360px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-card/45 backdrop-blur-md flex flex-col items-center justify-center p-5 text-center">
                 <Skeleton className="h-48 w-48 rounded-lg shadow-md mb-8" />
                 <div className="relative z-10 mx-auto w-64 bg-background/40 backdrop-blur-md px-6 py-4 rounded-md shadow-lg border border-white/10 flex flex-col gap-2 items-center">
                   <Skeleton className="h-6 w-40" />
@@ -570,7 +673,7 @@ function PlayPage() {
             {/* Right Column Skeleton */}
             <div className="flex flex-col gap-6 relative">
               {/* Game Area Skeleton */}
-              <div className="relative h-[450px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-6 py-10 overflow-hidden flex flex-col justify-center">
+              <div className="relative h-[360px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-5 py-8 overflow-hidden flex flex-col justify-center">
                 <div className="flex flex-col gap-8">
                   {/* Past line skeleton */}
                   <div className="flex items-center gap-6 opacity-30 scale-95">
@@ -599,13 +702,11 @@ function PlayPage() {
               <Skeleton className="mx-auto h-4 w-72 rounded" />
             </div>
           </div>
-        )}
-
-        {lines && !ytLoading && (
-          <div className="mt-10 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+        ) : (
+          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
             {/* Left Column: YouTube Video / Song Information Card */}
             <div className="flex flex-col gap-4">
-              <div className="relative w-full h-[450px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black flex flex-col items-center justify-center p-6 text-center">
+              <div className="relative w-full h-[360px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black flex flex-col items-center justify-center p-5 text-center">
                 {videoId ? (
                   <>
                     <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden rounded-xl bg-black">
@@ -624,15 +725,18 @@ function PlayPage() {
                           onPlay={() => setPlaying(true)}
                           onPause={() => setPlaying(false)}
                           onEnd={() => {
-                            setPlaying(false);
-                            setSongEnded(true);
-                          }}
+                             endSong();
+                           }}
                           onError={(e) => {
                             console.error("YouTube Error", e);
                             setLoadErr("Failed to load YouTube video.");
                           }}
-                          className="w-full h-full scale-[1.5]"
+                          className="w-full h-full scale-[1.6]"
                         />
+                        {/* Top masking blur to hide YouTube title/info */}
+                        <div className="absolute top-0 inset-x-0 h-11 bg-black/85 backdrop-blur-md border-b border-white/5 pointer-events-none z-10" />
+                        {/* Bottom masking blur to hide YouTube watermark/logo */}
+                        <div className="absolute bottom-0 inset-x-0 h-11 bg-black/85 backdrop-blur-md border-t border-white/5 pointer-events-none z-10" />
                     </div>
                     {/* Translucent cover to blur out YouTube video recommendations / pause state */}
                     <div className={`absolute inset-0 z-10 bg-black/55 backdrop-blur-lg transition-opacity duration-500 rounded-xl ${
@@ -643,9 +747,9 @@ function PlayPage() {
                 ) : (
                   <>
                     {art ? (
-                      <img src={art} alt="" className="h-48 w-48 rounded-lg shadow-md mb-8 relative z-10" />
+                      <img src={art} alt="" className="h-36 w-36 rounded-lg shadow-md mb-6 relative z-10" />
                     ) : (
-                      <div className="h-48 w-48 rounded-lg bg-muted mb-8 animate-pulse relative z-10" />
+                      <div className="h-36 w-36 rounded-lg bg-muted mb-6 animate-pulse relative z-10" />
                     )}
                   </>
                 )}
@@ -655,11 +759,11 @@ function PlayPage() {
                     videoId ? "absolute left-1/2 top-1/2" : "relative mt-auto mb-4 mx-auto"
                   } ${
                     showSpotifyPlayer 
-                      ? "w-[80%] max-w-[360px] h-[64px] px-6 rounded-xl" 
-                      : "w-[280px] h-[130px] px-6 rounded-2xl"
+                      ? "w-[80%] max-w-[320px] h-[56px] px-5 rounded-xl" 
+                      : "w-[240px] h-[110px] px-5 rounded-2xl"
                   }`}
                   style={videoId ? {
-                    transform: `translate(-50%, ${showSpotifyPlayer ? "140px" : "-50%"})`,
+                    transform: `translate(-50%, ${showSpotifyPlayer ? "110px" : "-50%"})`,
                   } : undefined}
                 >
                   {/* Layout A: Song Info */}
@@ -745,7 +849,7 @@ function PlayPage() {
                   {/* Game Area */}
                   <div
                     ref={lyricsRef}
-                    className="relative h-[450px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-6 py-10 cursor-pointer overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    className="relative h-[360px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-5 py-8 cursor-pointer overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                     onClick={() => inputRef.current?.focus()}
                   >
                     <div className="relative z-10">
@@ -847,7 +951,7 @@ function PlayPage() {
                                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                       </svg>
-                                      ♪ Next in {waitingForNext}s
+                                      <Music className="w-3.5 h-3.5 animate-pulse text-primary shrink-0" /> Next in {waitingForNext}s
                                   </div>
                               )}
                             </div>
@@ -874,7 +978,6 @@ function PlayPage() {
                     >
                       Restart
                     </button>
-                    {/*
                     <button
                       onClick={() => {
                         if (ytPlayerRef.current && lines) {
@@ -892,9 +995,8 @@ function PlayPage() {
                       }}
                       className="rounded-lg border border-border/40 bg-card/45 backdrop-blur-sm py-2.5 px-5 text-sm font-semibold hover:bg-muted transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
-                      ⏩ +10s
+                      <FastForward className="w-4 h-4 text-primary" /> +10s
                     </button>
-                    */}
                   </div>
 
                   <p className="text-center font-mono text-xs text-muted-foreground leading-relaxed">
@@ -919,6 +1021,168 @@ function PlayPage() {
           </div>
         )}
       </div>
+
+      {/* Premium Game Results Modal Overlay */}
+      <AnimatePresence>
+        {songEnded && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-xl"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1, transition: { type: "spring", duration: 0.4 } }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md rounded-3xl border border-white/[0.08] dark:border-white/[0.03] bg-card/45 backdrop-blur-2xl shadow-2xl p-6 md:p-8 flex flex-col items-center overflow-hidden"
+            >
+              {/* Backlight color glow based on grade */}
+              <div className={`absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl opacity-25 ${
+                grade.letter === 'S' ? 'bg-amber-400' :
+                grade.letter === 'A' ? 'bg-emerald-400' :
+                grade.letter === 'B' ? 'bg-blue-400' :
+                grade.letter === 'C' ? 'bg-purple-400' :
+                grade.letter === 'D' ? 'bg-orange-400' : 'bg-rose-400'
+              }`} />
+              <div className={`absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl opacity-25 ${
+                grade.letter === 'S' ? 'bg-amber-400' :
+                grade.letter === 'A' ? 'bg-emerald-400' :
+                grade.letter === 'B' ? 'bg-blue-400' :
+                grade.letter === 'C' ? 'bg-purple-400' :
+                grade.letter === 'D' ? 'bg-orange-400' : 'bg-rose-400'
+              }`} />
+
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground mb-1 z-10 bg-clip-text text-transparent bg-gradient-to-b from-foreground via-foreground to-foreground/80">
+                Song Completed!
+              </h2>
+              <p className="text-xs text-muted-foreground font-medium mb-8 z-10 tracking-wide uppercase">
+                {track} • {artist}
+              </p>
+
+              {/* Large Grade Circle */}
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1, rotate: 0, transition: { type: "spring", delay: 0.15, stiffness: 120 } }}
+                className={`relative w-28 h-28 md:w-32 md:h-32 rounded-full flex items-center justify-center mb-8 select-none z-10 border border-white/10 ${grade.color}`}
+              >
+                <span className="text-5xl md:text-6xl font-black italic tracking-tighter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                  {grade.letter}
+                </span>
+                
+                {/* Concentric premium animation rings */}
+                <div className="absolute inset-0 rounded-full border border-current/10 animate-ping opacity-25" />
+                <div className="absolute inset-1.5 rounded-full border border-current/5 animate-spin-slow" />
+                <div className="absolute inset-3 rounded-full border-t border-b border-current/25 animate-spin-reverse opacity-45" />
+              </motion.div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-3.5 w-full mb-8 z-10">
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08] p-4 flex flex-col items-center justify-center transition-all duration-350 shadow-sm relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground/50 mb-1 z-10 uppercase">
+                    Score
+                  </span>
+                  <span className="text-xl md:text-2xl font-black text-foreground font-mono z-10">
+                    {score.toLocaleString()}
+                  </span>
+                </div>
+                
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08] p-4 flex flex-col items-center justify-center transition-all duration-350 shadow-sm relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground/50 mb-1 z-10 uppercase">
+                    Accuracy
+                  </span>
+                  <span className="text-xl md:text-2xl font-black text-foreground font-mono z-10">
+                    {accuracy}%
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08] p-4 flex flex-col items-center justify-center transition-all duration-350 shadow-sm relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground/50 mb-1 z-10 uppercase">
+                    Speed (WPM)
+                  </span>
+                  <span className="text-xl md:text-2xl font-black text-foreground font-mono z-10">
+                    {wpm}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-white/[0.04] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08] p-4 flex flex-col items-center justify-center transition-all duration-350 shadow-sm relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <span className="text-[9px] font-bold tracking-widest text-muted-foreground/50 mb-1 z-10 uppercase">
+                    Max Combo
+                  </span>
+                  <span className="text-xl md:text-2xl font-black text-foreground font-mono z-10">
+                    {maxCombo}x
+                  </span>
+                </div>
+              </div>
+
+              {/* Leaderboard saving status or Guest CTA */}
+              <div className="w-full mb-8 z-10">
+                {user ? (
+                  <div className="flex items-center justify-center gap-2 p-3.5 rounded-xl border border-white/[0.05] bg-white/[0.01] text-sm">
+                    {savingScore ? (
+                      <>
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                        <span className="text-muted-foreground">Submitting score to leaderboard...</span>
+                      </>
+                    ) : scoreSaved ? (
+                      <>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span className="text-emerald-500 font-medium">Score saved to leaderboard!</span>
+                      </>
+                    ) : saveError ? (
+                      <>
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                        <span className="text-rose-500 text-xs font-medium">Failed to save score: {saveError}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">Preparing to save score...</span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-primary/15 bg-primary/[0.02] p-4 text-center">
+                    <p className="text-xs text-muted-foreground mb-3.5 leading-relaxed">
+                      You are playing as a <strong className="text-foreground">Guest</strong>. Sign in to save your score of <strong className="text-primary font-mono">{score.toLocaleString()}</strong> to the leaderboard!
+                    </p>
+                    <button
+                      onClick={() => setModalOpen(true)}
+                      className="inline-flex items-center gap-2 px-4.5 py-2 text-xs font-bold bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity cursor-pointer shadow-md shadow-primary/10"
+                    >
+                      Sign In to Save
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions Grid */}
+              <div className="flex flex-col sm:flex-row gap-3 w-full z-10">
+                <button
+                  onClick={restart}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-95 shadow-md shadow-primary/20 transition-all cursor-pointer text-sm"
+                >
+                  <RotateCcw className="w-4 h-4" /> Play Again
+                </button>
+                <Link
+                  to="/leaderboard"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.02] hover:bg-white/[0.05] text-foreground font-semibold rounded-xl transition-all text-sm"
+                >
+                  <Trophy className="w-4 h-4 text-primary" /> Leaderboard
+                </Link>
+                <Link
+                  to={from === "/recommended" ? "/recommended" : "/"}
+                  search={from !== "/recommended" && q ? { q } : undefined}
+                  className="px-4 py-3 border border-white/[0.08] hover:border-white/[0.15] bg-white/[0.02] hover:bg-white/[0.05] text-muted-foreground hover:text-foreground font-semibold rounded-xl transition-all text-sm flex items-center justify-center"
+                >
+                  <Home className="w-4 h-4" />
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

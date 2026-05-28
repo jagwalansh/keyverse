@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+MX:wght@100..400&display=swap');
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -251,4 +252,33 @@ html {
 
 .animate-float-up-fade {
   animation: floatUpFade 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+.playwrite-mx-regular {
+  font-family: "Playwrite MX", cursive;
+  font-weight: 400;
+  -webkit-text-stroke: 1px currentColor;
+  font-style: normal;
+}
+
+/* Theme Toggle View Transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* When transitioning from dark to light, keep the old dark state on top so it shrinks into the button */
+.dark-to-light-transition::view-transition-old(root) {
+  z-index: 2;
+}
+.dark-to-light-transition::view-transition-new(root) {
+  z-index: 1;
 }

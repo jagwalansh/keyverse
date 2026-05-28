@@ -48,7 +48,7 @@ const titleCharVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: "spring" as const,
       stiffness: 260,
       damping: 14,
     },
@@ -63,7 +63,7 @@ const paragraphVariants = {
     transition: {
       delay: 0.6,
       duration: 0.5,
-      ease: "easeOut",
+      ease: "easeOut" as const,
     },
   },
 };
@@ -74,72 +74,98 @@ const RECOMMENDED_SONGS_HOMEPAGE = [
     trackName: "Love Me Not",
     artistName: "Ravyn Lenae",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/07/8c/6c/078c6c94-d38d-0451-d57b-23e957b569f8/075679660893.jpg/100x100bb.jpg",
-    duration: 213,
-    difficulty: "Easy",
-    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+    duration: 213
   },
   {
     id: 1579787410,
     trackName: "STAY",
     artistName: "The Kid LAROI & Justin Bieber",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a8/3a/22/a83a22f7-af18-7ef6-a7de-74816c532a44/886449475421.jpg/100x100bb.jpg",
-    duration: 142,
-    difficulty: "Medium",
-    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20"
+    duration: 142
+  },
+  {
+    id: 1615585008,
+    trackName: "As It Was",
+    artistName: "Harry Styles",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/886449990061.jpg/100x100bb.jpg",
+    duration: 167
+  },
+  {
+    id: 1538003843,
+    trackName: "Levitating",
+    artistName: "Dua Lipa",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6c/11/d6/6c11d681-aa3a-d59e-4c2e-f77e181026ab/190295092665.jpg/100x100bb.jpg",
+    duration: 203
+  },
+  {
+    id: 1440870375,
+    trackName: "Starboy",
+    artistName: "The Weeknd feat. Daft Punk",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b5/92/bb/b592bb72-52e3-e756-9b26-9f56d08f47ab/16UMGIM67864.rgb.jpg/100x100bb.jpg",
+    duration: 230
+  },
+  {
+    id: 1468058171,
+    trackName: "Cruel Summer",
+    artistName: "Taylor Swift",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
+    duration: 178
+  },
+  {
+    id: 1193701392,
+    trackName: "Shape of You",
+    artistName: "Ed Sheeran",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/100x100bb.jpg",
+    duration: 233
+  },
+  {
+    id: 1411628233,
+    trackName: "Believer",
+    artistName: "Imagine Dragons",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/11/7a/b8/117ab805-6811-8929-18b9-0fad7baf0c25/17UMGIM98210.rgb.jpg/100x100bb.jpg",
+    duration: 204
   },
   {
     id: 1193701400,
     trackName: "Perfect",
     artistName: "Ed Sheeran",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/100x100bb.jpg",
-    duration: 263,
-    difficulty: "Very Easy",
-    difficultyColor: "bg-teal-500/10 text-teal-500 border-teal-500/20"
+    duration: 263
   },
   {
     id: 1488408568,
     trackName: "Blinding Lights",
     artistName: "The Weeknd",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a6/6e/bf/a66ebf79-5008-8948-b352-a790fc87446b/19UM1IM04638.rgb.jpg/100x100bb.jpg",
-    duration: 202,
-    difficulty: "Medium",
-    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20"
+    duration: 202
   },
   {
     id: 1674691586,
     trackName: "Flowers",
     artistName: "Miley Cyrus",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8c/67/ff/8c67ff91-31c3-3fef-1884-ce3ec89f3af4/196589946874.jpg/100x100bb.jpg",
-    duration: 201,
-    difficulty: "Easy",
-    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+    duration: 201
   },
   {
     id: 1508562516,
     trackName: "Heat Waves",
     artistName: "Glass Animals",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/da/8b/77/da8b7731-6f4f-eacf-5e74-8b23389eefa1/20UMGIM03371.rgb.jpg/100x100bb.jpg",
-    duration: 239,
-    difficulty: "Easy",
-    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+    duration: 239
   },
   {
     id: 1434371887,
     trackName: "Shallow",
     artistName: "Lady Gaga & Bradley Cooper",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b1/9f/ef/b19fef51-79de-a940-e8ab-9e4e07b04d96/18UMGIM53752.rgb.jpg/100x100bb.jpg",
-    duration: 216,
-    difficulty: "Very Easy",
-    difficultyColor: "bg-teal-500/10 text-teal-500 border-teal-500/20"
+    duration: 216
   },
   {
     id: 1571330212,
     trackName: "Bad Habits",
     artistName: "Ed Sheeran",
     artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/63/45/cc/6345cc98-aa83-ad6e-e3c9-1a36ff9838a4/190296614316.jpg/100x100bb.jpg",
-    duration: 231,
-    difficulty: "Medium",
-    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20"
+    duration: 231
   }
 ];
 
@@ -150,9 +176,11 @@ function Index() {
   const [err, setErr] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [disableAnimation, setDisableAnimation] = useState(hasVisitedHome);
+  const [useEditVideo, setUseEditVideo] = useState(false);
 
   useEffect(() => {
     hasVisitedHome = true;
+    setUseEditVideo(localStorage.getItem("useEditVideo") === "true");
   }, []);
 
   useEffect(() => {
@@ -224,12 +252,12 @@ function Index() {
               animate="visible"
               className="text-5xl md:text-6xl font-bold tracking-tight leading-tight text-foreground mb-6"
             >
-              {"Feel the rhythm in every keystroke.".split(" ").map((word, wordIdx, arr) => (
+              {"Feel the rhythm in every".split(" ").map((word, wordIdx, arr) => (
                 <Fragment key={wordIdx}>
                   <span className="inline-block whitespace-nowrap">
                     {word.split("").map((char, charIdx) => (
                       <motion.span
-                        key={charIdx}
+                        key={`word-${wordIdx}-${charIdx}`}
                         variants={titleCharVariants}
                         className="inline-block cursor-default select-none origin-bottom"
                       >
@@ -240,6 +268,32 @@ function Index() {
                   {wordIdx < arr.length - 1 && " "}
                 </Fragment>
               ))}
+              {" "}
+              <span className="inline-block whitespace-nowrap relative py-2">
+                {"keystroke.".split("").map((char, charIdx) => (
+                  <motion.span
+                    key={`key-${charIdx}`}
+                    variants={titleCharVariants}
+                    className="inline-block cursor-default select-none origin-bottom playwrite-mx-regular text-primary italic"
+                  >
+                    {char}
+                  </motion.span>
+                ))}
+                <motion.svg
+                  variants={titleCharVariants}
+                  className="absolute -bottom-2 left-0 w-full h-3 text-primary opacity-80"
+                  viewBox="0 0 100 20"
+                  preserveAspectRatio="none"
+                >
+                  <path
+                    d="M 2 15 Q 30 5 60 15 T 98 15"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                  />
+                </motion.svg>
+              </span>
             </motion.h1>
             
             <motion.p
@@ -313,6 +367,8 @@ function Index() {
                             track: t.trackName,
                             art: t.artworkUrl100 || "",
                             duration: t.duration,
+                            q: routeQuery || undefined,
+                            from: "/",
                           }}
                           className="flex items-center gap-4 rounded-xl px-4 py-3.5 transition-all hover:bg-muted/65 text-left group"
                         >
@@ -366,16 +422,40 @@ function Index() {
             transition={disableAnimation ? { duration: 0 } : { delay: 0.8, duration: 0.5 }}
             className="w-full max-w-2xl mt-4 flex flex-col gap-6 z-20"
           >
-            <div className="flex items-center justify-between border-b border-border/20 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border/20 pb-4 gap-4">
               <h2 className="text-sm font-bold tracking-wider text-muted-foreground font-mono uppercase">
                 Featured Songs
               </h2>
-              <Link
-                to="/recommended"
-                className="text-xs font-mono text-primary hover:text-primary/80 transition-colors font-semibold border-b border-primary/20 hover:border-primary"
-              >
-                View Full List &rarr;
-              </Link>
+              
+              <div className="flex items-center gap-6">
+                {/* Edit Video Toggle Switch */}
+                <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                  <div className="relative">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      checked={useEditVideo}
+                      onChange={(e) => {
+                        setUseEditVideo(e.target.checked);
+                        localStorage.setItem("useEditVideo", e.target.checked ? "true" : "false");
+                      }}
+                    />
+                    <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary border border-border/40"></div>
+                  </div>
+                  <span className="text-xs font-mono font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                    🎬 Play Edit Videos
+                  </span>
+                </label>
+
+                <div className="hidden sm:block w-px h-4 bg-border/45" />
+
+                <Link
+                  to="/recommended"
+                  className="text-xs font-mono text-primary hover:text-primary/80 transition-colors font-semibold border-b border-primary/20 hover:border-primary"
+                >
+                  View Full List &rarr;
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -388,7 +468,9 @@ function Index() {
                       artist: song.artistName,
                       track: song.trackName,
                       art: song.artworkUrl100,
-                      duration: song.duration
+                      duration: song.duration,
+                      q: routeQuery || undefined,
+                      from: "/",
                     }}
                     className="group relative flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 w-full h-full text-left"
                   >
@@ -404,9 +486,6 @@ function Index() {
                         <p className="truncate text-[10px] text-muted-foreground mt-0.5">
                           {song.artistName}
                         </p>
-                        <span className={`inline-flex px-1.5 py-0.5 text-[8px] font-mono font-bold tracking-wide rounded border uppercase mt-1.5 ${song.difficultyColor}`}>
-                          {song.difficulty}
-                        </span>
                       </div>
                     </div>
                     <span className="text-[10px] font-mono font-bold text-primary group-hover:translate-x-1 transition-transform relative z-10 flex items-center gap-1">

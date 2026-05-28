@@ -35,8 +35,8 @@ export function DeflectCard({ children, className = "" }: DeflectCardProps) {
     const maxTilt = 8;
     
     // Tilt the hovered edge away (inward)
-    const rY = ((x - centerX) / centerX) * maxTilt;
-    const rX = -((y - centerY) / centerY) * maxTilt;
+    const rY = -((x - centerX) / centerX) * maxTilt;
+    const rX = ((y - centerY) / centerY) * maxTilt;
     
     rotateX.set(rX);
     rotateY.set(rY);
@@ -56,26 +56,28 @@ export function DeflectCard({ children, className = "" }: DeflectCardProps) {
   };
 
   return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX,
-        rotateY,
-        scale,
-        transformStyle: "preserve-3d",
-      }}
-      className={`relative cursor-pointer transition-shadow duration-300 ${isHovered ? "shadow-md" : "shadow-sm"} ${className}`}
-    >
-      {children}
-      <div
-        className="absolute inset-0 pointer-events-none rounded-xl z-20 transition-opacity duration-300"
+    <div className={className} style={{ perspective: "1000px" }}>
+      <motion.div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
-          background: shadowStyle,
-          opacity: isHovered ? 1 : 0,
+          rotateX,
+          rotateY,
+          scale,
+          transformStyle: "preserve-3d",
         }}
-      />
-    </motion.div>
+        className={`relative h-full w-full cursor-pointer transition-shadow duration-300 rounded-xl bg-card ${isHovered ? "shadow-2xl shadow-foreground/10" : "shadow-sm"}`}
+      >
+        {children}
+        <div
+          className="absolute inset-0 pointer-events-none rounded-[inherit] z-20 transition-opacity duration-300"
+          style={{
+            background: shadowStyle,
+            opacity: isHovered ? 1 : 0,
+          }}
+        />
+      </motion.div>
+    </div>
   );
 }

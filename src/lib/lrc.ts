@@ -47,6 +47,39 @@ export async function searchTracks(query: string): Promise<TrackSearchResult[]> 
     artworkUrl100: item.artworkUrl100,
   }));
 }
+function normalizeStr(str: string): string {
+  return str
+    .toLowerCase()
+    .replace(/\s*[\(\[][^\)\]]*[\)\]]/g, "") // Remove parenthesized/bracketed details (e.g. "feat. ...")
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()\[\]'"]/g, "") // Remove all punctuation
+    .replace(/\s+/g, "") // Remove all whitespace
+    .trim();
+}
+
+function shouldRemoveFirstLine(firstLineText: string, artistName: string, trackName: string): boolean {
+  const normLine = normalizeStr(firstLineText);
+  const normTrack = normalizeStr(trackName);
+  const normArtist = normalizeStr(artistName);
+  
+  if (!normLine) return true;
+  
+  // 1. Match track name
+  if (normLine === normTrack) return true;
+  
+  // 2. Match artist name
+  if (normLine === normArtist) return true;
+  
+  // 3. Match combinations
+  if (normLine === normalizeStr(`${artistName} ${trackName}`)) return true;
+  if (normLine === normalizeStr(`${trackName} ${artistName}`)) return true;
+  
+  // 4. Common metadata indicator phrases
+  if (normLine.includes("lyricsby") || normLine.includes("writtenby") || normLine.includes("producedby") || normLine.includes("lrcby")) {
+    return true;
+  }
+  
+  return false;
+}
 
 export interface LyricsResult {
   lines: LyricLine[];
@@ -71,7 +104,20 @@ export async function fetchSyncedLyrics(
     if (!res.ok) return null;
     const data = (await res.json()) as { syncedLyrics?: string | null, duration?: number };
     if (!data.syncedLyrics) return null;
-    return { lines: parseLrc(data.syncedLyrics), duration: data.duration || duration || 0 };
+
+    const parsedLines = parseLrc(data.syncedLyrics);
+    const cleanedLines = [...parsedLines];
+    
+    // Clean starting metadata lines (e.g. title, artist name) in the first 20 seconds
+    while (cleanedLines.length > 0 && cleanedLines[0].time < 20) {
+      if (shouldRemoveFirstLine(cleanedLines[0].text, artist, track)) {
+        cleanedLines.shift();
+      } else {
+        break;
+      }
+    }
+
+    return { lines: cleanedLines, duration: data.duration || duration || 0 };
   } catch (error) {
     clearTimeout(timeoutId);
     console.error("Failed to fetch lyrics:", error);
