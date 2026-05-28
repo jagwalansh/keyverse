@@ -92,7 +92,7 @@ export function Footer() {
           {/* Bottom copyright row */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6 text-[10px] text-muted-foreground font-mono">
             <div>
-              &copy; {new Date().getFullYear()} lyrictype. All rights reserved.
+              &copy; {new Date().getFullYear()} keyVerse. All rights reserved.
             </div>
             <div className="flex items-center gap-4">
               <motion.a

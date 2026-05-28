@@ -191,7 +191,7 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
       >
         <div className="flex items-center justify-between gap-4 px-6 py-4 w-full">
           <Link to="/" className="font-mono text-xl font-medium tracking-tight hover:opacity-90 transition-opacity shrink-0">
-            lyric<span className="border-b-2 border-primary text-primary">type</span>
+            key<span className="border-b-2 border-primary text-primary">Verse</span>
           </Link>
 
 

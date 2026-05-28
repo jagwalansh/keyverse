@@ -48,21 +48,21 @@ function Support() {
                 Report a Bug & Feedback
               </h2>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Found a mistake in the lyric sync? Or did the player fail to load a video? We are constantly improving lyrictype and would love to hear from you.
+                Found a mistake in the lyric sync? Or did the player fail to load a video? We are constantly improving KeyVerse and would love to hear from you.
               </p>
             </div>
 
             <div className="relative z-10 flex flex-col gap-3 mt-8">
               {/* Email Link */}
               <a
-                href="mailto:bugs@lyrictype.com"
+                href="mailto:bugs@keyverse.com"
                 className="flex items-center justify-between p-3 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-primary" />
                   <span className="text-xs font-mono font-medium">Mail</span>
                 </div>
-                <span className="text-[10px] font-mono text-primary border-b border-primary/20">bugs@lyrictype.com</span>
+                <span className="text-[10px] font-mono text-primary border-b border-primary/20">bugs@keyverse.com</span>
               </a>
 
               {/* GitHub Issues */}
@@ -112,7 +112,7 @@ function Support() {
                   Support the Project
                 </h2>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  lyrictype is completely free and open-source. Help support server hosting costs and motivate future feature development by buying us a coffee or sponsoring!
+                  KeyVerse is completely free and open-source. Help support server hosting costs and motivate future feature development by buying us a coffee or sponsoring!
                 </p>
               </div>
 

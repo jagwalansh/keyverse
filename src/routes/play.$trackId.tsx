@@ -648,7 +648,7 @@ function PlayPage() {
             <h2 className="text-xl font-semibold mb-2">Lyrics Not Found</h2>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
               Sorry, we couldn't find synced lyrics for <strong>{track}</strong> by <strong>{artist}</strong>.<br/><br/>
-              Only songs with time-synced lyrics can be played in LyricType.
+              Only songs with time-synced lyrics can be played in KeyVerse.
             </p>
             <Link 
               to="/" 
