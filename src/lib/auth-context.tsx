@@ -178,12 +178,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase
         .from("profiles")
         .upsert(
-          {
-            id: user.id,
-            email: user.email ?? profile?.email ?? "",
-            username: trimmedUsername,
-            updated_at: new Date().toISOString(),
-          },
+          [
+            {
+              id: user.id,
+              email: user.email ?? profile?.email ?? "",
+              username: trimmedUsername,
+              updated_at: new Date().toISOString(),
+            },
+          ],
           { onConflict: "id" },
         )
         .select("*")

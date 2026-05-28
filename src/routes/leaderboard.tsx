@@ -198,7 +198,7 @@ function LeaderboardPage() {
     });
 
     // Merge database scores (will overwrite duplicates if score is better)
-    formattedDbScores.forEach((score) => {
+    formattedDbScores.forEach((score: any) => {
       const key = `${score.username}-${score.track}`;
       const existing = combinedMap.get(key);
       if (!existing || score.best_score >= existing.best_score) {
