@@ -4,9 +4,10 @@ import { motion, useSpring } from "motion/react";
 interface DeflectCardProps {
   children: React.ReactNode;
   className?: string;
+  cardClassName?: string;
 }
 
-export function DeflectCard({ children, className = "" }: DeflectCardProps) {
+export function DeflectCard({ children, className = "", cardClassName = "" }: DeflectCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   
   // Smooth spring motion values for natural physics
@@ -67,7 +68,7 @@ export function DeflectCard({ children, className = "" }: DeflectCardProps) {
           scale,
           transformStyle: "preserve-3d",
         }}
-        className={`relative h-full w-full cursor-pointer transition-shadow duration-300 rounded-xl bg-card ${isHovered ? "shadow-2xl shadow-foreground/10" : "shadow-sm"}`}
+        className={`relative h-full w-full cursor-pointer transition-all duration-300 ${isHovered ? "shadow-2xl shadow-foreground/10" : "shadow-sm"} ${cardClassName ? cardClassName : "rounded-xl bg-card"}`}
       >
         {children}
         <div
