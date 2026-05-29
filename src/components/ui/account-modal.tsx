@@ -1,9 +1,21 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { LogOut, Save, X } from "lucide-react";
+import { LogOut, Save, X, Trophy } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
+
+type PersonalBest = {
+  score: number;
+  accuracy: number;
+  consistency: number;
+  song_id: string;
+  songs: {
+    artist: string;
+    track: string;
+    art_url: string;
+  };
+};
 
 interface AccountModalProps {
   open: boolean;
@@ -17,13 +29,19 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [pb, setPb] = useState<PersonalBest | null | undefined>(undefined);
 
   useEffect(() => {
     if (!open) return;
 
     setError(null);
     setMessage(null);
+    setPb(undefined);
     void refreshProfile();
+    fetch("/api/user-best")
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => setPb(d?.pb ?? null))
+      .catch(() => setPb(null));
   }, [open, refreshProfile]);
 
   useEffect(() => {
@@ -117,6 +135,30 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
                 {message}
               </p>
             )}
+
+            {pb === undefined ? (
+              <div className="h-20 rounded-lg bg-muted/30 animate-pulse" />
+            ) : pb ? (
+              <div className="rounded-lg border border-border/20 bg-background/30 p-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-xs font-mono font-semibold text-foreground">Personal Best</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  {pb.songs.art_url && (
+                    <img src={pb.songs.art_url} alt="" className="h-10 w-10 rounded-lg object-cover border border-border/10" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold truncate text-foreground">{pb.songs.track}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{pb.songs.artist}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold text-primary">{pb.score.toLocaleString()}</p>
+                    <p className="text-[10px] text-muted-foreground">{pb.accuracy}% acc</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
               <Button type="button" variant="outline" onClick={handleSignOut} disabled={signingOut}>
