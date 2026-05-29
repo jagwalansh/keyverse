@@ -59,7 +59,17 @@ function Terms() {
           {/* Section 2 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              2. Fair Play & Gameplay Rules
+              2. Eligibility
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              KeyVerse is not intended for children under 13. If you are under the age of majority where you live, you may use KeyVerse only with permission from a parent or legal guardian. You are responsible for complying with the laws that apply to you.
+            </p>
+          </div>
+
+          {/* Section 3 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              3. Fair Play & Gameplay Rules
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               KeyVerse is a competitive rhythm-typing game. To maintain leaderboard integrity, we enforce the following rules:
@@ -71,33 +81,107 @@ function Terms() {
             </ul>
           </div>
 
-          {/* Section 3 */}
-          <div className="relative z-10 border-t border-border/20 pt-6">
-            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              3. Accounts & Leaderboards
-            </h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              When creating an account to save your scores, you are responsible for maintaining the security of your authentication details. Scores submitted to public leaderboards will display your username. You agree that KeyVerse has the right to remove or alter any score or username deemed inappropriate or fraudulent.
-            </p>
-          </div>
-
           {/* Section 4 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              4. Intellectual Property & Lyrics
+              4. Accounts & Leaderboards
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              KeyVerse is an open-source typing game built for educational and recreational typing practice. All music, lyrics, and metadata displayed on the platform remain the property of their respective creators, artists, and rights holders. Lyrics are fetched from open APIs like LRCLIB. We do not claim ownership over any lyrics or video content used.
+              When creating an account to save your scores, you are responsible for maintaining the security of your authentication details and for all activity under your account. Scores submitted to public leaderboards may display your username, song information, score, accuracy, and related gameplay statistics. You agree that KeyVerse may remove or alter any score, username, or account that appears inappropriate, fraudulent, abusive, or harmful to the service.
             </p>
           </div>
 
           {/* Section 5 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              5. Disclaimer of Warranties
+              5. Intellectual Property & Lyrics
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              KeyVerse is provided "as is" and "as available" without warranties of any kind. We do not guarantee that the service will be uninterrupted, error-free, or that YouTube video playback and lyric APIs will always operate correctly.
+              KeyVerse is an open-source typing game built for educational and recreational typing practice. The KeyVerse name, interface, code, and original design elements belong to their respective owners or contributors. All music, lyrics, videos, artwork, artist names, track names, and metadata remain the property of their respective creators, artists, publishers, platforms, and rights holders. Lyrics and metadata may be fetched from third-party sources such as LRCLIB and Apple-hosted artwork URLs. We do not claim ownership over any third-party music, lyrics, artwork, video, or metadata.
+            </p>
+          </div>
+
+          {/* Section 6 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              6. Third-Party Services
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              KeyVerse depends on third-party services including Supabase, YouTube, Google Analytics, Google AdSense, LRCLIB, Cloudflare, MailChannels, and other providers. These services are governed by their own terms and privacy policies. YouTube videos are provided through YouTube functionality, and use of YouTube content is subject to the <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2">YouTube Terms of Service</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2">Google Privacy Policy</a>.
+            </p>
+          </div>
+
+          {/* Section 7 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              7. Advertising
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              KeyVerse may display ads through Google AdSense or other advertising partners. We are not responsible for the content, products, services, or websites promoted by third-party advertisers. Ads may be personalized or measured as described in our Privacy Policy and the relevant advertising provider policies.
+            </p>
+          </div>
+
+          {/* Section 8 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              8. Prohibited Use
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              You agree not to misuse KeyVerse, interfere with the service, attempt unauthorized access, scrape or overload the service, bypass security or rate limits, upload or submit harmful content, impersonate others, violate intellectual property rights, or use KeyVerse for unlawful, abusive, or deceptive purposes.
+            </p>
+          </div>
+
+          {/* Section 9 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              9. Service Changes and Termination
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              We may change, suspend, or discontinue any part of KeyVerse at any time, including features, songs, lyrics, leaderboards, accounts, ads, or integrations. We may suspend or terminate access if we believe you violated these terms, created risk for the service, or used KeyVerse in a harmful way.
+            </p>
+          </div>
+
+          {/* Section 10 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              10. Disclaimer of Warranties
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              KeyVerse is provided "as is" and "as available" without warranties of any kind, whether express, implied, or statutory. We do not guarantee that the service will be uninterrupted, secure, error-free, accurate, available in every location, or that YouTube video playback, lyric APIs, analytics, ads, authentication, or leaderboards will always operate correctly.
+            </p>
+          </div>
+
+          {/* Section 11 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              11. Limitation of Liability
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              To the maximum extent permitted by law, KeyVerse and its operators, contributors, and affiliates will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost data, lost profits, service interruptions, third-party content, third-party services, or unauthorized account access arising from or related to your use of KeyVerse.
+            </p>
+          </div>
+
+          {/* Section 12 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              12. Privacy
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Your use of KeyVerse is also governed by our <Link to="/privacy" className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2">Privacy Policy</Link>, which explains how we collect, use, and share information.
+            </p>
+          </div>
+
+          {/* Section 13 */}
+          <div className="relative z-10 border-t border-border/20 pt-6">
+            <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
+              13. Contact
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              For questions about these terms, contact us at{" "}
+              <a href="mailto:support@keyverse.me" className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2">
+                support@keyverse.me
+              </a>
+              .
             </p>
           </div>
         </motion.div>
