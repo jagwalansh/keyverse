@@ -16,7 +16,7 @@ let hasVisitedHome = false;
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
-    q: typeof search.q === "string" ? search.q : undefined,
+    q: typeof search.q === "string" ? search.q.replace(/\+/g, " ") : undefined,
   }),
   component: Index,
 });

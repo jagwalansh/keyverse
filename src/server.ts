@@ -112,8 +112,10 @@ export default {
       }
 
       if (url.pathname === "/api/lyrics") {
-        const artist = url.searchParams.get("artist");
-        const track = url.searchParams.get("track");
+        const rawArtist = url.searchParams.get("artist");
+        const rawTrack = url.searchParams.get("track");
+        const artist = rawArtist ? rawArtist.replace(/\+/g, " ") : null;
+        const track = rawTrack ? rawTrack.replace(/\+/g, " ") : null;
         const durationParam = url.searchParams.get("duration");
         const duration = durationParam ? parseInt(durationParam, 10) : 0;
 
@@ -309,7 +311,8 @@ export default {
       }
 
       if (url.pathname === "/api/lyrics-search") {
-        const query = url.searchParams.get("q");
+        const rawQuery = url.searchParams.get("q");
+        const query = rawQuery ? rawQuery.replace(/\+/g, " ") : null;
 
         if (!query) {
           return new Response(JSON.stringify({ error: "Missing query" }), {
@@ -353,7 +356,8 @@ export default {
       }
 
       if (url.pathname === "/api/youtube-search") {
-        const query = url.searchParams.get("q");
+        const rawQuery = url.searchParams.get("q");
+        const query = rawQuery ? rawQuery.replace(/\+/g, " ") : null;
         const durationParam = url.searchParams.get("duration");
         const expectedDuration = durationParam ? parseInt(durationParam, 10) : 0;
 

@@ -42,11 +42,11 @@ const GOD_MODE = true ; // Set to true to always score PERFECT regardless of inp
 
 export const Route = createFileRoute("/play/$trackId")({
   validateSearch: (s: Record<string, unknown>): Search => ({
-    artist: String(s.artist ?? ""),
-    track: String(s.track ?? ""),
+    artist: String(s.artist ?? "").replace(/\+/g, " "),
+    track: String(s.track ?? "").replace(/\+/g, " "),
     art: String(s.art ?? ""),
     duration: s.duration ? Number(s.duration) : undefined,
-    q: typeof s.q === "string" ? s.q : undefined,
+    q: typeof s.q === "string" ? s.q.replace(/\+/g, " ") : undefined,
     from: typeof s.from === "string" ? s.from : undefined,
   }),
   component: PlayPage,
