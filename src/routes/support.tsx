@@ -126,40 +126,44 @@ function Support() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.4 }}
-            className="group relative p-6 rounded-2xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 transition-colors shadow-sm flex flex-col justify-between"
+            className="w-full h-full"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none rounded-2xl" />
+            <DeflectCard
+              className="w-full h-full"
+              cardClassName="group relative p-6 rounded-2xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 transition-all duration-300 flex flex-col justify-between h-full text-left"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none rounded-2xl" />
 
-            <div className="relative z-10 text-left">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                <MessageSquare className="h-5 w-5" />
+              <div className="relative z-10 text-left">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <h2 className="font-mono text-base font-bold tracking-wide text-foreground">
+                  Report a Bug & Feedback
+                </h2>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                  Found a mistake in the lyric sync? Or did the player fail to load a video? We are constantly improving KeyVerse and would love to hear from you.
+                </p>
               </div>
-              <h2 className="font-mono text-base font-bold tracking-wide text-foreground">
-                Report a Bug & Feedback
-              </h2>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                Found a mistake in the lyric sync? Or did the player fail to load a video? We are constantly improving KeyVerse and would love to hear from you.
-              </p>
-            </div>
 
               <div className="relative z-10 flex flex-col gap-3 mt-8">
-                {/* Contact Form */}
                 <ContactForm />
-
-                {/* GitHub Issues */}
-              <a
-                href="https://github.com/jagwalansh/updated-lyrictype/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Github className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-mono font-medium">Open a GitHub Issue</span>
-                </div>
-                <span className="text-[10px] font-mono text-muted-foreground">Submit Ticket &rarr;</span>
-              </a>
-            </div>
+                <motion.a
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  href="https://github.com/jagwalansh/updated-lyrictype/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors text-foreground"
+                >
+                  <div className="flex items-center gap-3">
+                    <Github className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-mono font-medium">Open a GitHub Issue</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-muted-foreground">Submit Ticket &rarr;</span>
+                </motion.a>
+              </div>
+            </DeflectCard>
           </motion.div>
 
           {/* Card 2: Donations & Sponsorship */}
