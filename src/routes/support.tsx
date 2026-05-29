@@ -55,14 +55,14 @@ function Support() {
             <div className="relative z-10 flex flex-col gap-3 mt-8">
               {/* Email Link */}
               <a
-                href="mailto:ansh@keyverse.me"
+                href="mailto:support@keyverse.me"
                 className="flex items-center justify-between p-3 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-primary" />
                   <span className="text-xs font-mono font-medium">Mail</span>
                 </div>
-                <span className="text-[10px] font-mono text-primary border-b border-primary/20">ansh@keyverse.me</span>
+                <span className="text-[10px] font-mono text-primary border-b border-primary/20">support@keyverse.me</span>
               </a>
 
               {/* GitHub Issues */}

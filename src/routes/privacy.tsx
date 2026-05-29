@@ -64,7 +64,7 @@ function Privacy() {
           {/* Section 2 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              ⚙️ 2. How We Use Information
+              2. How We Use Information
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               We use the collected information solely for:
@@ -79,7 +79,7 @@ function Privacy() {
           {/* Section 3 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              🍪 3. Cookies & Session Storage
+              3. Cookies & Session Storage
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               KeyVerse uses cookies and local storage to store authentication tokens (keeping you logged into your Supabase profile) and theme preferences (light/dark mode configuration). Third-party cookies may also be set by Google Analytics for website visitor tracking.
@@ -89,7 +89,7 @@ function Privacy() {
           {/* Section 4 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              📡 4. Third-Party Integrations
+              4. Third-Party Integrations
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               To provide our service, we load assets and interact with these external services:
@@ -104,7 +104,7 @@ function Privacy() {
           {/* Section 5 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              🔐 5. Security & Data Deletion
+              5. Security & Data Deletion
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               We care about your data's privacy and use SSL/TLS encryption for all communications. You can delete your account and all associated scores at any time from your Profile settings.

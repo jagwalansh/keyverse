@@ -59,7 +59,7 @@ function Terms() {
           {/* Section 2 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              🎯 2. Fair Play & Gameplay Rules
+              2. Fair Play & Gameplay Rules
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               KeyVerse is a competitive rhythm-typing game. To maintain leaderboard integrity, we enforce the following rules:
@@ -74,7 +74,7 @@ function Terms() {
           {/* Section 3 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              👤 3. Accounts & Leaderboards
+              3. Accounts & Leaderboards
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               When creating an account to save your scores, you are responsible for maintaining the security of your authentication details. Scores submitted to public leaderboards will display your username. You agree that KeyVerse has the right to remove or alter any score or username deemed inappropriate or fraudulent.
@@ -84,7 +84,7 @@ function Terms() {
           {/* Section 4 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              🎵 4. Intellectual Property & Lyrics
+              4. Intellectual Property & Lyrics
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               KeyVerse is an open-source typing game built for educational and recreational typing practice. All music, lyrics, and metadata displayed on the platform remain the property of their respective creators, artists, and rights holders. Lyrics are fetched from open APIs like LRCLIB. We do not claim ownership over any lyrics or video content used.
@@ -94,7 +94,7 @@ function Terms() {
           {/* Section 5 */}
           <div className="relative z-10 border-t border-border/20 pt-6">
             <h2 className="font-mono text-base font-bold tracking-wide text-foreground flex items-center gap-2 mb-3">
-              ⚠️ 5. Disclaimer of Warranties
+              5. Disclaimer of Warranties
             </h2>
             <p className="text-xs text-muted-foreground leading-relaxed">
               KeyVerse is provided "as is" and "as available" without warranties of any kind. We do not guarantee that the service will be uninterrupted, error-free, or that YouTube video playback and lyric APIs will always operate correctly.
