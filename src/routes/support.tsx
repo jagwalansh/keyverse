@@ -169,7 +169,7 @@ function Support() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mt-2">
+        <div className="grid grid-cols-1 gap-10 mt-2">
 
           {/* Card 1: Bug Reports & Feedback */}
           <motion.div
@@ -224,63 +224,9 @@ function Support() {
             </DeflectCard>
           </motion.div>
 
-          {/* Card 2: Donations & Sponsorship */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, duration: 0.25 }}
-            className="w-full h-full"
-          >
-            <DeflectCard
-              className="w-full h-full"
-              cardClassName="group relative p-10 rounded-2xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 transition-all duration-150 flex flex-col justify-between h-full min-h-[320px] text-left"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none rounded-2xl" />
-
-              <div className="relative z-10 text-left">
-                <h2 className="font-mono text-lg font-bold tracking-wide text-foreground">
-                  Support the Project
-                </h2>
-                <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
-                  KeyVerse is completely free and open-source. Help support server hosting costs and motivate future feature development by sponsoring!
-                </p>
-              </div>
-
-              <div className="relative z-10 flex flex-col gap-3 mt-5 mb-4">
-                <motion.a
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  href="https://paypal.me/anshjagwal"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors text-foreground"
-                >
-                  <div className="flex items-center gap-3">
-                    <svg className="h-4 w-4 text-primary fill-current" viewBox="0 0 16 16" fill="currentColor">
-                      <path d="M14.06 3.713c.12-1.071-.093-1.832-.702-2.526C12.628.356 11.312 0 9.626 0H4.734a.7.7 0 0 0-.691.59L2.005 13.509a.42.42 0 0 0 .415.486h2.756l-.202 1.28a.628.628 0 0 0 .62.726H8.14c.429 0 .793-.31.862-.731l.025-.13.48-3.043.03-.164.001-.007a.35.35 0 0 1 .348-.297h.38c1.266 0 2.425-.256 3.345-.91q.57-.403.993-1.005a4.94 4.94 0 0 0 .88-2.195c.242-1.246.13-2.356-.57-3.154a2.7 2.7 0 0 0-.76-.59l-.094-.061ZM6.543 8.82a.7.7 0 0 1 .321-.079H8.3c2.82 0 5.027-1.144 5.672-4.456l.003-.016q.326.186.548.438c.546.623.679 1.535.45 2.71-.272 1.397-.866 2.307-1.663 2.874-.802.57-1.842.815-3.043.815h-.38a.87.87 0 0 0-.863.734l-.03.164-.48 3.043-.024.13-.001.004a.35.35 0 0 1-.348.296H5.595a.106.106 0 0 1-.105-.123l.208-1.32z" />
-                    </svg>
-                    <span className="text-xs font-mono font-medium">Donate with PayPal</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">PayPal &rarr;</span>
-                </motion.a>
-
-                <motion.a
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  href="https://github.com/sponsors/jagwalansh"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-4 rounded-xl border border-border/20 bg-background/30 hover:bg-background/80 transition-colors text-foreground"
-                >
-                  <div className="flex items-center gap-3">
-                    <Github className="h-4 w-4 text-primary" />
-                    <span className="text-xs font-mono font-medium">Sponsor on GitHub</span>
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">Sponsor &rarr;</span>
-                </motion.a>
-              </div>
-            </DeflectCard>
-          </motion.div>
+          {/* Card 2: Donations & Sponsorship - commented out until accounts are set up */}
+          {/* Disabled */}
+          <div className="hidden"></div>
         </div>
       </div>
 
