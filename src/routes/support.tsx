@@ -176,9 +176,6 @@ function Support() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none rounded-2xl" />
 
               <div className="relative z-10 text-left">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
-                  <span className="text-lg font-bold font-mono">R</span>
-                </div>
                 <h2 className="font-mono text-lg font-bold tracking-wide text-foreground">
                   Report a Bug & Feedback
                 </h2>
@@ -232,9 +229,6 @@ function Support() {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none rounded-2xl" />
 
               <div className="relative z-10 text-left">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-5">
-                  <span className="text-lg font-bold font-mono">S</span>
-                </div>
                 <h2 className="font-mono text-lg font-bold tracking-wide text-foreground">
                   Support the Project
                 </h2>
