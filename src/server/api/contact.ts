@@ -36,7 +36,7 @@ export async function POST(req: Request, env: ContactEnv = {}) {
       return jsonResponse({ error: "Contact form email provider is not configured yet." }, 503);
     }
 
-    const toEmail = asString(env.CONTACT_TO_EMAIL) ?? "support@keyverse.me";
+    const toEmail = asString(env.CONTACT_TO_EMAIL) ?? "anshjagwal02@gmail.com";
     const fromEmail = asString(env.CONTACT_FROM_EMAIL) ?? "support@keyverse.me";
 
     const safeName = asHeader(name);

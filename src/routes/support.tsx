@@ -157,13 +157,13 @@ function Support() {
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 border-b border-border/20 pb-6 text-left">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono text-primary font-semibold tracking-wider uppercase mb-1">
-              Support Center
+              Contact
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">
-              Support & Feedback
+              Bug Reports & Feedback
             </h1>
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed max-w-xl">
-              Have questions, encountered a bug, or want to support the project's growth? You can find all the resources to contact us or support development here.
+              Found an issue or have an idea? Send us a message or open a GitHub issue.
             </p>
           </div>
           <Link
@@ -211,7 +211,7 @@ function Support() {
                     <Mail className="h-4 w-4 text-primary" />
                     <span className="text-xs font-mono font-medium">Send a Message</span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground">Contact &rarr;</span>
+                  <span className="text-[10px] font-mono text-muted-foreground">support@keyverse.me &rarr;</span>
                 </motion.button>
                 <motion.a
                   whileHover={{ y: -2 }}
@@ -230,10 +230,6 @@ function Support() {
               </div>
             </DeflectCard>
           </motion.div>
-
-          {/* Card 2: Donations & Sponsorship - commented out until accounts are set up */}
-          {/* Disabled */}
-          <div className="hidden"></div>
         </div>
       </div>
 
