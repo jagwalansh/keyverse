@@ -215,16 +215,19 @@ Sitemap: https://keyverse.me/sitemap.xml`;
 
         const cacheKey = `${artist}:${track}`;
         const cached = lyricsCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < LYRICS_CACHE_TTL_SECONDS * 1000) {
+        if (
+          cached?.data?.syncedLyrics &&
+          Date.now() - cached.timestamp < LYRICS_CACHE_TTL_SECONDS * 1000
+        ) {
           return new Response(JSON.stringify(cached.data), {
             status: 200,
             headers: { "content-type": "application/json" },
           });
         }
 
-        const sharedCacheKey = `lyrics:${cacheKey}`;
+        const sharedCacheKey = `lyrics:v2:${cacheKey}`;
         const sharedCached = await getSharedCache<any>(env, sharedCacheKey);
-        if (sharedCached) {
+        if (sharedCached?.syncedLyrics) {
           lyricsCache.set(cacheKey, { data: sharedCached, timestamp: Date.now() });
           return new Response(JSON.stringify(sharedCached), {
             status: 200,
@@ -258,7 +261,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
             lyricsUrl += `&duration=${dur}`;
           }
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 10000);
+          const timeoutId = setTimeout(() => controller.abort(), 12000);
 
           try {
             const res = await fetch(lyricsUrl, { 
@@ -269,7 +272,8 @@ Sitemap: https://keyverse.me/sitemap.xml`;
             });
             clearTimeout(timeoutId);
             if (!res.ok) return null;
-            const data = await res.json();
+            const data = await res.json() as { syncedLyrics?: string | null };
+            if (!data.syncedLyrics) return null;
             return new Response(JSON.stringify(data), {
               status: res.status,
               headers: { "content-type": "application/json" },
@@ -308,7 +312,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
             searchPairs.push([aggressivelyCleanedArtist, aggressivelyCleanedTrack]);
           }
 
-          for (const [searchArtist, searchTrack] of searchPairs) {
+          const searchRequests = searchPairs.flatMap(([searchArtist, searchTrack]) => {
             const searchUrls = [
               `https://lrclib.net/api/search?artist_name=${encodeURIComponent(searchArtist)}&track_name=${encodeURIComponent(searchTrack)}`,
               `https://lrclib.net/api/search?q=${encodeURIComponent(searchArtist + " " + searchTrack)}`,
@@ -321,9 +325,9 @@ Sitemap: https://keyverse.me/sitemap.xml`;
               searchUrls[2] += `&duration=${dur}`;
             }
 
-            for (const searchUrl of searchUrls) {
+            return searchUrls.map(async (searchUrl) => {
               const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 10000);
+              const timeoutId = setTimeout(() => controller.abort(), 12000);
 
               try {
                 const res = await fetch(searchUrl, {
@@ -333,7 +337,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
                   }
                 });
                 clearTimeout(timeoutId);
-                if (!res.ok) continue;
+                if (!res.ok) return null;
                 const results = (await res.json()) as Array<{
                   trackName: string;
                   artistName: string;
@@ -358,33 +362,27 @@ Sitemap: https://keyverse.me/sitemap.xml`;
                 clearTimeout(timeoutId);
                 console.error(`Search fallback failed for ${searchUrl}:`, e);
               }
-            }
-          }
-          return null;
+              return null;
+            });
+          });
+
+          const results = await Promise.all(searchRequests);
+          return results.find((response) => response !== null) ?? null;
         };
 
         try {
-          let response: Response | null = null;
-
-          // 1. If we extracted an original artist from the track title (e.g. cover version), try it first
-          if (extractedOriginal) {
-            response = await tryFetchLyrics(extractedOriginal, cleanedTrack, duration);
-          }
-
-          // 2. Try fetching with cleaned names
-          if (!response) {
-            response = await tryFetchLyrics(cleanedArtist, cleanedTrack, duration);
-          }
-          
-          // 3. If cleaned names fail and they are different from originals, try original names
-          if (!response && (cleanedArtist !== artist || cleanedTrack !== track)) {
-            response = await tryFetchLyrics(artist, track, duration);
-          }
-
-          // 4. Broad search fallback
-          if (!response) {
-            response = await searchFallbackLyrics(cleanedArtist, cleanedTrack, duration);
-          }
+          const directPairs = [
+            ...(extractedOriginal ? [[extractedOriginal, cleanedTrack]] : []),
+            [cleanedArtist, cleanedTrack],
+            ...(cleanedArtist !== artist || cleanedTrack !== track ? [[artist, track]] : []),
+          ];
+          const responses = await Promise.all([
+            ...directPairs.map(([candidateArtist, candidateTrack]) =>
+              tryFetchLyrics(candidateArtist, candidateTrack, duration),
+            ),
+            searchFallbackLyrics(cleanedArtist, cleanedTrack, duration),
+          ]);
+          const response = responses.find((candidate) => candidate !== null) ?? null;
 
           if (response) {
             const clone = response.clone();
@@ -475,7 +473,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           });
         }
 
-        const sharedCacheKey = `youtube:v2:${cacheKey}`;
+        const sharedCacheKey = `youtube:v3:${cacheKey}`;
         const sharedCached = await getSharedCache<{
           videoId: string;
           authorName: string;
@@ -490,7 +488,9 @@ Sitemap: https://keyverse.me/sitemap.xml`;
         }
 
         try {
-          const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+          // Prefer edit videos without adding a second network round trip.
+          // Duration ranking below keeps the selected result close to the synced lyrics.
+          const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${query} edit`)}`;
           const ytRes = await fetch(searchUrl, {
             headers: {
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",

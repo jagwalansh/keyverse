@@ -1,8 +1,6 @@
-import { EmailMessage } from "cloudflare:email";
-
 type ContactEnv = {
   CONTACT_EMAIL?: {
-    send: (message: EmailMessage) => Promise<void>;
+    send: (message: unknown) => Promise<void>;
   };
   CONTACT_FROM_EMAIL?: string;
   CONTACT_TO_EMAIL?: string;
@@ -58,6 +56,7 @@ export async function POST(req: Request, env: ContactEnv = {}) {
       String(message),
     ].join("\r\n");
 
+    const { EmailMessage } = await import("cloudflare:email");
     await env.CONTACT_EMAIL.send(new EmailMessage(fromEmail, toEmail, rawEmail));
 
     return jsonResponse({ success: true }, 200);

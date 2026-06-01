@@ -58,116 +58,138 @@ const FEATURED_SONGS = [
   }
 ];
 
-const POPULAR_SONGS = [
+const TRENDING_SONGS = [
   {
-    id: 1615585008,
-    trackName: "As It Was",
+    id: 1752214923,
+    trackName: "Espresso",
+    artistName: "Sabrina Carpenter",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a1/1c/ca/a11ccab6-7d4c-e041-d028-998bcebeb709/24UMGIM61704.rgb.jpg/100x100bb.jpg",
+    duration: 175,
+    difficulty: "Medium",
+    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    description: "Bouncy pop phrasing with quick transitions and a playful rhythm.",
+    tags: ["Pop", "Trending"]
+  },
+  {
+    id: 1739659142,
+    trackName: "BIRDS OF A FEATHER",
+    artistName: "Billie Eilish",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/92/9f/69/929f69f1-9977-3a44-d674-11f70c852d1b/24UMGIM36186.rgb.jpg/100x100bb.jpg",
+    duration: 210,
+    difficulty: "Easy",
+    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    description: "Smooth, melodic lines with a steady tempo that is easy to follow.",
+    tags: ["Pop", "Chill"]
+  },
+  {
+    id: 1762656732,
+    trackName: "Die With A Smile",
+    artistName: "Lady Gaga & Bruno Mars",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/11/ae/f2/11aef294-f57c-bab9-c9fc-529162984e62/24UMGIM85348.rgb.jpg/100x100bb.jpg",
+    duration: 251,
+    difficulty: "Easy",
+    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    description: "A dramatic duet with clear vocals and a comfortable typing pace.",
+    tags: ["Pop", "Ballad"]
+  },
+  {
+    id: 1773452221,
+    trackName: "APT.",
+    artistName: "ROSÉ & Bruno Mars",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2d/1a/7d/2d1a7d91-587e-0ceb-d434-327bd66d9e86/075679628312.jpg/100x100bb.jpg",
+    duration: 169,
+    difficulty: "Medium",
+    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    description: "Fast, punchy hooks and repeated phrases for energetic practice.",
+    tags: ["Pop", "Upbeat"]
+  },
+  {
+    id: 1724488124,
+    trackName: "Beautiful Things",
+    artistName: "Benson Boone",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/54/f4/92/54f49210-e260-b519-ebbd-f4f40ee710cd/054391342751.jpg/100x100bb.jpg",
+    duration: 180,
+    difficulty: "Easy",
+    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    description: "A gradual vocal build with clear verses and a memorable chorus.",
+    tags: ["Pop", "Emotional"]
+  },
+  {
+    id: 1749591722,
+    trackName: "A Bar Song (Tipsy)",
+    artistName: "Shaboozey",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/be/db/81/bedb81c3-ca23-a1b9-f275-59e46ae4fdb1/197342625517_cover.jpg/100x100bb.jpg",
+    duration: 171,
+    difficulty: "Medium",
+    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    description: "A catchy country-pop rhythm with conversational, flowing lyrics.",
+    tags: ["Country", "Trending"]
+  },
+  {
+    id: 1866732800,
+    trackName: "I Just Might",
+    artistName: "Bruno Mars",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ed/46/bf/ed46bf4e-7cb9-965a-54f3-03059977fe6c/075679589293.jpg/100x100bb.jpg",
+    duration: 213,
+    difficulty: "Medium",
+    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    description: "Bright pop vocals and a steady groove with quick lyrical turns.",
+    tags: ["Pop", "Trending"]
+  },
+  {
+    id: 1870984033,
+    trackName: "Aperture",
     artistName: "Harry Styles",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/886449990061.jpg/100x100bb.jpg",
-    duration: 167,
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/07/41/6a/07416a78-38b9-2d47-7ce8-8a52a44c510f/196874010112.jpg/100x100bb.jpg",
+    duration: 312,
     difficulty: "Easy",
     difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    description: "A fast-paced indie pop track with a catchy, constant synth riff.",
-    tags: ["Indie Pop", "Synth"]
+    description: "A relaxed, melodic track with plenty of room to settle into the beat.",
+    tags: ["Pop", "Chill"]
   },
   {
-    id: 1538003843,
-    trackName: "Levitating",
-    artistName: "Dua Lipa",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6c/11/d6/6c11d681-aa3a-d59e-4c2e-f77e181026ab/190295092665.jpg/100x100bb.jpg",
-    duration: 203,
-    difficulty: "Medium",
-    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    description: "Space-themed nu-disco and pop song. Rhythmic, groovy and upbeat.",
-    tags: ["Disco-pop", "Upbeat"]
-  },
-  {
-    id: 1440870375,
-    trackName: "Starboy",
-    artistName: "The Weeknd feat. Daft Punk",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b5/92/bb/b592bb72-52e3-e756-9b26-9f56d08f47ab/16UMGIM67864.rgb.jpg/100x100bb.jpg",
-    duration: 230,
-    difficulty: "Easy",
-    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    description: "Dark, moody R&B track with a steady, driving kick drum beat.",
-    tags: ["R&B", "Electro"]
-  },
-  {
-    id: 1468058171,
-    trackName: "Cruel Summer",
+    id: 1833328845,
+    trackName: "Opalite",
     artistName: "Taylor Swift",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/49/3d/ab/493dab54-f920-9043-6181-80993b8116c9/19UMGIM53909.rgb.jpg/100x100bb.jpg",
-    duration: 178,
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/2d/46/e0/2d46e0bc-8ab9-85dd-4b56-ee6951351034/25UM1IM19577.rgb.jpg/100x100bb.jpg",
+    duration: 235,
     difficulty: "Medium",
     difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    description: "Energetic synth-pop track with highly memorable rhythmic lyrics.",
-    tags: ["Pop", "Synth-pop"]
+    description: "Polished pop storytelling with a rhythmic chorus and clear phrasing.",
+    tags: ["Pop", "Trending"]
   },
   {
-    id: 1193701392,
-    trackName: "Shape of You",
-    artistName: "Ed Sheeran",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/100x100bb.jpg",
-    duration: 233,
+    id: 1842444457,
+    trackName: "Dracula",
+    artistName: "Tame Impala",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/36/be/b4/36beb41f-c644-55cb-9fbb-bf0622a66653/196873644783.jpg/100x100bb.jpg",
+    duration: 205,
+    difficulty: "Medium",
+    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    description: "Psychedelic pop with a firm pulse and a slightly trickier lyrical flow.",
+    tags: ["Psychedelic", "Trending"]
+  },
+  {
+    id: 1817609509,
+    trackName: "Man I Need",
+    artistName: "Olivia Dean",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/08/e2/21/08e22164-7c0b-1522-818f-e0e74f62dc49/25UMGIM69703.rgb.jpg/100x100bb.jpg",
+    duration: 184,
     difficulty: "Easy",
     difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    description: "Tropical house inspired pop track. Great sync pacing.",
-    tags: ["Pop", "Dance"]
+    description: "Warm vocals and an easygoing groove that keeps the typing pace smooth.",
+    tags: ["Soul-pop", "Groovy"]
   },
   {
-    id: 1411628233,
-    trackName: "Believer",
-    artistName: "Imagine Dragons",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/11/7a/b8/117ab805-6811-8929-18b9-0fad7baf0c25/17UMGIM98210.rgb.jpg/100x100bb.jpg",
-    duration: 204,
+    id: 1806614783,
+    trackName: "Stateside",
+    artistName: "PinkPantheress",
+    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/12/db/5a/12db5a38-94c1-42bc-b36b-7204b7aa4eac/5021732768650.jpg/100x100bb.jpg",
+    duration: 168,
     difficulty: "Medium",
     difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    description: "Energetic pop-rock song with highly physical beat structure.",
-    tags: ["Rock", "Upbeat"]
-  },
-  {
-    id: 1193701400,
-    trackName: "Perfect",
-    artistName: "Ed Sheeran",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/100x100bb.jpg",
-    duration: 263,
-    difficulty: "Very Easy",
-    difficultyColor: "bg-teal-500/10 text-teal-500 border-teal-500/20",
-    description: "A slow, romantic ballad. Very steady and simple to type along.",
-    tags: ["Ballad", "Slow"]
-  },
-  {
-    id: 1674691586,
-    trackName: "Flowers",
-    artistName: "Miley Cyrus",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8c/67/ff/8c67ff91-31c3-3fef-1884-ce3ec89f3af4/196589946874.jpg/100x100bb.jpg",
-    duration: 201,
-    difficulty: "Easy",
-    difficultyColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    description: "A mid-tempo disco-pop song. Clear vocals and a steady typing flow.",
-    tags: ["Pop", "Disco"]
-  },
-  {
-    id: 1434371887,
-    trackName: "Shallow",
-    artistName: "Lady Gaga & Bradley Cooper",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b1/9f/ef/b19fef51-79de-a940-e8ab-9e4e07b04d96/18UMGIM53752.rgb.jpg/100x100bb.jpg",
-    duration: 216,
-    difficulty: "Very Easy",
-    difficultyColor: "bg-teal-500/10 text-teal-500 border-teal-500/20",
-    description: "Slow tempo acoustic build. Perfect for beginners learning typing sync.",
-    tags: ["Acoustic", "Slow"]
-  },
-  {
-    id: 1571330212,
-    trackName: "Bad Habits",
-    artistName: "Ed Sheeran",
-    artworkUrl100: "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/63/45/cc/6345cc98-aa83-ad6e-e3c9-1a36ff9838a4/190296614316.jpg/100x100bb.jpg",
-    duration: 231,
-    difficulty: "Medium",
-    difficultyColor: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    description: "Catchy, driving pop rhythm. Keeps you tapping to the constant beat.",
-    tags: ["Dance-pop", "Rhythmic"]
+    description: "A compact, upbeat track with brisk lines and a light dance rhythm.",
+    tags: ["Dance-pop", "Upbeat"]
   }
 ];
 
@@ -299,12 +321,12 @@ function Recommended() {
           <SongGrid songs={FEATURED_SONGS} />
         </div>
 
-        {/* Popular Hits Section */}
+        {/* Trending Songs Section */}
         <div className="flex flex-col gap-4">
           <h2 className="text-sm font-bold tracking-wider text-muted-foreground font-mono uppercase flex items-center gap-2">
-            Popular Hits
+            Trending Songs
           </h2>
-          <SongGrid songs={POPULAR_SONGS} />
+          <SongGrid songs={TRENDING_SONGS} />
         </div>
 
         <Footer />

@@ -92,7 +92,7 @@ export async function fetchSyncedLyrics(
   duration?: number,
 ): Promise<LyricsResult | null> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
 
   try {
     let url = `/api/lyrics?artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(track)}`;

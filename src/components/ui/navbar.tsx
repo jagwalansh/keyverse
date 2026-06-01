@@ -203,15 +203,18 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
             transition={{ duration: 0.3, delay: disableEntranceAnimation ? 0 : 0.15 }}
             className="flex items-center gap-3 shrink-0"
           >
-              <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
+            <Link
+              to="/"
+              className="relative z-50 rounded-md border border-border/40 bg-card/50 px-3 py-1.5 font-mono text-xl font-medium tracking-tight shadow-sm transition-all hover:bg-card/85"
             >
-              <Link to="/" className="font-mono text-xl font-medium tracking-tight">
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center"
+              >
                 <HomeIcon className="text-foreground hover:text-primary transition-colors duration-200" />
-              </Link>
-             </motion.button>
+              </motion.span>
+            </Link>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -221,15 +224,18 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
             >
               <Search className="h-[18px] w-[18px] text-foreground hover:text-primary transition-colors duration-200" />
             </motion.button>
-              <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="py-1.5 border border-border/40 bg-card/50 hover:bg-card/85 transition-all shadow-sm rounded-md px-3 cursor-pointer relative z-50"
+            <Link
+              to="/leaderboard"
+              className="relative z-50 rounded-md border border-border/40 bg-card/50 px-3 py-1.5 font-mono text-xl font-medium tracking-tight shadow-sm transition-all hover:bg-card/85"
             >
-              <Link to="/leaderboard" className="font-mono text-xl font-medium tracking-tight">
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center"
+              >
                 <LeaderboardIcon className="text-foreground hover:text-primary transition-colors duration-200" />
-              </Link>
-            </motion.button>
+              </motion.span>
+            </Link>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

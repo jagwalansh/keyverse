@@ -38,9 +38,12 @@ function findLineIdxForTime(time: number, lyricLines: LyricLine[]): number {
   return targetIdx;
 }
 
-// const SHOW_TYPING_ERRORS = true;
-const GOD_MODE = import.meta.env.DEV;
+function charsMatch(typedChar: string, expectedChar: string): boolean {
+  return typedChar === expectedChar;
+}
 
+// Local debugging only:
+// const GOD_MODE = true;
 
 export const Route = createFileRoute("/play/$trackId")({
   validateSearch: (s: Record<string, unknown>): Search => ({
@@ -146,7 +149,7 @@ function PlayPage() {
     async function loadData() {
       try {
         setYtLoading(true);
-        const searchQuery = artist + " " + track + " edit";
+        const searchQuery = artist + " " + track;
         
         // Fetch both lyrics and YouTube search in parallel to optimize loading speed / LCP
         const [lyricsRes, ytResponse] = await Promise.all([
@@ -242,7 +245,10 @@ function PlayPage() {
     const linesNodes = lyricsRef.current.querySelectorAll("[data-line-idx]");
     const currentLineNode = linesNodes[currentLineIdx] as HTMLElement;
     if (currentLineNode) {
-      currentLineNode.scrollIntoView({ behavior: "smooth", block: "center" });
+      lyricsRef.current.scrollTo({
+        top: currentLineNode.offsetTop - lyricsRef.current.clientHeight / 2 + currentLineNode.clientHeight / 2,
+        behavior: "smooth",
+      });
     }
   }, [currentLineIdx]);
 
@@ -276,15 +282,13 @@ function PlayPage() {
     }
     const lineAccuracy = currentLine.length > 0 ? correctChars / currentLine.length : 0;
     
-    const effectiveAccuracy = GOD_MODE ? 1 : lineAccuracy;
-
     let type = "miss";
     let text = "MISS";
 
-    if (results.length > 0 && effectiveAccuracy >= 0.90) {
+    if (results.length > 0 && lineAccuracy >= 0.90) {
         type = "perfect";
         text = "PERFECT";
-    } else if (results.length > 0 && effectiveAccuracy >= 0.50) {
+    } else if (results.length > 0 && lineAccuracy >= 0.50) {
         type = "good";
         text = "GOOD";
     } else {
@@ -479,7 +483,7 @@ function PlayPage() {
     const expectedChar = line.text[charIdx];
     const typedChar = e.key;
 
-    const isHit = GOD_MODE || typedChar.toLowerCase() === expectedChar.toLowerCase();
+    const isHit = charsMatch(typedChar, expectedChar);
     
     const newResults = [...charResults];
     newResults[charIdx] = { status: isHit ? 'hit' : 'miss', char: typedChar };
@@ -785,7 +789,7 @@ function PlayPage() {
                             console.error("YouTube Error", e);
                             handleYoutubeError();
                           }}
-                          className="w-full h-full scale-[1.6]"
+                          className="w-full h-full scale-[1.1]"
                         />
                         {/* Top masking blur to hide YouTube title/info */}
                         <div className="absolute top-0 inset-x-0 h-11 bg-black/85 backdrop-blur-md border-b border-white/5 pointer-events-none z-10" />
@@ -902,10 +906,13 @@ function PlayPage() {
 
                   {/* Game Area */}
                   <div
-                    ref={lyricsRef}
-                    className="relative h-[360px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-5 py-8 cursor-pointer overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                    className="relative h-[360px] overflow-hidden rounded-xl border border-border/40 bg-card/40 shadow-inner"
                     onClick={() => inputRef.current?.focus()}
                   >
+                    <div
+                      ref={lyricsRef}
+                      className="h-full cursor-pointer overflow-hidden px-5 py-8"
+                    >
                     {songEnded ? (
                       /* ── Result Card (replaces lyrics when song ends) ── */
                       <motion.div
@@ -1010,6 +1017,8 @@ function PlayPage() {
                         const isCurrentLine = idx === currentLineIdx;
                         const isPassed = idx < currentLineIdx;
                         const lineText = line.text;
+                        const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
+                        let tokenOffset = 0;
 
                         return (
                           <div
@@ -1053,7 +1062,14 @@ function PlayPage() {
 
                             <div className="text-2xl font-bold leading-relaxed text-left flex-1 relative">
                               {isCurrentLine
-                                ? lineText.split("").map((ch, i) => {
+                                ? lineTokens.map((token, tokenIdx) => {
+                                  const tokenStart = tokenOffset;
+                                  tokenOffset += token.length;
+
+                                  return (
+                                    <span key={tokenIdx} className="inline-block whitespace-nowrap">
+                                      {token.split("").map((ch, tokenCharIdx) => {
+                                    const i = tokenStart + tokenCharIdx;
                                     const result = charResults[i];
                                     let className = "text-muted-foreground/30";
                                     let showWrongChar = false;
@@ -1091,9 +1107,17 @@ function PlayPage() {
                                           );
                                         })}
                                         {ch === " " ? "\u00A0" : ch}
+                                        {showWrongChar && (
+                                          <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-sm font-bold leading-none text-incorrect">
+                                            {wrongCharText === " " ? "\u00A0" : wrongCharText}
+                                          </span>
+                                        )}
                                       </span>
                                     );
-                                  })
+                                      })}
+                                    </span>
+                                  );
+                                })
                                 : lineText}
                                 
                               {isCurrentLine && waitingForNext && (
@@ -1112,6 +1136,14 @@ function PlayPage() {
                       
                       <div className="min-h-[200px]" />
                     </div>
+                    )}
+                    </div>
+
+                    {!songEnded && (
+                      <>
+                        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-16 bg-gradient-to-b from-background/85 via-background/35 to-transparent backdrop-blur-[2px]" />
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-background/85 via-background/35 to-transparent backdrop-blur-[2px]" />
+                      </>
                     )}
                   </div>
 
