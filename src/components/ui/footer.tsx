@@ -10,7 +10,7 @@ export function Footer() {
         <div className="flex flex-col gap-8">
           
           {/* Top Row: Responsive Column Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             
             {/* Col 1: Brand details */}
             <div className="flex flex-col gap-3">
@@ -85,16 +85,6 @@ export function Footer() {
                   </a>
                 </li>
               </ul>
-            </div>
-
-            {/* Col 4: Tech stack */}
-            <div className="flex flex-col gap-3">
-              <h4 className="font-mono text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Tech Stack
-              </h4>
-              <p className="text-[11px] text-muted-foreground leading-relaxed font-mono">
-                Built using <span className="text-foreground">React</span>, <span className="text-foreground">TanStack Start</span>, <span className="text-foreground">Vite</span>, <span className="text-foreground">Tailwind CSS</span>, <span className="text-foreground">Framer Motion</span>, and <span className="text-foreground">Supabase</span>.
-              </p>
             </div>
 
           </div>
