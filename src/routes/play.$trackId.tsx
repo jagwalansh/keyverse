@@ -104,8 +104,6 @@ function PlayPage() {
   const [songEndedAt, setSongEndedAt] = useState<number | null>(null);
   const [showBlurOverlay, setShowBlurOverlay] = useState(false);
   const showBlurOverlayRef = useRef(false);
-  const [syncOffset, setSyncOffset] = useState(0);
-  const syncOffsetRef = useRef(0);
 
 
   // Prevent multiple triggers in rAF loop
@@ -120,8 +118,6 @@ function PlayPage() {
 
   const comboRef = useRef(combo);
   useEffect(() => { comboRef.current = combo; }, [combo]);
-
-  useEffect(() => { syncOffsetRef.current = syncOffset; }, [syncOffset]);
 
   const resetActiveLineState = useCallback(() => {
     charIdxRef.current = 0;
@@ -151,8 +147,6 @@ function PlayPage() {
     setSongEndedAt(null);
     showBlurOverlayRef.current = false;
     setShowBlurOverlay(false);
-    syncOffsetRef.current = 0;
-    setSyncOffset(0);
     setSavingScore(false);
     setSaveError(null);
     setScoreSaved(false);
@@ -368,10 +362,9 @@ function PlayPage() {
       }
       
       if (lines && lines[currentLineIdx]) {
-        const effectiveTime = currentTimeRef.current + syncOffsetRef.current;
         const line = lines[currentLineIdx];
         const nextLineTime = lines[currentLineIdx + 1]?.time || line.time + 5;
-        const timeDiff = line.time - effectiveTime;
+        const timeDiff = line.time - currentTimeRef.current;
         const duration = nextLineTime - line.time;
 
         // Visual Updates
@@ -401,7 +394,7 @@ function PlayPage() {
         }
 
         // Auto-advance
-        if (effectiveTime > nextLineTime + 0.2) {
+        if (currentTimeRef.current > nextLineTime + 0.2) {
           if (lastCompletedLineRef.current !== currentLineIdx) {
             lastCompletedLineRef.current = currentLineIdx;
             
@@ -426,9 +419,9 @@ function PlayPage() {
               handleLineComplete(true);
             }
           }
-        } else if (charIdxRef.current >= line.text.length && effectiveTime < nextLineTime) {
+        } else if (charIdxRef.current >= line.text.length && currentTimeRef.current < nextLineTime) {
             // Waiting for next line
-            const timeRemaining = (nextLineTime - effectiveTime).toFixed(1);
+            const timeRemaining = (nextLineTime - currentTimeRef.current).toFixed(1);
             setWaitingForNext(timeRemaining);
         } else {
             setWaitingForNext(null);
@@ -463,7 +456,7 @@ function PlayPage() {
     if (!line) return;
 
     // Line is locked until its timestamp
-    if (currentTimeRef.current + syncOffsetRef.current < line.time) return;
+    if (currentTimeRef.current < line.time) return;
 
     if (e.key === "Backspace") {
         e.preventDefault();
@@ -633,15 +626,6 @@ function PlayPage() {
     inputRef.current?.focus();
   }
 
-  function adjustSyncOffset(delta: number) {
-    setSyncOffset((currentOffset) => {
-      const nextOffset = Math.max(-10, Math.min(10, Number((currentOffset + delta).toFixed(1))));
-      syncOffsetRef.current = nextOffset;
-      return nextOffset;
-    });
-    inputRef.current?.focus();
-  }
-
   function restart() {
     resetActiveLineState();
     setCurrentLineIdx(0);
@@ -657,8 +641,6 @@ function PlayPage() {
     setSongEndedAt(null);
     showBlurOverlayRef.current = false;
     setShowBlurOverlay(false);
-    syncOffsetRef.current = 0;
-    setSyncOffset(0);
     setSavingScore(false);
     setSaveError(null);
     setScoreSaved(false);
@@ -1196,26 +1178,6 @@ function PlayPage() {
                       className="rounded-lg border border-border/40 bg-card/45 backdrop-blur-sm py-2.5 px-6 text-sm font-semibold hover:bg-muted transition-colors cursor-pointer"
                     >
                       Restart
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-center gap-2 text-xs font-mono text-muted-foreground">
-                    <button
-                      type="button"
-                      onClick={() => adjustSyncOffset(-0.5)}
-                      className="rounded-md border border-border/40 bg-card/45 px-2.5 py-1.5 transition-colors hover:bg-muted cursor-pointer"
-                    >
-                      Lyrics later
-                    </button>
-                    <span className="min-w-16 text-center text-foreground">
-                      Sync {syncOffset > 0 ? "+" : ""}{syncOffset.toFixed(1)}s
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => adjustSyncOffset(0.5)}
-                      className="rounded-md border border-border/40 bg-card/45 px-2.5 py-1.5 transition-colors hover:bg-muted cursor-pointer"
-                    >
-                      Lyrics earlier
                     </button>
                   </div>
 
