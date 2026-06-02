@@ -157,6 +157,61 @@ html {
   }
 }
 
+.liquid-glass-navbar {
+  isolation: isolate;
+  border: 1px solid oklch(1 0 0 / 38%);
+  border-top: 0;
+  background:
+    radial-gradient(circle at 18% -30%, oklch(1 0 0 / 62%), transparent 42%),
+    radial-gradient(circle at 86% 140%, oklch(0.72 0.08 120 / 22%), transparent 48%),
+    linear-gradient(115deg, oklch(1 0 0 / 32%), oklch(1 0 0 / 12%));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 55%),
+    inset 0 -1px 0 oklch(1 0 0 / 18%),
+    0 10px 32px oklch(0.3 0.03 120 / 16%);
+  backdrop-filter: blur(22px) saturate(185%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+}
+
+.liquid-glass-navbar.is-scrolled {
+  border-top: 1px solid oklch(1 0 0 / 38%);
+}
+
+.liquid-glass-navbar::before,
+.liquid-glass-navbar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.liquid-glass-navbar::before {
+  background: linear-gradient(100deg, transparent 8%, oklch(1 0 0 / 34%) 35%, transparent 58%);
+  opacity: 0.7;
+}
+
+.liquid-glass-navbar::after {
+  background: radial-gradient(ellipse at 50% 0%, oklch(1 0 0 / 28%), transparent 58%);
+  mix-blend-mode: screen;
+}
+
+.dark .liquid-glass-navbar {
+  border-color: oklch(1 0 0 / 18%);
+  background:
+    radial-gradient(circle at 16% -35%, oklch(0.92 0.04 200 / 26%), transparent 42%),
+    radial-gradient(circle at 88% 145%, oklch(0.68 0.116 200.7 / 18%), transparent 48%),
+    linear-gradient(115deg, oklch(0.48 0.02 260 / 30%), oklch(0.24 0.02 260 / 32%));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 20%),
+    inset 0 -1px 0 oklch(0.68 0.116 200.7 / 16%),
+    0 12px 34px oklch(0 0 0 / 38%),
+    0 0 18px oklch(0.68 0.116 200.7 / 10%);
+}
+
+.dark .liquid-glass-navbar.is-scrolled {
+  border-top-color: oklch(1 0 0 / 18%);
+}
+
 @keyframes shimmer {
   0% {
     background-position: -200% 0;

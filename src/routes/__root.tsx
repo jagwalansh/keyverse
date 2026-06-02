@@ -187,15 +187,25 @@ function AdSenseLoader() {
       return;
     }
 
-    if (document.querySelector("script[data-keyverse-adsense='true']")) return;
+    const loadAdSense = () => {
+      if (document.querySelector("script[data-keyverse-adsense='true']")) return;
 
-    const script = document.createElement("script");
-    script.async = true;
-    script.crossOrigin = "anonymous";
-    script.dataset.keyverseAdsense = "true";
-    script.src =
-      "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4059858414395489";
-    document.head.appendChild(script);
+      const script = document.createElement("script");
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      script.dataset.keyverseAdsense = "true";
+      script.src =
+        "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4059858414395489";
+      document.head.appendChild(script);
+    };
+
+    const idleCallback = window.requestIdleCallback?.(loadAdSense, { timeout: 2500 });
+    const timer = idleCallback === undefined ? window.setTimeout(loadAdSense, 1200) : undefined;
+
+    return () => {
+      if (idleCallback !== undefined) window.cancelIdleCallback?.(idleCallback);
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
   }, [isPlayRoute]);
 
   return null;

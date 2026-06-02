@@ -1,12 +1,13 @@
-import { Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { LogIn, UserRound, Moon, Sun, Search } from "lucide-react";
-import { useState, useEffect } from "react";
-import { AccountModal } from "@/components/ui/account-modal";
-import { AuthModal } from "@/components/ui/auth-modal";
-import { SearchModal } from "@/components/ui/search-modal";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useModal } from "@/lib/modal-context";
 import { motion } from "motion/react";
+
+const AccountModal = lazy(() => import("@/components/ui/account-modal").then((module) => ({ default: module.AccountModal })));
+const AuthModal = lazy(() => import("@/components/ui/auth-modal").then((module) => ({ default: module.AuthModal })));
+const SearchModal = lazy(() => import("@/components/ui/search-modal").then((module) => ({ default: module.SearchModal })));
 
 const HomeIcon = ({ className }: { className?: string }) => {
   return (
@@ -52,12 +53,11 @@ const LeaderboardIcon = ({ className }: { className?: string }) => {
   );
 };
 
-export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAnimation?: boolean }) {
-  const { setModalOpen } = useModal();
-  const { user, profile, loading: authLoading } = useAuth();
+export function Navbar() {
+  const { modalOpen, setModalOpen } = useModal();
+  const { user, loading: authLoading } = useAuth();
   const [accountOpen, setAccountOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [isEntranceDone, setIsEntranceDone] = useState(disableEntranceAnimation);
   const [isScrolled, setIsScrolled] = useState(false);
   const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
 
@@ -92,26 +92,16 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
     handleScroll();
     handleResize();
 
-    // Trigger entrance expansion after a small delay if not disabled
-    let timer: NodeJS.Timeout | undefined;
-    if (!disableEntranceAnimation) {
-      timer = setTimeout(() => {
-        setIsEntranceDone(true);
-      }, 450);
-    }
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      if (timer) clearTimeout(timer);
     };
-  }, [disableEntranceAnimation]);
+  }, []);
 
   const baseWidth = Math.min(896, windowWidth - 32);
-  const shrinkWidth = Math.max(360, baseWidth * 0.6);
-  const targetWidth = isEntranceDone
-    ? (isScrolled ? shrinkWidth : baseWidth)
-    : 160;
+  const shrinkWidth = Math.max(360, baseWidth * 0.54);
+  const attachedWidth = Math.min(1200, windowWidth - 32);
+  const targetWidth = isScrolled ? shrinkWidth : attachedWidth;
 
   const toggleTheme = (event: React.MouseEvent) => {
     const isDarkNow = document.documentElement.classList.contains("dark");
@@ -177,30 +167,81 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
   return (
     <>
       <motion.nav
-        initial={disableEntranceAnimation ? false : { opacity: 0, scale: 0.9, y: -20 }}
+        initial={false}
         animate={{
-          opacity: 1,
-          scale: 1,
-          y: 0,
+          y: isScrolled ? 20 : 0,
           width: targetWidth,
+          borderTopLeftRadius: isScrolled ? 16 : 0,
+          borderTopRightRadius: isScrolled ? 16 : 0,
+          borderBottomLeftRadius: 16,
+          borderBottomRightRadius: 16,
         }}
         transition={{
-          type: "spring",
-          stiffness: 120,
-          damping: 18,
+          y: {
+            type: "spring",
+            stiffness: 80,
+            damping: 20,
+          },
+          width: {
+            type: "spring",
+            stiffness: 70,
+            damping: 20,
+          },
+          borderTopLeftRadius: {
+            duration: 0.48,
+            ease: "easeOut",
+          },
+          borderTopRightRadius: {
+            duration: 0.48,
+            ease: "easeOut",
+          },
         }}
-        className="sticky top-8 z-50 mx-auto text-md backdrop-blur-md border border-border/40 shadow-[0_8px_32px_rgba(0,0,0,0.05)] dark:shadow-[0_8px_32px_oklch(0_0_0_/_40%),_0_0_16px_oklch(0.680_0.116_200.7_/_15%)] rounded-2xl my-8 bg-card/60 dark:bg-card/40 flex items-center overflow-hidden h-[60px]"
+        className={`liquid-glass-navbar sticky top-0 z-50 mx-auto mb-8 text-md flex items-center overflow-hidden h-[52px] ${
+          isScrolled ? "is-scrolled" : ""
+        }`}
       >
-        <div className="flex items-center justify-between gap-4 px-6 py-4 w-full">
+        <div
+          className={`relative z-10 flex w-full items-center justify-between gap-4 px-6 py-2.5 ${
+            isScrolled ? "" : "mx-auto max-w-6xl"
+          }`}
+        >
           <Link to="/" className="font-mono text-xl font-medium tracking-tight hover:opacity-90 transition-opacity shrink-0">
-            key<span className="border-b-2 border-primary text-primary">Verse</span>
+            <motion.span className="flex items-baseline" animate={isScrolled ? "compact" : "full"} initial={false}>
+              <span>k</span>
+              <motion.span
+                variants={{
+                  full: { width: "auto", opacity: 1 },
+                  compact: { width: 0, opacity: 0 },
+                }}
+                transition={{
+                  width: { delay: isScrolled ? 0.26 : 0, duration: 0.34, ease: "easeOut" },
+                  opacity: { delay: isScrolled ? 0 : 0.28, duration: 0.24, ease: "easeOut" },
+                }}
+                className="overflow-hidden"
+              >
+                ey
+              </motion.span>
+              <motion.span className="border-b-2 border-primary text-primary">
+                V
+              </motion.span>
+              <motion.span
+                variants={{
+                  full: { width: "auto", opacity: 1 },
+                  compact: { width: 0, opacity: 0 },
+                }}
+                transition={{
+                  width: { delay: isScrolled ? 0.26 : 0, duration: 0.34, ease: "easeOut" },
+                  opacity: { delay: isScrolled ? 0 : 0.28, duration: 0.24, ease: "easeOut" },
+                }}
+                className="overflow-hidden border-b-2 border-primary text-primary"
+              >
+                erse
+              </motion.span>
+            </motion.span>
           </Link>
 
 
           <motion.div
-            initial={disableEntranceAnimation ? false : { opacity: 0, scale: 0.8 }}
-            animate={isEntranceDone ? { opacity: 1, scale: 1, pointerEvents: "auto" } : { opacity: 0, scale: 0.8, pointerEvents: "none" }}
-            transition={{ duration: 0.3, delay: disableEntranceAnimation ? 0 : 0.15 }}
             className="flex items-center gap-3 shrink-0"
           >
             <Link
@@ -279,9 +320,11 @@ export function Navbar({ disableEntranceAnimation = false }: { disableEntranceAn
         </div>
       </motion.nav>
 
-      <AuthModal />
-      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
-      <AccountModal open={accountOpen} onOpenChange={setAccountOpen} />
+      <Suspense fallback={null}>
+        {modalOpen && <AuthModal />}
+        {searchOpen && <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />}
+        {accountOpen && <AccountModal open={accountOpen} onOpenChange={setAccountOpen} />}
+      </Suspense>
     </>
   );
 }

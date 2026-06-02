@@ -473,7 +473,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           });
         }
 
-        const sharedCacheKey = `youtube:v3:${cacheKey}`;
+        const sharedCacheKey = `youtube:v4:${cacheKey}`;
         const sharedCached = await getSharedCache<{
           videoId: string;
           authorName: string;
@@ -488,9 +488,9 @@ Sitemap: https://keyverse.me/sitemap.xml`;
         }
 
         try {
-          // Prefer edit videos without adding a second network round trip.
+          // Prefer clean audio uploads so the embedded video does not duplicate the game's lyrics.
           // Duration ranking below keeps the selected result close to the synced lyrics.
-          const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${query} edit`)}`;
+          const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${query} official audio`)}`;
           const ytRes = await fetch(searchUrl, {
             headers: {
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
@@ -557,11 +557,28 @@ Sitemap: https://keyverse.me/sitemap.xml`;
             });
           }
 
-          let bestVideo = videos[0];
+          const blockedTitleTerms = [
+            "lyrics",
+            "lyric video",
+            "karaoke",
+            "sped up",
+            "slowed",
+            "nightcore",
+            "edit audio",
+            "fan edit",
+            "status",
+          ];
+          const preferredVideos = videos.filter((video) => {
+            const normalizedTitle = video.title?.toLowerCase() || "";
+            return !blockedTitleTerms.some((term) => normalizedTitle.includes(term));
+          });
+          const rankedVideos = preferredVideos.length > 0 ? preferredVideos : videos;
+
+          let bestVideo = rankedVideos[0];
           if (expectedDuration > 0) {
             let bestDiff = Infinity;
             // Only look at the top 10 results to ensure high relevance
-            const candidates = videos.slice(0, 10);
+            const candidates = rankedVideos.slice(0, 10);
             for (const video of candidates) {
               if (video.seconds !== undefined) {
                 const diff = Math.abs(video.seconds - expectedDuration);
@@ -575,7 +592,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
 
           const candidates = [
             bestVideo,
-            ...videos.filter((video) => video.videoId !== bestVideo.videoId),
+            ...rankedVideos.filter((video) => video.videoId !== bestVideo.videoId),
           ]
             .slice(0, 10)
             .map((video) => ({

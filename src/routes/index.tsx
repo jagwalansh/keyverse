@@ -214,7 +214,7 @@ function Index() {
 
   return (
     <main className="flex flex-col justify-start items-center min-h-screen bg-background text-foreground font-sans relative">
-      <Navbar disableEntranceAnimation={disableAnimation} />
+      <Navbar />
 
       <div className="w-full max-w-4xl mx-auto px-6 py-28 flex flex-col items-center text-center justify-start flex-1 gap-10 relative">
         {/* Floating background music notes and keycaps */}

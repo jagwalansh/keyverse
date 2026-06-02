@@ -662,7 +662,7 @@ function PlayPage() {
 
   return (
     <main className="relative min-h-screen bg-background text-foreground font-sans flex flex-col items-center">
-      <Navbar disableEntranceAnimation />
+      <Navbar />
 
       {/* Content Overlay */}
       <div className="relative z-20 w-full max-w-5xl px-6 pt-24 pb-8">
