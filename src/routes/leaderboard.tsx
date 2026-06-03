@@ -26,18 +26,6 @@ async function fetchLeaderboard(period: "daily" | "weekly" | "alltime") {
   return data || [];
 }
 
-const DEBUG_FOURTH_PLACE_ROW = {
-  user_id: "debug-fourth-place-user",
-  song_id: "debug-fourth-place-song",
-  username: "debug_user_4",
-  track: "Debug Sync Run",
-  artist: "KeyVerse",
-  art_url: "",
-  best_score: 4321,
-  best_accuracy: 72.4,
-  isDebug: true,
-};
-
 // Custom Premium SVG Rank Badge Component
 const RankBadge = ({ rank }: { rank: number }) => {
   if (rank === 1) {
@@ -102,12 +90,7 @@ function LeaderboardPage() {
         }
       });
 
-    const rankedScores = Array.from(bestScoreByUser.values()).slice(0, 50);
-    return [
-      ...rankedScores.slice(0, 3),
-      DEBUG_FOURTH_PLACE_ROW,
-      ...rankedScores.slice(3, 49),
-    ];
+    return Array.from(bestScoreByUser.values()).slice(0, 50);
   }, [dbScores, isLoading, error]);
 
   const periodOptions = [
