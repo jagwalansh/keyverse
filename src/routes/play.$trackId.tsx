@@ -348,7 +348,6 @@ function PlayPage() {
   const currentTimeRef = useRef(0);
   const songStartedTrackedRef = useRef(false);
   const songCompletedTrackedRef = useRef(false);
-  const shiftShortcutPendingRef = useRef(false);
   const lastVideoCarouselScrollRef = useRef(0);
 
   const [playing, setPlaying] = useState(false);
@@ -745,15 +744,12 @@ function PlayPage() {
   }, [playing, updateTime]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Shift") {
+    if (e.key === "Escape") {
+      e.preventDefault();
       if (!e.repeat) {
-        shiftShortcutPendingRef.current = true;
+        togglePlay();
       }
       return;
-    }
-
-    if (e.shiftKey) {
-      shiftShortcutPendingRef.current = false;
     }
 
     if (e.key === "Tab") {
@@ -871,17 +867,6 @@ function PlayPage() {
             endSong();
         }
     }
-  }
-
-  function onKeyUp(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== "Shift") return;
-
-    if (shiftShortcutPendingRef.current) {
-      e.preventDefault();
-      togglePlay();
-    }
-
-    shiftShortcutPendingRef.current = false;
   }
 
   const accuracy = stats.total ? Math.round((stats.correct / stats.total) * 100) : 0;
@@ -1721,7 +1706,7 @@ function PlayPage() {
                       {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                       <span>{playing ? "Pause" : "Play"}</span>
                       <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-primary-foreground/85">
-                        Shift
+                        Esc
                       </kbd>
                     </button>
                     <button
@@ -1751,10 +1736,6 @@ function PlayPage() {
                     value=""
                     onChange={() => {}}
                     onKeyDown={onKeyDown}
-                    onKeyUp={onKeyUp}
-                    onBlur={() => {
-                      shiftShortcutPendingRef.current = false;
-                    }}
                     onPaste={(e) => e.preventDefault()}
                     autoFocus
                     spellCheck={false}
