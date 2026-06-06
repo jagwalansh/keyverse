@@ -329,6 +329,9 @@ function charsMatch(typedChar: string, expectedChar: string): boolean {
 // const GOD_MODE = true;
 
 export const Route = createFileRoute("/play/$trackId")({
+  head: () => ({
+    meta: [{ name: "robots", content: "noindex, nofollow" }],
+  }),
   validateSearch: (s: Record<string, unknown>): Search => ({
     artist: String(s.artist ?? "").replace(/\+/g, " "),
     track: String(s.track ?? "").replace(/\+/g, " "),

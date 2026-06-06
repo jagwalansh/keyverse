@@ -51,6 +51,19 @@ function brandedErrorResponse(): Response {
   });
 }
 
+function withSeoHeaders(request: Request, response: Response): Response {
+  const { pathname } = new URL(request.url);
+  if (pathname !== "/play" && !pathname.startsWith("/play/")) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set("X-Robots-Tag", "noindex, nofollow");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 function isCatastrophicSsrErrorBody(body: string, responseStatus: number): boolean {
   let payload: unknown;
   try {
@@ -1031,7 +1044,8 @@ Sitemap: https://keyverse.me/sitemap.xml`;
 
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalizedResponse = await normalizeCatastrophicSsrResponse(response);
+      return withSeoHeaders(request, normalizedResponse);
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
