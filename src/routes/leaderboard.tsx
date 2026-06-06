@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Trophy, Calendar, Clock, ArrowLeft, Music } from "lucide-react";
@@ -22,16 +22,35 @@ export const Route = createFileRoute("/leaderboard")({
   component: LeaderboardPage,
 });
 
+type LeaderboardPeriod = "daily" | "weekly" | "alltime";
+
+type LeaderboardRow = {
+  user_id: string;
+  song_id: string;
+  username: string;
+  track: string;
+  artist: string;
+  art_url: string | null;
+  best_score: number;
+  best_accuracy: number;
+};
+
 async function fetchLeaderboard(period: "daily" | "weekly" | "alltime") {
+  if (!isSupabaseConfigured) {
+    throw new Error(
+      "Leaderboard is unavailable because Supabase environment variables are missing.",
+    );
+  }
+
   const viewName = `${period}_leaderboard`;
   const { data, error } = await supabase
-    .from(viewName as any)
+    .from(viewName)
     .select("*")
     .order("best_score", { ascending: false })
     .limit(500);
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as LeaderboardRow[];
 }
 
 // Custom Premium SVG Rank Badge Component
@@ -67,7 +86,7 @@ const RankBadge = ({ rank }: { rank: number }) => {
 };
 
 function LeaderboardPage() {
-  const [period, setPeriod] = useState<"daily" | "weekly" | "alltime">("alltime");
+  const [period, setPeriod] = useState<LeaderboardPeriod>("alltime");
 
   const {
     data: dbScores = [],
@@ -82,10 +101,10 @@ function LeaderboardPage() {
   const scores = useMemo(() => {
     if (isLoading || error) return [];
 
-    const bestScoreByUser = new Map<string, any>();
+    const bestScoreByUser = new Map<string, LeaderboardRow>();
 
     dbScores
-      .map((score: any) => ({
+      .map((score) => ({
         user_id: score.user_id,
         song_id: score.song_id,
         username: score.username,
@@ -95,8 +114,8 @@ function LeaderboardPage() {
         best_score: score.best_score,
         best_accuracy: score.best_accuracy,
       }))
-      .sort((a: any, b: any) => b.best_score - a.best_score)
-      .forEach((score: any) => {
+      .sort((a, b) => b.best_score - a.best_score)
+      .forEach((score) => {
         if (!bestScoreByUser.has(score.user_id)) {
           bestScoreByUser.set(score.user_id, score);
         }
@@ -208,7 +227,7 @@ function LeaderboardPage() {
                 </thead>
                 <tbody>
                   <AnimatePresence mode="popLayout">
-                    {scores.map((row: any, index: number) => {
+                    {scores.map((row, index) => {
                       const rank = index + 1;
 
                       let rowBgStyle = "bg-card/20 hover:bg-card/35 border-b border-border/10";
