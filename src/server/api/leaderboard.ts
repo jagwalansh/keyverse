@@ -1,12 +1,28 @@
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase";
 
-export async function GET(req: Request) {
-  if (!isSupabaseConfigured) {
+export type LeaderboardEnv = {
+  VITE_SUPABASE_URL?: string;
+  VITE_SUPABASE_ANON_KEY?: string;
+};
+
+function getSupabaseConfig(env?: LeaderboardEnv) {
+  return {
+    url: env?.VITE_SUPABASE_URL || supabaseUrl,
+    anonKey: env?.VITE_SUPABASE_ANON_KEY || supabaseAnonKey,
+  };
+}
+
+export async function GET(req: Request, env?: LeaderboardEnv) {
+  const config = getSupabaseConfig(env);
+
+  if (!config.url || !config.anonKey) {
     return new Response(JSON.stringify({ error: "Supabase is not configured" }), {
       status: 503,
     });
   }
 
+  const supabase = createClient(config.url, config.anonKey);
   const url = new URL(req.url);
   const songId = url.searchParams.get("songId");
   const period = url.searchParams.get("period") || "alltime"; // alltime, weekly, daily

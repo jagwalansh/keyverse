@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
-import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import { Trophy, Calendar, Clock, ArrowLeft, Music } from "lucide-react";
@@ -36,21 +35,14 @@ type LeaderboardRow = {
 };
 
 async function fetchLeaderboard(period: "daily" | "weekly" | "alltime") {
-  if (!isSupabaseConfigured) {
-    throw new Error(
-      "Leaderboard is unavailable because Supabase environment variables are missing.",
-    );
+  const response = await fetch(`/api/leaderboard?period=${encodeURIComponent(period)}`);
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(payload?.error || "Failed to fetch leaderboard data.");
   }
 
-  const viewName = `${period}_leaderboard`;
-  const { data, error } = await supabase
-    .from(viewName)
-    .select("*")
-    .order("best_score", { ascending: false })
-    .limit(500);
-
-  if (error) throw error;
-  return (data || []) as LeaderboardRow[];
+  return (payload?.leaderboard || []) as LeaderboardRow[];
 }
 
 // Custom Premium SVG Rank Badge Component

@@ -9,7 +9,11 @@ import { GET as profileHandler } from "./server/api/profile";
 import { GET as userBestHandler } from "./server/api/user-best";
 import { POST as contactHandler } from "./server/api/contact";
 import type { ContactEnv } from "./server/api/contact";
-import { GET as videoVotesGetHandler, POST as videoVotesPostHandler } from "./server/api/video-votes";
+import type { LeaderboardEnv } from "./server/api/leaderboard";
+import {
+  GET as videoVotesGetHandler,
+  POST as videoVotesPostHandler,
+} from "./server/api/video-votes";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -20,9 +24,10 @@ type KVNamespace = {
   put: (key: string, value: string, options?: { expirationTtl?: number }) => Promise<void>;
 };
 
-type WorkerEnv = ContactEnv & {
-  API_CACHE?: KVNamespace;
-};
+type WorkerEnv = ContactEnv &
+  LeaderboardEnv & {
+    API_CACHE?: KVNamespace;
+  };
 
 type ExecutionContext = {
   waitUntil?: (promise: Promise<unknown>) => void;
@@ -88,16 +93,26 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 }
 
 function extractOriginalArtist(track: string): string | null {
-  const pattern = /[([{(](?:originally\s+performed\s+by|originally\s+by|in\s+the\s+style\s+of|tribute\s+to|cover\s+of)\s+(.*?)[)\]}]/i;
+  const pattern =
+    /[([{(](?:originally\s+performed\s+by|originally\s+by|in\s+the\s+style\s+of|tribute\s+to|cover\s+of)\s+(.*?)[)\]}]/i;
   const match = track.match(pattern);
   return match && match[1] ? match[1].trim() : null;
 }
 
 function cleanTitle(title: string): string {
   return title
-    .replace(/\s*[([{(](?:originally\s+performed\s+by|originally\s+by|in\s+the\s+style\s+of|tribute\s+to|cover\s+of)\s+.*?[)\]}]/gi, "")
-    .replace(/\s*[([{(](?:explicit|clean|radio\s+edit|remastered|deluxe|single|ep|version|instrumental|jersey\s+club|remix|sped\s+up|slowed|acoustic|live|tribute|cover|karaoke|drill|phonk|mix|edit|reverb|lounge|tribute\s+version|cover\s+version)[)\]}]/gi, "")
-    .replace(/\s*-\s*(?:single|ep|deluxe|remastered|version|explicit|clean|instrumental|jersey\s+club|remix|sped\s+up|slowed|acoustic|live|tribute|cover|karaoke|mix|edit)$/gi, "")
+    .replace(
+      /\s*[([{(](?:originally\s+performed\s+by|originally\s+by|in\s+the\s+style\s+of|tribute\s+to|cover\s+of)\s+.*?[)\]}]/gi,
+      "",
+    )
+    .replace(
+      /\s*[([{(](?:explicit|clean|radio\s+edit|remastered|deluxe|single|ep|version|instrumental|jersey\s+club|remix|sped\s+up|slowed|acoustic|live|tribute|cover|karaoke|drill|phonk|mix|edit|reverb|lounge|tribute\s+version|cover\s+version)[)\]}]/gi,
+      "",
+    )
+    .replace(
+      /\s*-\s*(?:single|ep|deluxe|remastered|version|explicit|clean|instrumental|jersey\s+club|remix|sped\s+up|slowed|acoustic|live|tribute|cover|karaoke|mix|edit)$/gi,
+      "",
+    )
     .replace(/\s*[([{(](?:feat|ft|with|featuring)\b.*?[)\]}]/gi, "")
     .replace(/\s*(?:-\s*)?(?:feat|ft|with|featuring)\b.*$/gi, "")
     .trim();
@@ -245,12 +260,16 @@ function hasVerifiedYoutubeBadge(info: YoutubeVideoRenderer): boolean {
   const badges = [...(info.ownerBadges ?? []), ...(info.badges ?? [])];
   return badges.some((badge) => {
     const renderer = badge?.metadataBadgeRenderer;
-    const text = `${renderer?.label ?? ""} ${renderer?.tooltip ?? ""} ${renderer?.style ?? ""}`.toLowerCase();
+    const text =
+      `${renderer?.label ?? ""} ${renderer?.tooltip ?? ""} ${renderer?.style ?? ""}`.toLowerCase();
     return text.includes("verified") || text.includes("official artist");
   });
 }
 
-function collectYoutubeVideoRenderers(value: unknown, output: YoutubeVideoRenderer[] = []): YoutubeVideoRenderer[] {
+function collectYoutubeVideoRenderers(
+  value: unknown,
+  output: YoutubeVideoRenderer[] = [],
+): YoutubeVideoRenderer[] {
   if (!value || typeof value !== "object" || output.length >= 60) {
     return output;
   }
@@ -276,20 +295,24 @@ function collectYoutubeVideoRenderers(value: unknown, output: YoutubeVideoRender
   return output;
 }
 
-function parseYoutubeVideoRenderer(info: YoutubeVideoRenderer, sourceQuery: string): YoutubeVideoCandidate | null {
+function parseYoutubeVideoRenderer(
+  info: YoutubeVideoRenderer,
+  sourceQuery: string,
+): YoutubeVideoCandidate | null {
   if (!info?.videoId) return null;
 
   const ownerRun =
-    info.ownerText?.runs?.[0] ??
-    info.longBylineText?.runs?.[0] ??
-    info.shortBylineText?.runs?.[0];
+    info.ownerText?.runs?.[0] ?? info.longBylineText?.runs?.[0] ?? info.shortBylineText?.runs?.[0];
 
   const durationText = readTextRuns(info.lengthText);
 
   return {
     videoId: String(info.videoId),
     title: readTextRuns(info.title),
-    author: readTextRuns(info.ownerText) || readTextRuns(info.longBylineText) || readTextRuns(info.shortBylineText),
+    author:
+      readTextRuns(info.ownerText) ||
+      readTextRuns(info.longBylineText) ||
+      readTextRuns(info.shortBylineText),
     seconds: durationText ? parseYoutubeDuration(durationText) : undefined,
     channelId: ownerRun?.navigationEndpoint?.browseEndpoint?.browseId,
     channelHandle: ownerRun?.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl,
@@ -300,7 +323,9 @@ function parseYoutubeVideoRenderer(info: YoutubeVideoRenderer, sourceQuery: stri
 
 function parseYoutubeSearchHtml(html: string, sourceQuery: string): YoutubeVideoCandidate[] {
   const videos: YoutubeVideoCandidate[] = [];
-  const dataMatch = html.match(/(?:ytInitialData\s*=\s*|window\["ytInitialData"\]\s*=\s*)({.+?});\s*<\/script>/);
+  const dataMatch = html.match(
+    /(?:ytInitialData\s*=\s*|window\["ytInitialData"\]\s*=\s*)({.+?});\s*<\/script>/,
+  );
 
   if (dataMatch) {
     try {
@@ -340,7 +365,8 @@ async function fetchYoutubeSearchResults(searchQuery: string): Promise<YoutubeVi
   const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchQuery)}`;
   const ytRes = await fetch(searchUrl, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
       "Accept-Language": "en-US,en;q=0.9",
     },
   });
@@ -379,7 +405,11 @@ function isLiveYoutubeVersion(video: YoutubeVideoCandidate, track: string): bool
     "vevo live",
   ];
 
-  if (livePhrases.some((phrase) => hasNormalizedPhrase(title, phrase) && !hasNormalizedPhrase(cleanedTrack, phrase))) {
+  if (
+    livePhrases.some(
+      (phrase) => hasNormalizedPhrase(title, phrase) && !hasNormalizedPhrase(cleanedTrack, phrase),
+    )
+  ) {
     return true;
   }
 
@@ -419,7 +449,11 @@ function scoreYoutubeVideo(
   if (normalizedTitle.includes("official audio")) score += 22;
   else if (normalizedTitle.includes("audio")) score += 10;
   if (normalizedTitle.includes("visualizer")) score += 7;
-  if (normalizedTitle.includes("official music video") || normalizedTitle.includes("official video")) score += 4;
+  if (
+    normalizedTitle.includes("official music video") ||
+    normalizedTitle.includes("official video")
+  )
+    score += 4;
 
   if (normalizedSourceQuery.includes("official audio")) score += 4;
   if (normalizedSourceQuery.includes("topic")) score += 3;
@@ -475,8 +509,8 @@ function scoreYoutubeVideo(
   return score;
 }
 
-const lyricsCache = new Map<string, { data: LyricsCacheData, timestamp: number }>();
-const youtubeCache = new Map<string, { data: YoutubeSearchData, timestamp: number }>();
+const lyricsCache = new Map<string, { data: LyricsCacheData; timestamp: number }>();
+const youtubeCache = new Map<string, { data: YoutubeSearchData; timestamp: number }>();
 const LYRICS_CACHE_TTL_SECONDS = 30 * 60;
 const YOUTUBE_CACHE_TTL_SECONDS = 6 * 60 * 60;
 
@@ -485,7 +519,7 @@ async function getSharedCache<T>(env: WorkerEnv, key: string): Promise<T | null>
 
   try {
     const value = await env.API_CACHE.get(key);
-    return value ? JSON.parse(value) as T : null;
+    return value ? (JSON.parse(value) as T) : null;
   } catch (error) {
     console.error(`Failed to read API cache key ${key}:`, error);
     return null;
@@ -501,9 +535,9 @@ function putSharedCache(
 ) {
   if (!env.API_CACHE) return;
 
-  const write = env.API_CACHE
-    .put(key, JSON.stringify(value), { expirationTtl })
-    .catch((error) => console.error(`Failed to write API cache key ${key}:`, error));
+  const write = env.API_CACHE.put(key, JSON.stringify(value), { expirationTtl }).catch((error) =>
+    console.error(`Failed to write API cache key ${key}:`, error),
+  );
 
   if (ctx.waitUntil) {
     ctx.waitUntil(write);
@@ -520,7 +554,7 @@ export default {
         return await saveScoreHandler(request);
       }
       if (url.pathname === "/api/leaderboard") {
-        return await leaderboardHandler(request);
+        return await leaderboardHandler(request, env);
       }
       if (url.pathname === "/api/profile") {
         return await profileHandler();
@@ -618,9 +652,10 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           return CUSTOM_LYRICS[key] || null;
         };
 
-        const customData = checkCustomLyrics(cleanedArtist, cleanedTrack) ||
-                           checkCustomLyrics(artist, track) ||
-                           (extractedOriginal ? checkCustomLyrics(extractedOriginal, cleanedTrack) : null);
+        const customData =
+          checkCustomLyrics(cleanedArtist, cleanedTrack) ||
+          checkCustomLyrics(artist, track) ||
+          (extractedOriginal ? checkCustomLyrics(extractedOriginal, cleanedTrack) : null);
 
         if (customData) {
           return new Response(JSON.stringify(customData), {
@@ -638,15 +673,16 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           const timeoutId = setTimeout(() => controller.abort(), 12000);
 
           try {
-            const res = await fetch(lyricsUrl, { 
+            const res = await fetch(lyricsUrl, {
               signal: controller.signal,
               headers: {
-                "User-Agent": "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)"
-              }
+                "User-Agent":
+                  "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)",
+              },
             });
             clearTimeout(timeoutId);
             if (!res.ok) return null;
-            const data = await res.json() as { syncedLyrics?: string | null };
+            const data = (await res.json()) as { syncedLyrics?: string | null };
             if (!data.syncedLyrics) return null;
             return new Response(JSON.stringify(data), {
               status: res.status,
@@ -659,29 +695,35 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           }
         };
 
-        const isTrackMatch = (item: { trackName: string; artistName: string }, expectedArtist: string, expectedTrack: string): boolean => {
+        const isTrackMatch = (
+          item: { trackName: string; artistName: string },
+          expectedArtist: string,
+          expectedTrack: string,
+        ): boolean => {
           const itemArtist = cleanArtist(item.artistName).toLowerCase();
           const itemTrack = cleanTitle(item.trackName).toLowerCase();
           const expArtist = cleanArtist(expectedArtist).toLowerCase();
           const expTrack = cleanTitle(expectedTrack).toLowerCase();
 
           // Check if artist matches (exact or subset/superset)
-          const artistMatches = itemArtist === expArtist || itemArtist.includes(expArtist) || expArtist.includes(itemArtist);
-          
+          const artistMatches =
+            itemArtist === expArtist ||
+            itemArtist.includes(expArtist) ||
+            expArtist.includes(itemArtist);
+
           // Check if track matches (exact or subset/superset)
-          const trackMatches = itemTrack === expTrack || itemTrack.includes(expTrack) || expTrack.includes(itemTrack);
-          
+          const trackMatches =
+            itemTrack === expTrack || itemTrack.includes(expTrack) || expTrack.includes(itemTrack);
+
           return artistMatches && trackMatches;
         };
 
         const searchFallbackLyrics = async (a: string, t: string, dur?: number) => {
           const aggressivelyCleanedTrack = t.replace(/\s*[([{(].*?[)\]}]/gi, "").trim();
           const aggressivelyCleanedArtist = a.replace(/\s*[([{(].*?[)\]}]/gi, "").trim();
-          
+
           // Build search candidate pairs: [artist, track]
-          const searchPairs = [
-            [a, t],
-          ];
+          const searchPairs = [[a, t]];
           if (aggressivelyCleanedTrack !== t || aggressivelyCleanedArtist !== a) {
             searchPairs.push([aggressivelyCleanedArtist, aggressivelyCleanedTrack]);
           }
@@ -690,7 +732,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
             const searchUrls = [
               `https://lrclib.net/api/search?artist_name=${encodeURIComponent(searchArtist)}&track_name=${encodeURIComponent(searchTrack)}`,
               `https://lrclib.net/api/search?q=${encodeURIComponent(searchArtist + " " + searchTrack)}`,
-              `https://lrclib.net/api/search?q=${encodeURIComponent(searchTrack)}` // Fallback search with only track, but we will filter by artist below
+              `https://lrclib.net/api/search?q=${encodeURIComponent(searchTrack)}`, // Fallback search with only track, but we will filter by artist below
             ];
 
             if (dur && dur > 0) {
@@ -707,8 +749,9 @@ Sitemap: https://keyverse.me/sitemap.xml`;
                 const res = await fetch(searchUrl, {
                   signal: controller.signal,
                   headers: {
-                    "User-Agent": "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)"
-                  }
+                    "User-Agent":
+                      "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)",
+                  },
                 });
                 clearTimeout(timeoutId);
                 if (!res.ok) return null;
@@ -721,10 +764,10 @@ Sitemap: https://keyverse.me/sitemap.xml`;
 
                 if (Array.isArray(results) && results.length > 0) {
                   // Find the first result that has synced lyrics and matches both artist and track
-                  const match = results.find(item => 
-                    item.syncedLyrics && isTrackMatch(item, searchArtist, searchTrack)
+                  const match = results.find(
+                    (item) => item.syncedLyrics && isTrackMatch(item, searchArtist, searchTrack),
                   );
-                  
+
                   if (match) {
                     return new Response(JSON.stringify(match), {
                       status: 200,
@@ -799,8 +842,9 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           const res = await fetch(searchUrl, {
             signal: controller.signal,
             headers: {
-              "User-Agent": "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)"
-            }
+              "User-Agent":
+                "LyricalSyncGame v1.0.0 (https://github.com/jagwalansh/lyrical-sync-game)",
+            },
           });
           clearTimeout(timeoutId);
 
@@ -845,7 +889,8 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           });
         }
 
-        const cacheKey = `v8:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
+        const cacheKey =
+          `v8:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
         const cached = youtubeCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < YOUTUBE_CACHE_TTL_SECONDS * 1000) {
           return new Response(JSON.stringify(cached.data), {
@@ -871,17 +916,14 @@ Sitemap: https://keyverse.me/sitemap.xml`;
         try {
           const cleanedArtist = cleanArtist(rankingArtist);
           const cleanedTrack = cleanTitle(rankingTrack);
-          const searchTerms = artistParam && trackParam
-            ? [
-                `${cleanedArtist} ${cleanedTrack} official audio`,
-                `${cleanedArtist} ${cleanedTrack} topic`,
-                `${cleanedArtist} ${cleanedTrack}`,
-              ]
-            : [
-                `${baseQuery} official audio`,
-                `${baseQuery} topic`,
-                baseQuery,
-              ];
+          const searchTerms =
+            artistParam && trackParam
+              ? [
+                  `${cleanedArtist} ${cleanedTrack} official audio`,
+                  `${cleanedArtist} ${cleanedTrack} topic`,
+                  `${cleanedArtist} ${cleanedTrack}`,
+                ]
+              : [`${baseQuery} official audio`, `${baseQuery} topic`, baseQuery];
 
           const searchResultGroups = await Promise.all(
             uniqueStrings(searchTerms).map(async (searchTerm) => {
@@ -902,19 +944,34 @@ Sitemap: https://keyverse.me/sitemap.xml`;
               continue;
             }
 
-            const existingScore = scoreYoutubeVideo(existing, rankingArtist, rankingTrack, expectedDuration);
-            const nextScore = scoreYoutubeVideo(video, rankingArtist, rankingTrack, expectedDuration);
+            const existingScore = scoreYoutubeVideo(
+              existing,
+              rankingArtist,
+              rankingTrack,
+              expectedDuration,
+            );
+            const nextScore = scoreYoutubeVideo(
+              video,
+              rankingArtist,
+              rankingTrack,
+              expectedDuration,
+            );
             if (nextScore > existingScore) {
               videosById.set(video.videoId, video);
             }
           }
 
-          const videos = [...videosById.values()].filter((video) => !isLiveYoutubeVersion(video, rankingTrack));
+          const videos = [...videosById.values()].filter(
+            (video) => !isLiveYoutubeVersion(video, rankingTrack),
+          );
           if (videos.length === 0) {
-            return new Response(JSON.stringify({ error: "Could not find a non-live YouTube video for this track" }), {
-              status: 404,
-              headers: { "content-type": "application/json" },
-            });
+            return new Response(
+              JSON.stringify({ error: "Could not find a non-live YouTube video for this track" }),
+              {
+                status: 404,
+                headers: { "content-type": "application/json" },
+              },
+            );
           }
 
           const scoredVideos: ScoredYoutubeVideo[] = videos
@@ -926,10 +983,15 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           const rankedVideos = scoredVideos.map(({ video }) => video);
 
           if (rankedVideos.length === 0) {
-            return new Response(JSON.stringify({ error: "Could not find a clean original YouTube upload for this track" }), {
-              status: 404,
-              headers: { "content-type": "application/json" },
-            });
+            return new Response(
+              JSON.stringify({
+                error: "Could not find a clean original YouTube upload for this track",
+              }),
+              {
+                status: 404,
+                headers: { "content-type": "application/json" },
+              },
+            );
           }
 
           const bestVideo = rankedVideos[0];
