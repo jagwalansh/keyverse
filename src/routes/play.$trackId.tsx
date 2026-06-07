@@ -366,6 +366,7 @@ function PlayPage() {
   const [waitingForNext, setWaitingForNext] = useState<string | null>(null);
 
   const [stats, setStats] = useState({ correct: 0, total: 0, started: 0 });
+  const [activeTypingMs, setActiveTypingMs] = useState(0);
 
   // Game state
   const [combo, setCombo] = useState(0);
@@ -384,6 +385,9 @@ function PlayPage() {
   const ytPlayerRef = useRef<YouTubePlayer | null>(null);
   const rafRef = useRef<number | null>(null);
   const currentTimeRef = useRef(0);
+  const activeTypingMsRef = useRef(0);
+  const lastActiveTypingTickRef = useRef<number | null>(null);
+  const lastActiveTypingRenderRef = useRef(0);
   const songStartedTrackedRef = useRef(false);
   const songCompletedTrackedRef = useRef(false);
   const completedLyricsRef = useRef(false);
@@ -436,6 +440,10 @@ function PlayPage() {
   useEffect(() => {
     comboRef.current = combo;
   }, [combo]);
+  const statsStartedRef = useRef(stats.started);
+  useEffect(() => {
+    statsStartedRef.current = stats.started;
+  }, [stats.started]);
   const waitingForNextRef = useRef<string | null>(null);
 
   const updateWaitingForNext = useCallback((value: string | null) => {
@@ -459,12 +467,16 @@ function PlayPage() {
     resetActiveLineState();
     setCurrentLineIdx(0);
     setStats({ correct: 0, total: 0, started: 0 });
+    setActiveTypingMs(0);
     setCombo(0);
     setMaxCombo(0);
     setScore(0);
     setHitFeedback(null);
     setParticles([]);
     currentTimeRef.current = 0;
+    activeTypingMsRef.current = 0;
+    lastActiveTypingTickRef.current = null;
+    lastActiveTypingRenderRef.current = 0;
     songStartedTrackedRef.current = false;
     songCompletedTrackedRef.current = false;
     completedLyricsRef.current = false;
@@ -732,52 +744,92 @@ function PlayPage() {
         const line = lines[currentLineIdx];
         const nextLineTime = lines[currentLineIdx + 1]?.time || line.time + 5;
         const timeDiff = line.time - currentTimeRef.current;
+        const waitingForUpcomingLine =
+          charIdxRef.current >= line.text.length && currentTimeRef.current < nextLineTime;
+        const visualTimeDiff = waitingForUpcomingLine
+          ? nextLineTime - currentTimeRef.current
+          : timeDiff;
         const duration = nextLineTime - line.time;
+        const canTrackActiveTyping =
+          statsStartedRef.current > 0 &&
+          currentTimeRef.current >= line.time &&
+          !waitingForUpcomingLine &&
+          charIdxRef.current < line.text.length;
+        const activeTickNow = performance.now();
+
+        if (canTrackActiveTyping) {
+          if (lastActiveTypingTickRef.current !== null) {
+            activeTypingMsRef.current += Math.min(
+              activeTickNow - lastActiveTypingTickRef.current,
+              500,
+            );
+          }
+          lastActiveTypingTickRef.current = activeTickNow;
+
+          if (activeTickNow - lastActiveTypingRenderRef.current > 250) {
+            lastActiveTypingRenderRef.current = activeTickNow;
+            setActiveTypingMs(activeTypingMsRef.current);
+          }
+        } else {
+          lastActiveTypingTickRef.current = null;
+        }
 
         // Visual Updates
         const approachEl = document.getElementById("approach-circle");
         const progressEl = document.getElementById("progress-circle");
 
         if (approachEl) {
-          if (timeDiff > 0 && timeDiff < 2.0) {
+          if (visualTimeDiff > 0 && visualTimeDiff < 2.0) {
             approachEl.style.display = "block";
-            const size = 48 + timeDiff * 50; // Shrinks down to 48px
+            const size = 48 + visualTimeDiff * 50; // Shrinks down to 48px
             approachEl.style.width = `${size}px`;
             approachEl.style.height = `${size}px`;
-            approachEl.style.opacity = timeDiff > 1.5 ? "0" : `${1 - timeDiff / 1.5}`;
+            approachEl.style.opacity = visualTimeDiff > 1.5 ? "0" : `${1 - visualTimeDiff / 1.5}`;
           } else {
             approachEl.style.display = "none";
           }
         }
 
         if (progressEl) {
-          if (timeDiff <= 0 && timeDiff > -duration) {
+          if (!waitingForUpcomingLine && timeDiff <= 0 && timeDiff > -duration) {
             progressEl.style.display = "block";
             const progress = Math.abs(timeDiff) / duration;
-            progressEl.style.strokeDashoffset = `${138.2 * progress}`;
+            progressEl
+              .querySelector<SVGCircleElement>("circle")
+              ?.style.setProperty("stroke-dashoffset", `${138.2 * progress}`);
           } else {
             progressEl.style.display = "none";
           }
         }
 
-        // Auto-advance
-        if (currentTimeRef.current > nextLineTime + 0.2) {
+        if (charIdxRef.current >= line.text.length && currentTimeRef.current >= nextLineTime) {
+          if (lastCompletedLineRef.current !== currentLineIdx) {
+            lastCompletedLineRef.current = currentLineIdx;
+            handleLineComplete(true);
+          }
+        } else if (currentTimeRef.current > nextLineTime + 0.2) {
+          // Auto-advance when the line was not completed in time.
           if (lastCompletedLineRef.current !== currentLineIdx) {
             lastCompletedLineRef.current = currentLineIdx;
 
             // Mark remaining characters as miss
             const currentResults = [...charResultsRef.current];
-            let modified = false;
+            let missedCharacters = 0;
             for (let i = charIdxRef.current; i < line.text.length; i++) {
               if (currentResults[i]?.status !== "hit" && currentResults[i]?.status !== "miss") {
                 currentResults[i] = { status: "miss" };
-                modified = true;
+                missedCharacters++;
               }
             }
-            if (modified) {
-              inactivityMissesRef.current += line.text.length - charIdxRef.current;
+            if (missedCharacters > 0) {
+              inactivityMissesRef.current += missedCharacters;
               charResultsRef.current = currentResults;
               setCharResults(currentResults);
+              setStats((s) => ({
+                correct: s.correct,
+                total: s.total + missedCharacters,
+                started: s.started || Date.now(),
+              }));
               setCombo(0);
             }
 
@@ -808,6 +860,7 @@ function PlayPage() {
       rafRef.current = requestAnimationFrame(updateTime);
     } else if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
+      lastActiveTypingTickRef.current = null;
     }
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -953,8 +1006,11 @@ function PlayPage() {
   }
 
   const accuracy = stats.total ? Math.round((stats.correct / stats.total) * 100) : 0;
-  const elapsed = stats.started ? ((songEndedAt || Date.now()) - stats.started) / 1000 / 60 : 0;
-  const wpm = elapsed > 0 ? Math.round(stats.correct / 5 / elapsed) : 0;
+  const activeTypingMinutes = activeTypingMs / 1000 / 60;
+  const wpm =
+    stats.started && activeTypingMinutes > 0
+      ? Math.round(stats.correct / 5 / activeTypingMinutes)
+      : 0;
 
   useEffect(() => {
     if (!songEnded || songCompletedTrackedRef.current) return;
@@ -978,9 +1034,9 @@ function PlayPage() {
         return;
       }
 
-      if (!completedLyricsRef.current || inactivityMissesRef.current > 0) {
+      if (!completedLyricsRef.current) {
         setSaveAttempted(true);
-        setScoreSaveSkippedReason("No score was saved because the round was left inactive.");
+        setScoreSaveSkippedReason("No score was saved because the lyrics were not completed.");
         return;
       }
 
@@ -1104,12 +1160,16 @@ function PlayPage() {
     resetActiveLineState();
     setCurrentLineIdx(0);
     setStats({ correct: 0, total: 0, started: 0 });
+    setActiveTypingMs(0);
     setCombo(0);
     setMaxCombo(0);
     setScore(0);
     setHitFeedback(null);
     setParticles([]);
     currentTimeRef.current = 0;
+    activeTypingMsRef.current = 0;
+    lastActiveTypingTickRef.current = null;
+    lastActiveTypingRenderRef.current = 0;
     songStartedTrackedRef.current = false;
     songCompletedTrackedRef.current = false;
     completedLyricsRef.current = false;
@@ -1791,12 +1851,17 @@ function PlayPage() {
                       {lines.map((line, idx) => {
                         const isCurrentLine = idx === currentLineIdx;
                         const isPassed = idx < currentLineIdx;
+                        const isWaitingLine = Boolean(waitingForNext) && idx === currentLineIdx + 1;
+                        const showTimingCircle =
+                          isWaitingLine || (isCurrentLine && !waitingForNext);
                         const distanceFromCurrent = Math.abs(idx - currentLineIdx);
                         const lyricLineStateClass = isCurrentLine
                           ? "scale-105 opacity-100 blur-0"
-                          : distanceFromCurrent === 1
-                            ? "scale-95 opacity-45 blur-[1.5px]"
-                            : "scale-95 opacity-20 blur-[3px]";
+                          : isWaitingLine
+                            ? "scale-100 opacity-80 blur-0"
+                            : distanceFromCurrent === 1
+                              ? "scale-95 opacity-45 blur-[1.5px]"
+                              : "scale-95 opacity-20 blur-[3px]";
                         const lineText = line.text;
                         const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
                         let tokenOffset = 0;
@@ -1810,13 +1875,13 @@ function PlayPage() {
                             {/* osu! Style Note Indicator */}
                             <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
                               <div
-                                className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${isCurrentLine ? "border-primary" : "border-muted-foreground/30"}`}
+                                className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${isCurrentLine || isWaitingLine ? "border-primary" : "border-muted-foreground/30"}`}
                               />
                               <div
-                                className={`absolute w-4 h-4 rounded-full transition-colors duration-300 ${isPassed ? "bg-primary/50" : isCurrentLine ? "bg-primary" : "bg-muted-foreground/30"}`}
+                                className={`absolute w-4 h-4 rounded-full transition-colors duration-300 ${isPassed ? "bg-primary/50" : isCurrentLine || isWaitingLine ? "bg-primary" : "bg-muted-foreground/30"}`}
                               />
 
-                              {isCurrentLine && (
+                              {showTimingCircle && (
                                 <>
                                   <div
                                     id="approach-circle"

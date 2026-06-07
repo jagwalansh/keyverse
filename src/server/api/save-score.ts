@@ -34,15 +34,10 @@ export async function POST(req: Request) {
     });
   }
 
-  if (
-    numericScore <= 0 ||
-    numericTypedCharacters <= 0 ||
-    completedLyrics !== true ||
-    numericInactivityMisses > 0
-  ) {
+  if (numericScore <= 0 || numericTypedCharacters <= 0 || completedLyrics !== true) {
     return new Response(
       JSON.stringify({
-        error: "Inactive or incomplete rounds are not eligible for the leaderboard",
+        error: "Incomplete rounds are not eligible for the leaderboard",
       }),
       { status: 400 },
     );
@@ -67,7 +62,10 @@ export async function POST(req: Request) {
     },
   });
 
-  const { data: { user }, error: authError } = await userSupabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await userSupabase.auth.getUser();
 
   if (authError || !user) {
     return new Response(JSON.stringify({ error: authError?.message || "Unauthorized" }), {
