@@ -96,7 +96,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Type lyrics in sync with your favorite songs.",
       },
       { property: "og:image", content: "https://keyverse.me/og-image.png" },
-      { property: "og:url", content: "https://keyverse.me" },
+      { property: "og:url", content: "https://keyverse.me/" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "KeyVerse" },

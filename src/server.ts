@@ -33,6 +33,9 @@ type ExecutionContext = {
   waitUntil?: (promise: Promise<unknown>) => void;
 };
 
+const CANONICAL_HOSTNAME = "keyverse.me";
+const TRACKING_QUERY_PARAMS = new Set(["fbclid", "gclid", "msclkid", "ref", "referrer", "source"]);
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -62,6 +65,33 @@ function withSeoHeaders(request: Request, response: Response): Response {
     statusText: response.statusText,
     headers,
   });
+}
+
+function getCanonicalRedirect(request: Request, url: URL): Response | null {
+  const isProductionHost =
+    url.hostname === CANONICAL_HOSTNAME || url.hostname === `www.${CANONICAL_HOSTNAME}`;
+  if (!isProductionHost) return null;
+
+  const target = new URL(url);
+  target.protocol = "https:";
+  target.hostname = CANONICAL_HOSTNAME;
+  target.port = "";
+
+  if (
+    (request.method === "GET" || request.method === "HEAD") &&
+    !target.pathname.startsWith("/api/")
+  ) {
+    for (const param of [...target.searchParams.keys()]) {
+      if (
+        param.toLowerCase().startsWith("utm_") ||
+        TRACKING_QUERY_PARAMS.has(param.toLowerCase())
+      ) {
+        target.searchParams.delete(param);
+      }
+    }
+  }
+
+  return target.href === url.href ? null : Response.redirect(target, 308);
 }
 
 function isCatastrophicSsrErrorBody(body: string, responseStatus: number): boolean {
@@ -561,9 +591,11 @@ function putSharedCache(
 export default {
   async fetch(request: Request, env: WorkerEnv = {}, ctx: ExecutionContext = {}) {
     try {
-      // Handle API proxy requests
       const url = new URL(request.url);
+      const canonicalRedirect = getCanonicalRedirect(request, url);
+      if (canonicalRedirect) return canonicalRedirect;
 
+      // Handle API proxy requests
       if (url.pathname === "/api/save-score") {
         return await saveScoreHandler(request);
       }
