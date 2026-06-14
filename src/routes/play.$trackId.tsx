@@ -378,9 +378,6 @@ function charsMatch(typedChar: string, expectedChar: string): boolean {
 }
 
 export const Route = createFileRoute("/play/$trackId")({
-  head: () => ({
-    meta: [{ name: "robots", content: "noindex, nofollow" }],
-  }),
   validateSearch: (s: Record<string, unknown>): Search => ({
     artist: String(s.artist ?? "").replace(/\+/g, " "),
     track: String(s.track ?? "").replace(/\+/g, " "),
@@ -389,6 +386,35 @@ export const Route = createFileRoute("/play/$trackId")({
     q: typeof s.q === "string" ? s.q.replace(/\+/g, " ") : undefined,
     from: typeof s.from === "string" ? s.from : undefined,
   }),
+  head: ({ match, params }) => {
+    const { artist, track } = match.search;
+    const songLabel = track && artist ? `${track} by ${artist}` : "Song typing game";
+    const title = `${songLabel} | KeyVerse`;
+    const description =
+      track && artist
+        ? `Type the lyrics to ${track} by ${artist} in sync with the music on KeyVerse.`
+        : "Type song lyrics in sync with the music on KeyVerse.";
+    const canonicalSearch = new URLSearchParams();
+    if (artist) canonicalSearch.set("artist", artist);
+    if (track) canonicalSearch.set("track", track);
+    const query = canonicalSearch.toString();
+    const canonical = `https://keyverse.me/play/${encodeURIComponent(params.trackId)}${query ? `?${query}` : ""}`;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { name: "robots", content: "index, follow" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: canonical },
+        { property: "og:type", content: "website" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+      links: [{ rel: "canonical", href: canonical }],
+    };
+  },
   component: PlayPage,
 });
 
@@ -833,7 +859,6 @@ function PlayPage() {
         if (fillEl) fillEl.style.width = `${pct}%`;
         if (unplayedEl) unplayedEl.style.left = `${pct}%`;
         if (handleEl) handleEl.style.left = `${pct}%`;
-
       }
 
       if (lines && lines[currentLineIdx] && !lyricsFinished) {

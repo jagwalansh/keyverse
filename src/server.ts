@@ -54,19 +54,6 @@ function brandedErrorResponse(): Response {
   });
 }
 
-function withSeoHeaders(request: Request, response: Response): Response {
-  const { pathname } = new URL(request.url);
-  if (pathname !== "/play" && !pathname.startsWith("/play/")) return response;
-
-  const headers = new Headers(response.headers);
-  headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
-}
-
 function getCanonicalRedirect(request: Request, url: URL): Response | null {
   const isProductionHost =
     url.hostname === CANONICAL_HOSTNAME || url.hostname === `www.${CANONICAL_HOSTNAME}`;
@@ -645,8 +632,6 @@ export default {
       if (url.pathname === "/robots.txt") {
         const robots = `User-agent: *
 Allow: /
-Disallow: /play
-Disallow: /play/
 Sitemap: https://keyverse.me/sitemap.xml`;
         return new Response(robots, {
           status: 200,
@@ -1080,7 +1065,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalizedResponse = await normalizeCatastrophicSsrResponse(response);
-      return withSeoHeaders(request, normalizedResponse);
+      return normalizedResponse;
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
