@@ -311,8 +311,6 @@ function Index() {
     };
   }, []);
 
-
-
   useEffect(() => {
     const query = routeQuery ?? "";
     if (query.trim()) {
@@ -455,7 +453,8 @@ function Index() {
                     {paginatedResults.map((t) => (
                       <li key={t.id}>
                         <Link
-                          to={`/play/${t.id}`}
+                          to="/play/$trackId"
+                          params={{ trackId: String(t.id) }}
                           search={{
                             artist: t.artistName,
                             track: t.trackName,
@@ -547,7 +546,8 @@ function Index() {
               {RECOMMENDED_SONGS_HOMEPAGE.map((song) => (
                 <DeflectCard key={song.id} className="w-full rounded-xl">
                   <Link
-                    to={`/play/${song.id}`}
+                    to="/play/$trackId"
+                    params={{ trackId: String(song.id) }}
                     search={{
                       artist: song.artistName,
                       track: song.trackName,

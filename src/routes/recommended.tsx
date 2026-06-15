@@ -287,7 +287,8 @@ function SongGrid({ songs }: { songs: Song[] }) {
               </span>
 
               <Link
-                to={`/play/${song.id}`}
+                to="/play/$trackId"
+                params={{ trackId: String(song.id) }}
                 search={{
                   artist: song.artistName,
                   track: song.trackName,

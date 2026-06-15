@@ -23,11 +23,14 @@ export const CUSTOM_LYRICS: Record<
   string,
   { plainLyrics?: string; syncedLyrics?: string; duration?: number }
 > = {
-  "pls&ty - summer's young (shadient remix) [feat. dia frampton & shadient]": SUMMERS_YOUNG_SHADIENT,
+  "pls&ty - summer's young (shadient remix) [feat. dia frampton & shadient]":
+    SUMMERS_YOUNG_SHADIENT,
   "pls&ty - summer's young (shadient remix)": SUMMERS_YOUNG_SHADIENT,
-  "pls&ty - summer's young (feat. dia frampton & shadient) (shadient remix)": SUMMERS_YOUNG_SHADIENT,
+  "pls&ty - summer's young (feat. dia frampton & shadient) (shadient remix)":
+    SUMMERS_YOUNG_SHADIENT,
   "pls&ty - summer's young (shadient remix) feat. dia frampton & shadient": SUMMERS_YOUNG_SHADIENT,
-  "pls&ty - summer's young (feat. dia frampton & shadient) [shadient remix]": SUMMERS_YOUNG_SHADIENT,
+  "pls&ty - summer's young (feat. dia frampton & shadient) [shadient remix]":
+    SUMMERS_YOUNG_SHADIENT,
   "pls&ty - summer's young - shadient remix": SUMMERS_YOUNG_SHADIENT,
   "ravyn lenae - love me not": {
     duration: 214,
