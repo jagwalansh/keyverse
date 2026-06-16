@@ -170,15 +170,17 @@ function AdSenseLoader() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-  const isPlayRoute = pathname.startsWith("/play/");
+  const adEligibleRoutes = new Set(["/", "/about", "/guide", "/how-to-play", "/recommended"]);
+  const canLoadAds = adEligibleRoutes.has(pathname);
 
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    if (isPlayRoute) {
+    if (!canLoadAds) {
       document
         .querySelectorAll<HTMLElement>(
           [
+            "script[data-keyverse-adsense='true']",
             "ins.adsbygoogle",
             ".google-auto-placed",
             "iframe[id^='google_ads_iframe_']",
@@ -216,7 +218,7 @@ function AdSenseLoader() {
       });
       window.clearTimeout(timer);
     };
-  }, [isPlayRoute]);
+  }, [canLoadAds]);
 
   return null;
 }

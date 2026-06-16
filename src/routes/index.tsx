@@ -600,10 +600,10 @@ function Index() {
                   </p>
                 </div>
                 <Link
-                  to="/how-to-play"
+                  to="/guide"
                   className="text-xs font-mono font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
                 >
-                  Read the guide
+                  Read the full guide
                 </Link>
               </div>
 

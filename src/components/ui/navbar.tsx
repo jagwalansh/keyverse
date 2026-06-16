@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LogIn, UserRound, Moon, Sun, Search } from "lucide-react";
+import { BookOpen, LogIn, UserRound, Moon, Sun, Search } from "lucide-react";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useModal } from "@/lib/modal-context";
@@ -287,6 +287,19 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
             >
               <Search className="h-[18px] w-[18px] text-foreground hover:text-primary transition-colors duration-200" />
             </motion.button>
+            <Link
+              to="/guide"
+              aria-label="Rhythm typing guide"
+              className="relative z-50 rounded-md border border-border/40 bg-card/50 px-3 py-1.5 font-mono text-xl font-medium tracking-tight shadow-sm transition-all hover:bg-card/85"
+            >
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center justify-center"
+              >
+                <BookOpen className="h-[18px] w-[18px] text-foreground transition-colors duration-200 hover:text-primary" />
+              </motion.span>
+            </Link>
             <Link
               to="/leaderboard"
               aria-label="Leaderboard"

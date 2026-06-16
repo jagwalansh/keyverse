@@ -612,10 +612,12 @@ export default {
       }
 
       if (url.pathname === "/sitemap.xml") {
-        const lastmod = "2026-06-05";
+        const lastmod = "2026-06-16";
         const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://keyverse.me/</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/how-to-play</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/guide</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/recommended</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/leaderboard</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/about</loc><lastmod>${lastmod}</lastmod></url>
