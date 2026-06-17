@@ -33,6 +33,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 const DISCORD_USERNAME = "nxxei";
 const DISCORD_USER_ID = "1215184320424050698";
 const X_USERNAME = "jagwalansh";
+const FINISHING_SONG_GRACE_SECONDS = 4;
 
 interface Search {
   artist: string;
@@ -500,6 +501,7 @@ function PlayPage() {
   const songStartedTrackedRef = useRef(false);
   const songCompletedTrackedRef = useRef(false);
   const completedLyricsRef = useRef(false);
+  const lyricsFinishedAtRef = useRef<number | null>(null);
   const inactivityMissesRef = useRef(0);
   const lastVideoCarouselScrollRef = useRef(0);
 
@@ -859,6 +861,18 @@ function PlayPage() {
         if (fillEl) fillEl.style.width = `${pct}%`;
         if (unplayedEl) unplayedEl.style.left = `${pct}%`;
         if (handleEl) handleEl.style.left = `${pct}%`;
+
+        if (lyricsFinished) {
+          if (lyricsFinishedAtRef.current === null) {
+            lyricsFinishedAtRef.current = currentTimeRef.current;
+          }
+
+          const finishingElapsed = currentTimeRef.current - lyricsFinishedAtRef.current;
+          if (timeRemaining <= 1.25 || finishingElapsed >= FINISHING_SONG_GRACE_SECONDS) {
+            endSong();
+            return;
+          }
+        }
       }
 
       if (lines && lines[currentLineIdx] && !lyricsFinished) {
@@ -955,6 +969,7 @@ function PlayPage() {
             }
 
             if (currentLineIdx === lines.length - 1) {
+              lyricsFinishedAtRef.current = currentTimeRef.current;
               setLyricsFinished(true);
               updateWaitingForNext(null);
             } else {
@@ -975,7 +990,15 @@ function PlayPage() {
 
       rafRef.current = requestAnimationFrame(updateTime);
     }
-  }, [playing, lines, currentLineIdx, lyricsFinished, handleLineComplete, updateWaitingForNext]);
+  }, [
+    playing,
+    lines,
+    currentLineIdx,
+    lyricsFinished,
+    handleLineComplete,
+    updateWaitingForNext,
+    endSong,
+  ]);
 
   useEffect(() => {
     if (playing) {
@@ -1122,6 +1145,7 @@ function PlayPage() {
       setLineComplete(true);
       if (currentLineIdx === lines.length - 1) {
         completedLyricsRef.current = true;
+        lyricsFinishedAtRef.current = currentTimeRef.current;
         setLyricsFinished(true);
         updateWaitingForNext(null);
       }
@@ -1296,6 +1320,7 @@ function PlayPage() {
     songStartedTrackedRef.current = false;
     songCompletedTrackedRef.current = false;
     completedLyricsRef.current = false;
+    lyricsFinishedAtRef.current = null;
     setLyricsFinished(false);
     inactivityMissesRef.current = 0;
     lastCompletedLineRef.current = -1;
@@ -1470,11 +1495,11 @@ function PlayPage() {
         ) : !lines || ytLoading ? (
           <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
             {/* Video Skeleton */}
-            <div className="fixed left-1/2 top-[6.25rem] z-10 flex w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2 flex-col gap-4">
+            <div className="fixed left-1/2 top-[6.25rem] z-10 w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2">
               <Link
                 to={from === "/recommended" ? "/recommended" : "/"}
                 search={from !== "/recommended" && q ? { q } : undefined}
-                className="w-fit font-mono text-xs text-muted-foreground hover:text-foreground"
+                className="absolute right-full top-2 mr-4 whitespace-nowrap font-mono text-xs text-muted-foreground hover:text-foreground"
               >
                 ← back
               </Link>
@@ -1513,11 +1538,11 @@ function PlayPage() {
         ) : (
           <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
             {/* YouTube Video / Song Information Card */}
-            <div className="fixed left-1/2 top-[5.25rem] z-10 flex w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2 flex-col gap-4">
+            <div className="fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2">
               <Link
                 to={from === "/recommended" ? "/recommended" : "/"}
                 search={from !== "/recommended" && q ? { q } : undefined}
-                className="w-fit font-mono text-xs text-muted-foreground hover:text-foreground"
+                className="absolute right-full top-2 mr-4 whitespace-nowrap font-mono text-xs text-muted-foreground hover:text-foreground"
               >
                 ← back
               </Link>
@@ -1823,14 +1848,6 @@ function PlayPage() {
                       transition={{ duration: 0.5, ease: "easeOut" }}
                       className="flex flex-col items-center justify-center h-full gap-6 text-center"
                     >
-                      {/* Song Title */}
-                      <div>
-                        <h2 className="text-xl font-bold tracking-tight text-foreground">
-                          {track}
-                        </h2>
-                        <p className="text-sm text-muted-foreground mt-0.5">{artist}</p>
-                      </div>
-
                       {/* Stats Grid — Score, Accuracy, Speed, Max Combo */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-md">
                         <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-sm p-3 flex flex-col items-center justify-center">
@@ -1982,172 +1999,183 @@ function PlayPage() {
                         </div>
                       </div>
 
-                      <div
-                        ref={lyricsRef}
-                        className="absolute inset-x-0 bottom-20 top-16 overflow-hidden px-5"
-                      >
-                        <div className="min-h-[96px]" />
+                      {lyricsFinished ? (
+                        <div className="absolute inset-x-0 bottom-20 top-16 flex items-center justify-center px-5 text-center">
+                          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-4 py-2 font-mono text-xs tracking-widest text-primary shadow-sm backdrop-blur-sm">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Finishing song
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          ref={lyricsRef}
+                          className="absolute inset-x-0 bottom-20 top-16 overflow-hidden px-5"
+                        >
+                          <div className="min-h-[96px]" />
 
-                        {lines.map((line, idx) => {
-                          const isCurrentLine = idx === currentLineIdx;
-                          const isPassed = idx < currentLineIdx;
-                          const isWaitingLine =
-                            Boolean(waitingForNext) && idx === currentLineIdx + 1;
-                          const showTimingCircle =
-                            isWaitingLine || (isCurrentLine && !waitingForNext);
-                          const distanceFromCurrent = Math.abs(idx - currentLineIdx);
-                          const lyricLineStateClass = isCurrentLine
-                            ? "scale-105 opacity-100 blur-0"
-                            : isWaitingLine
-                              ? "scale-100 opacity-75 blur-0"
-                              : distanceFromCurrent === 1
-                                ? "scale-95 opacity-45 blur-[1.5px]"
-                                : "scale-95 opacity-20 blur-[3px]";
-                          const lineText = line.text;
-                          const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
-                          let tokenOffset = 0;
+                          {lines.map((line, idx) => {
+                            const isCurrentLine = idx === currentLineIdx;
+                            const isPassed = idx < currentLineIdx;
+                            const isWaitingLine =
+                              Boolean(waitingForNext) && idx === currentLineIdx + 1;
+                            const showTimingCircle =
+                              isWaitingLine || (isCurrentLine && !waitingForNext);
+                            const distanceFromCurrent = Math.abs(idx - currentLineIdx);
+                            const lyricLineStateClass = isCurrentLine
+                              ? "scale-105 opacity-100 blur-0"
+                              : isWaitingLine
+                                ? "scale-100 opacity-75 blur-0"
+                                : distanceFromCurrent === 1
+                                  ? "scale-95 opacity-45 blur-[1.5px]"
+                                  : "scale-95 opacity-20 blur-[3px]";
+                            const lineText = line.text;
+                            const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
+                            let tokenOffset = 0;
 
-                          return (
-                            <div
-                              key={idx}
-                              data-line-idx={idx}
-                              className={`mb-8 flex items-center gap-6 rounded-xl p-2 transition-all duration-300 hover:bg-muted/10 ${lyricLineStateClass}`}
-                            >
-                              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-                                <div
-                                  className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${
-                                    isCurrentLine || isWaitingLine
-                                      ? "border-primary"
-                                      : "border-muted-foreground/30"
-                                  }`}
-                                />
-                                <div
-                                  className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${
-                                    isPassed
-                                      ? "bg-primary/50"
-                                      : isCurrentLine || isWaitingLine
-                                        ? "bg-primary"
-                                        : "bg-muted-foreground/30"
-                                  }`}
-                                />
-
-                                {showTimingCircle && (
-                                  <>
-                                    <div
-                                      id="approach-circle"
-                                      className="absolute left-1/2 top-1/2 rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                      style={{ display: "none" }}
-                                    />
-                                    <svg
-                                      id="progress-circle"
-                                      className="absolute inset-0 h-full w-full -rotate-90 pointer-events-none"
-                                      viewBox="0 0 48 48"
-                                      style={{ display: "none" }}
-                                    >
-                                      <circle
-                                        cx="24"
-                                        cy="24"
-                                        r="22"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="4"
-                                        className="text-primary"
-                                        strokeDasharray="138.2"
-                                      />
-                                    </svg>
-                                  </>
-                                )}
-                              </div>
-
+                            return (
                               <div
-                                className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${
-                                  isCurrentLine
-                                    ? "text-muted-foreground/55"
-                                    : "text-muted-foreground"
-                                }`}
+                                key={idx}
+                                data-line-idx={idx}
+                                className={`mb-8 flex items-center gap-6 rounded-xl p-2 transition-all duration-300 hover:bg-muted/10 ${lyricLineStateClass}`}
                               >
-                                {isCurrentLine
-                                  ? lineTokens.map((token, tokenIdx) => {
-                                      const tokenStart = tokenOffset;
-                                      tokenOffset += token.length;
+                                <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
+                                  <div
+                                    className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${
+                                      isCurrentLine || isWaitingLine
+                                        ? "border-primary"
+                                        : "border-muted-foreground/30"
+                                    }`}
+                                  />
+                                  <div
+                                    className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${
+                                      isPassed
+                                        ? "bg-primary/50"
+                                        : isCurrentLine || isWaitingLine
+                                          ? "bg-primary"
+                                          : "bg-muted-foreground/30"
+                                    }`}
+                                  />
 
-                                      return (
-                                        <span
-                                          key={tokenIdx}
-                                          className="inline-block whitespace-nowrap"
-                                        >
-                                          {token.split("").map((ch, tokenCharIdx) => {
-                                            const i = tokenStart + tokenCharIdx;
-                                            const result = charResults[i];
-                                            let className = "text-muted-foreground/55";
-                                            let showWrongChar = false;
-                                            let wrongCharText = "!";
+                                  {showTimingCircle && (
+                                    <>
+                                      <div
+                                        id="approach-circle"
+                                        className="absolute left-1/2 top-1/2 rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                        style={{ display: "none" }}
+                                      />
+                                      <svg
+                                        id="progress-circle"
+                                        className="absolute inset-0 h-full w-full -rotate-90 pointer-events-none"
+                                        viewBox="0 0 48 48"
+                                        style={{ display: "none" }}
+                                      >
+                                        <circle
+                                          cx="24"
+                                          cy="24"
+                                          r="22"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="4"
+                                          className="text-primary"
+                                          strokeDasharray="138.2"
+                                        />
+                                      </svg>
+                                    </>
+                                  )}
+                                </div>
 
-                                            if (i === charIdx) {
-                                              className =
-                                                "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
-                                            } else if (result?.status === "hit") {
-                                              className = "text-foreground font-black";
-                                            } else if (result?.status === "miss") {
-                                              className =
-                                                "text-incorrect font-black animate-miss-shake";
-                                              showWrongChar = true;
-                                              wrongCharText = result.char || "!";
-                                            }
+                                <div
+                                  className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${
+                                    isCurrentLine
+                                      ? "text-muted-foreground/55"
+                                      : "text-muted-foreground"
+                                  }`}
+                                >
+                                  {isCurrentLine
+                                    ? lineTokens.map((token, tokenIdx) => {
+                                        const tokenStart = tokenOffset;
+                                        tokenOffset += token.length;
 
-                                            return (
-                                              <span
-                                                key={i}
-                                                className={`inline-block relative ${className} transition-colors duration-100`}
-                                              >
-                                                {/* Floating feedback particles */}
-                                                {particles
-                                                  .filter((p) => p.charIdx === i)
-                                                  .map((p) => {
-                                                    let colorClass = "text-red-500 font-extrabold";
-                                                    if (p.type === "hit") {
-                                                      if (p.text === "+15")
-                                                        colorClass = "text-amber-400 font-bold";
-                                                      else if (p.text === "+20")
-                                                        colorClass = "text-fuchsia-400 font-bold";
-                                                      else if (p.text === "+30")
-                                                        colorClass = "text-pink-400 font-extrabold";
-                                                      else if (p.text === "+50")
-                                                        colorClass =
-                                                          "text-yellow-400 font-extrabold";
-                                                      else colorClass = "text-primary font-bold";
-                                                    }
-                                                    return (
-                                                      <span
-                                                        key={p.id}
-                                                        className={`absolute left-1/2 -translate-x-1/2 font-mono font-black text-xs select-none pointer-events-none z-50 animate-float-up-fade ${colorClass}`}
-                                                      >
-                                                        {p.text}
-                                                      </span>
-                                                    );
-                                                  })}
-                                                {ch === " " ? "\u00A0" : ch}
-                                                {showWrongChar && (
-                                                  <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-xs font-bold leading-none text-incorrect">
-                                                    {wrongCharText === " "
-                                                      ? "\u00A0"
-                                                      : wrongCharText}
-                                                  </span>
-                                                )}
-                                              </span>
-                                            );
-                                          })}
-                                        </span>
-                                      );
-                                    })
-                                  : lineText}
+                                        return (
+                                          <span
+                                            key={tokenIdx}
+                                            className="inline-block whitespace-nowrap"
+                                          >
+                                            {token.split("").map((ch, tokenCharIdx) => {
+                                              const i = tokenStart + tokenCharIdx;
+                                              const result = charResults[i];
+                                              let className = "text-muted-foreground/55";
+                                              let showWrongChar = false;
+                                              let wrongCharText = "!";
+
+                                              if (i === charIdx) {
+                                                className =
+                                                  "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
+                                              } else if (result?.status === "hit") {
+                                                className = "text-foreground font-black";
+                                              } else if (result?.status === "miss") {
+                                                className =
+                                                  "text-incorrect font-black animate-miss-shake";
+                                                showWrongChar = true;
+                                                wrongCharText = result.char || "!";
+                                              }
+
+                                              return (
+                                                <span
+                                                  key={i}
+                                                  className={`inline-block relative ${className} transition-colors duration-100`}
+                                                >
+                                                  {/* Floating feedback particles */}
+                                                  {particles
+                                                    .filter((p) => p.charIdx === i)
+                                                    .map((p) => {
+                                                      let colorClass =
+                                                        "text-red-500 font-extrabold";
+                                                      if (p.type === "hit") {
+                                                        if (p.text === "+15")
+                                                          colorClass = "text-amber-400 font-bold";
+                                                        else if (p.text === "+20")
+                                                          colorClass = "text-fuchsia-400 font-bold";
+                                                        else if (p.text === "+30")
+                                                          colorClass =
+                                                            "text-pink-400 font-extrabold";
+                                                        else if (p.text === "+50")
+                                                          colorClass =
+                                                            "text-yellow-400 font-extrabold";
+                                                        else colorClass = "text-primary font-bold";
+                                                      }
+                                                      return (
+                                                        <span
+                                                          key={p.id}
+                                                          className={`absolute left-1/2 -translate-x-1/2 font-mono font-black text-xs select-none pointer-events-none z-50 animate-float-up-fade ${colorClass}`}
+                                                        >
+                                                          {p.text}
+                                                        </span>
+                                                      );
+                                                    })}
+                                                  {ch === " " ? "\u00A0" : ch}
+                                                  {showWrongChar && (
+                                                    <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-xs font-bold leading-none text-incorrect">
+                                                      {wrongCharText === " "
+                                                        ? "\u00A0"
+                                                        : wrongCharText}
+                                                    </span>
+                                                  )}
+                                                </span>
+                                              );
+                                            })}
+                                          </span>
+                                        );
+                                      })
+                                    : lineText}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
 
-                        <div className="min-h-[96px]" />
-                      </div>
+                          <div className="min-h-[96px]" />
+                        </div>
+                      )}
 
                       <div className="absolute inset-x-8 bottom-5 z-30 flex items-center gap-3">
                         <button
