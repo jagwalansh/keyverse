@@ -735,7 +735,7 @@ function PlayPage() {
     return lines.map((l) => l.text).join("\n");
   }, [lines]);
 
-  // Scroll to current line
+  // Keep the active lyric line centered as the next lyrics rise from below.
   useEffect(() => {
     if (!lyricsRef.current) return;
     const linesNodes = lyricsRef.current.querySelectorAll("[data-line-idx]");
@@ -749,7 +749,7 @@ function PlayPage() {
         behavior: "smooth",
       });
     }
-  }, [currentLineIdx]);
+  }, [currentLineIdx, lines]);
 
   // Reset line state whenever the active line changes
   useEffect(() => {
@@ -1415,10 +1415,12 @@ function PlayPage() {
   const handleVideoCarouselWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (Math.abs(event.deltaY) < 8 || ytCandidates.length < 2) return;
 
+    event.preventDefault();
+    event.stopPropagation();
+
     const candidate = event.deltaY > 0 ? nextVideoCandidate : previousVideoCandidate;
     if (!candidate) return;
 
-    event.preventDefault();
     const now = Date.now();
     if (now - lastVideoCarouselScrollRef.current < 450) return;
 
@@ -1445,39 +1447,7 @@ function PlayPage() {
       <Navbar staticLayout />
 
       {/* Content Overlay */}
-      <div className="relative z-20 w-full max-w-5xl px-6 pt-24 pb-8">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <Link
-            to={from === "/recommended" ? "/recommended" : "/"}
-            search={from !== "/recommended" && q ? { q } : undefined}
-            className="font-mono text-xs text-muted-foreground hover:text-foreground"
-          >
-            ← back
-          </Link>
-
-          <div className="flex items-center gap-6 font-mono text-sm border border-border/40 bg-card/45 backdrop-blur-md shadow-sm rounded-full px-6 py-3">
-            <div>
-              <span className="text-primary font-bold text-base">{score.toLocaleString()}</span>{" "}
-              <span className="text-muted-foreground text-xs">score</span>
-            </div>
-            <div className="w-px h-4 bg-border/40" />
-            <div>
-              <span className="text-primary font-bold text-base">{combo}x</span>{" "}
-              <span className="text-muted-foreground text-xs">combo</span>
-            </div>
-            <div className="w-px h-4 bg-border/40" />
-            <div>
-              <span className="text-primary font-bold text-base">{wpm}</span>{" "}
-              <span className="text-muted-foreground text-xs">wpm</span>
-            </div>
-            <div className="w-px h-4 bg-border/40" />
-            <div>
-              <span className="text-primary font-bold text-base">{accuracy}%</span>{" "}
-              <span className="text-muted-foreground text-xs">acc</span>
-            </div>
-          </div>
-        </div>
-
+      <div className="relative z-20 w-full max-w-5xl px-6 pt-8 pb-6">
         {loadErr ? (
           <div className="mt-10 max-w-lg mx-auto rounded-xl border border-border/40 bg-card/60 backdrop-blur-md p-10 text-center shadow-lg">
             <div className="w-16 h-16 mx-auto bg-muted/30 rounded-full flex items-center justify-center mb-6">
@@ -1498,10 +1468,17 @@ function PlayPage() {
             </Link>
           </div>
         ) : !lines || ytLoading ? (
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
-            {/* Left Column Skeleton */}
-            <div className="flex flex-col gap-4">
-              <div className="relative w-full h-[360px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-card/45 backdrop-blur-md flex flex-col items-center justify-center p-5 text-center">
+          <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
+            {/* Video Skeleton */}
+            <div className="fixed left-1/2 top-[6.25rem] z-10 flex w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2 flex-col gap-4">
+              <Link
+                to={from === "/recommended" ? "/recommended" : "/"}
+                search={from !== "/recommended" && q ? { q } : undefined}
+                className="w-fit font-mono text-xs text-muted-foreground hover:text-foreground"
+              >
+                ← back
+              </Link>
+              <div className="h-[min(42vh,380px)] w-full rounded-xl overflow-hidden border border-border/40 shadow-lg bg-card/45 backdrop-blur-md flex flex-col items-center justify-center p-5 text-center">
                 <Skeleton className="h-48 w-48 rounded-lg shadow-md mb-8" />
                 <div className="relative z-10 mx-auto w-64 bg-background/40 backdrop-blur-md px-6 py-4 rounded-md shadow-lg border border-white/10 flex flex-col gap-2 items-center">
                   <Skeleton className="h-6 w-40" />
@@ -1510,44 +1487,42 @@ function PlayPage() {
               </div>
             </div>
 
-            {/* Right Column Skeleton */}
-            <div className="flex flex-col gap-6 relative">
-              {/* Game Area Skeleton */}
-              <div className="relative h-[360px] rounded-xl bg-card/40 border border-border/40 shadow-inner px-5 py-8 overflow-hidden flex flex-col justify-center">
-                <div className="flex flex-col gap-8">
-                  {/* Past line skeleton */}
-                  <div className="flex items-center gap-6 opacity-30 scale-95">
-                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
-                    <Skeleton className="h-8 w-[50%]" />
-                  </div>
-                  {/* Current line skeleton */}
-                  <div className="flex items-center gap-6 scale-105">
-                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
-                    <Skeleton className="h-8 w-[75%]" />
-                  </div>
-                  {/* Next line skeleton */}
-                  <div className="flex items-center gap-6 opacity-45 scale-95">
-                    <Skeleton className="w-12 h-12 rounded-full flex-shrink-0" />
-                    <Skeleton className="h-8 w-[60%]" />
-                  </div>
+            {/* Game Skeleton */}
+            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-5xl -translate-x-1/2 flex-col gap-4">
+              <div className="relative h-[min(34vh,300px)] rounded-xl bg-card/90 border border-border/35 shadow-[0_24px_70px_rgba(0,0,0,0.16)] px-8 py-6 overflow-hidden dark:bg-card/80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.32)]">
+                <div className="flex justify-center gap-8">
+                  {Array.from({ length: 4 }).map((_, idx) => (
+                    <div key={idx} className="flex flex-col items-center gap-2">
+                      <Skeleton className="h-6 w-12 bg-muted/60" />
+                      <Skeleton className="h-3 w-16 bg-muted/35" />
+                    </div>
+                  ))}
                 </div>
-              </div>
-
-              {/* Controls Skeleton */}
-              <div className="flex items-center gap-3">
-                <Skeleton className="flex-1 h-[42px] rounded-lg" />
-                <Skeleton className="w-28 h-[42px] rounded-lg" />
+                <div className="mt-16 flex flex-col items-center gap-5">
+                  <Skeleton className="h-8 w-[min(620px,80vw)] bg-muted/60" />
+                </div>
+                <div className="absolute inset-x-8 bottom-5 flex items-center gap-3">
+                  <Skeleton className="flex-1 h-[42px] rounded-lg bg-muted/60" />
+                  <Skeleton className="w-28 h-[42px] rounded-lg bg-muted/60" />
+                </div>
               </div>
 
               <Skeleton className="mx-auto h-4 w-72 rounded" />
             </div>
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-6 items-start">
-            {/* Left Column: YouTube Video / Song Information Card */}
-            <div className="flex flex-col gap-4">
+          <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
+            {/* YouTube Video / Song Information Card */}
+            <div className="fixed left-1/2 top-[5.25rem] z-10 flex w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2 flex-col gap-4">
+              <Link
+                to={from === "/recommended" ? "/recommended" : "/"}
+                search={from !== "/recommended" && q ? { q } : undefined}
+                className="w-fit font-mono text-xs text-muted-foreground hover:text-foreground"
+              >
+                ← back
+              </Link>
               <div
-                className="relative h-[360px] w-full"
+                className="relative h-[min(42vh,380px)] w-full"
                 onWheel={handleVideoCarouselWheel}
                 aria-label="YouTube video carousel"
               >
@@ -1561,16 +1536,17 @@ function PlayPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -32, scale: 0.96 }}
                       transition={{ duration: 0.28, ease: "easeOut" }}
-                      className="absolute -top-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-border/40 bg-black shadow-md transition-all hover:-top-9 hover:border-primary/50"
+                      className="absolute -top-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-white/20 bg-white/10 shadow-md shadow-black/20 backdrop-blur-xl transition-all hover:-top-9 hover:border-primary/45 dark:bg-white/5"
                       aria-label={`Use previous video: ${previousVideoCandidate.title || previousVideoCandidate.authorName}`}
                     >
                       <img
                         src={`https://i.ytimg.com/vi/${previousVideoCandidate.videoId}/hqdefault.jpg`}
                         alt=""
                         aria-hidden="true"
-                        className="h-full w-full object-cover opacity-55"
+                        className="h-full w-full scale-110 object-cover opacity-35 blur-md"
                       />
-                      <div className="absolute inset-0 bg-black/35" />
+                      <div className="absolute inset-0 bg-background/35 backdrop-blur-md" />
+                      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent" />
                       <ChevronUp className="absolute left-1/2 top-1 h-4 w-4 -translate-x-1/2 text-white/80" />
                     </motion.button>
                   )}
@@ -1586,16 +1562,17 @@ function PlayPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 32, scale: 0.96 }}
                       transition={{ duration: 0.28, ease: "easeOut" }}
-                      className="absolute -bottom-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-border/40 bg-black shadow-md transition-all hover:-bottom-9 hover:border-primary/50"
+                      className="absolute -bottom-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-white/20 bg-white/10 shadow-md shadow-black/20 backdrop-blur-xl transition-all hover:-bottom-9 hover:border-primary/45 dark:bg-white/5"
                       aria-label={`Use next video: ${nextVideoCandidate.title || nextVideoCandidate.authorName}`}
                     >
                       <img
                         src={`https://i.ytimg.com/vi/${nextVideoCandidate.videoId}/hqdefault.jpg`}
                         alt=""
                         aria-hidden="true"
-                        className="h-full w-full object-cover opacity-55"
+                        className="h-full w-full scale-110 object-cover opacity-35 blur-md"
                       />
-                      <div className="absolute inset-0 bg-black/35" />
+                      <div className="absolute inset-0 bg-background/35 backdrop-blur-md" />
+                      <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent" />
                       <ChevronDown className="absolute bottom-1 left-1/2 h-4 w-4 -translate-x-1/2 text-white/80" />
                     </motion.button>
                   )}
@@ -1626,7 +1603,7 @@ function PlayPage() {
                     animate="center"
                     exit="exit"
                     transition={{ duration: 0.32, ease: "easeInOut" }}
-                    className="absolute inset-0 z-10 w-full h-[360px] rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black flex flex-col items-center justify-center p-5 text-center"
+                    className="absolute inset-0 z-10 w-full h-full rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black flex flex-col items-center justify-center p-5 text-center"
                   >
                     {videoId ? (
                       <>
@@ -1810,8 +1787,8 @@ function PlayPage() {
               </div>
             </div>
 
-            {/* Right Column: Game/Lyrics or Sync Editor */}
-            <div className="flex flex-col gap-6 relative">
+            {/* Game/Lyrics or Sync Editor */}
+            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-5xl -translate-x-1/2 flex-col gap-4">
               {/* Hit Feedback Overlay */}
               {hitFeedback && (
                 <div
@@ -1830,10 +1807,14 @@ function PlayPage() {
 
               {/* Game Area */}
               <div
-                className="relative h-[360px] overflow-hidden rounded-xl border border-border/40 bg-card/40 shadow-inner"
+                className={`relative overflow-hidden rounded-xl border shadow-[0_24px_70px_rgba(0,0,0,0.22)] ${
+                  songEnded
+                    ? "h-[min(34vh,300px)] border-border/40 bg-card/40"
+                    : "h-[min(34vh,300px)] border-border/35 bg-card/90 text-card-foreground dark:bg-card/80"
+                }`}
                 onClick={() => inputRef.current?.focus()}
               >
-                <div ref={lyricsRef} className="h-full cursor-pointer overflow-hidden px-5 py-8">
+                <div className="h-full cursor-pointer overflow-hidden px-8 py-6">
                   {songEnded ? (
                     /* ── Result Card (replaces lyrics when song ends) ── */
                     <motion.div
@@ -1971,155 +1952,236 @@ function PlayPage() {
                     </motion.div>
                   ) : (
                     /* ── Normal Lyrics Display ── */
-                    <div className="relative z-10 transition-opacity duration-300 opacity-100">
-                      <div className="min-h-[200px]" />
-
-                      {lines.map((line, idx) => {
-                        const isCurrentLine = idx === currentLineIdx;
-                        const isPassed = idx < currentLineIdx;
-                        const isWaitingLine = Boolean(waitingForNext) && idx === currentLineIdx + 1;
-                        const showTimingCircle =
-                          isWaitingLine || (isCurrentLine && !waitingForNext);
-                        const distanceFromCurrent = Math.abs(idx - currentLineIdx);
-                        const lyricLineStateClass = isCurrentLine
-                          ? "scale-105 opacity-100 blur-0"
-                          : isWaitingLine
-                            ? "scale-100 opacity-80 blur-0"
-                            : distanceFromCurrent === 1
-                              ? "scale-95 opacity-45 blur-[1.5px]"
-                              : "scale-95 opacity-20 blur-[3px]";
-                        const lineText = line.text;
-                        const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
-                        let tokenOffset = 0;
-
-                        return (
-                          <div
-                            key={idx}
-                            data-line-idx={idx}
-                            className={`flex items-center gap-6 mb-8 transition-all duration-300 p-2 rounded-xl hover:bg-muted/10 ${lyricLineStateClass}`}
-                          >
-                            {/* osu! Style Note Indicator */}
-                            <div className="relative w-12 h-12 flex-shrink-0 flex items-center justify-center">
-                              <div
-                                className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${isCurrentLine || isWaitingLine ? "border-primary" : "border-muted-foreground/30"}`}
-                              />
-                              <div
-                                className={`absolute w-4 h-4 rounded-full transition-colors duration-300 ${isPassed ? "bg-primary/50" : isCurrentLine || isWaitingLine ? "bg-primary" : "bg-muted-foreground/30"}`}
-                              />
-
-                              {showTimingCircle && (
-                                <>
-                                  <div
-                                    id="approach-circle"
-                                    className="absolute rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2 pointer-events-none"
-                                    style={{ display: "none" }}
-                                  />
-                                  <svg
-                                    id="progress-circle"
-                                    className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none"
-                                    viewBox="0 0 48 48"
-                                    style={{ display: "none" }}
-                                  >
-                                    <circle
-                                      cx="24"
-                                      cy="24"
-                                      r="22"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      strokeWidth="4"
-                                      className="text-primary"
-                                      strokeDasharray="138.2"
-                                    />
-                                  </svg>
-                                </>
-                              )}
-                            </div>
-
-                            <div className="text-2xl font-bold leading-relaxed text-left flex-1 relative">
-                              {isCurrentLine
-                                ? lineTokens.map((token, tokenIdx) => {
-                                    const tokenStart = tokenOffset;
-                                    tokenOffset += token.length;
-
-                                    return (
-                                      <span
-                                        key={tokenIdx}
-                                        className="inline-block whitespace-nowrap"
-                                      >
-                                        {token.split("").map((ch, tokenCharIdx) => {
-                                          const i = tokenStart + tokenCharIdx;
-                                          const result = charResults[i];
-                                          let className = "text-muted-foreground/30";
-                                          let showWrongChar = false;
-                                          let wrongCharText = "!";
-
-                                          if (i === charIdx) {
-                                            className =
-                                              "text-foreground animate-cursor-blink underline decoration-2 underline-offset-4 decoration-primary";
-                                          } else if (result?.status === "hit") {
-                                            className = "text-correct font-semibold";
-                                          } else if (result?.status === "miss") {
-                                            className =
-                                              "text-incorrect font-semibold animate-miss-shake";
-                                            showWrongChar = true;
-                                            wrongCharText = result.char || "!";
-                                          }
-
-                                          return (
-                                            <span
-                                              key={i}
-                                              className={`inline-block relative ${className} transition-colors duration-100`}
-                                            >
-                                              {/* Floating feedback particles */}
-                                              {particles
-                                                .filter((p) => p.charIdx === i)
-                                                .map((p) => {
-                                                  let colorClass = "text-red-500 font-extrabold";
-                                                  if (p.type === "hit") {
-                                                    if (p.text === "+15")
-                                                      colorClass = "text-amber-400 font-bold";
-                                                    else if (p.text === "+20")
-                                                      colorClass = "text-fuchsia-400 font-bold";
-                                                    else if (p.text === "+30")
-                                                      colorClass = "text-pink-400 font-extrabold";
-                                                    else if (p.text === "+50")
-                                                      colorClass = "text-yellow-400 font-extrabold";
-                                                    else colorClass = "text-primary font-bold";
-                                                  }
-                                                  return (
-                                                    <span
-                                                      key={p.id}
-                                                      className={`absolute left-1/2 -translate-x-1/2 font-mono font-black text-sm select-none pointer-events-none z-50 animate-float-up-fade ${colorClass}`}
-                                                    >
-                                                      {p.text}
-                                                    </span>
-                                                  );
-                                                })}
-                                              {ch === " " ? "\u00A0" : ch}
-                                              {showWrongChar && (
-                                                <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-sm font-bold leading-none text-incorrect">
-                                                  {wrongCharText === " " ? "\u00A0" : wrongCharText}
-                                                </span>
-                                              )}
-                                            </span>
-                                          );
-                                        })}
-                                      </span>
-                                    );
-                                  })
-                                : lineText}
-                            </div>
+                    <div className="relative z-10 h-full transition-opacity duration-300 opacity-100">
+                      <div className="pt-0 text-center">
+                        <div className="mx-auto grid w-fit grid-cols-3 gap-8 sm:gap-12">
+                          <div className="flex min-w-14 flex-col items-center">
+                            <span className="font-mono text-xl font-black leading-none text-foreground">
+                              {wpm}
+                            </span>
+                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              wpm
+                            </span>
                           </div>
-                        );
-                      })}
+                          <div className="flex min-w-14 flex-col items-center">
+                            <span className="font-mono text-xl font-black leading-none text-foreground">
+                              {accuracy}%
+                            </span>
+                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              acc
+                            </span>
+                          </div>
+                          <div className="flex min-w-14 flex-col items-center">
+                            <span className="font-mono text-xl font-black leading-none text-foreground">
+                              {score.toLocaleString()}
+                            </span>
+                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              score
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                      <div className="min-h-[200px]" />
+                      <div
+                        ref={lyricsRef}
+                        className="absolute inset-x-0 bottom-20 top-16 overflow-hidden px-5"
+                      >
+                        <div className="min-h-[96px]" />
+
+                        {lines.map((line, idx) => {
+                          const isCurrentLine = idx === currentLineIdx;
+                          const isPassed = idx < currentLineIdx;
+                          const isWaitingLine =
+                            Boolean(waitingForNext) && idx === currentLineIdx + 1;
+                          const showTimingCircle =
+                            isWaitingLine || (isCurrentLine && !waitingForNext);
+                          const distanceFromCurrent = Math.abs(idx - currentLineIdx);
+                          const lyricLineStateClass = isCurrentLine
+                            ? "scale-105 opacity-100 blur-0"
+                            : isWaitingLine
+                              ? "scale-100 opacity-75 blur-0"
+                              : distanceFromCurrent === 1
+                                ? "scale-95 opacity-45 blur-[1.5px]"
+                                : "scale-95 opacity-20 blur-[3px]";
+                          const lineText = line.text;
+                          const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
+                          let tokenOffset = 0;
+
+                          return (
+                            <div
+                              key={idx}
+                              data-line-idx={idx}
+                              className={`mb-8 flex items-center gap-6 rounded-xl p-2 transition-all duration-300 hover:bg-muted/10 ${lyricLineStateClass}`}
+                            >
+                              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
+                                <div
+                                  className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${
+                                    isCurrentLine || isWaitingLine
+                                      ? "border-primary"
+                                      : "border-muted-foreground/30"
+                                  }`}
+                                />
+                                <div
+                                  className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${
+                                    isPassed
+                                      ? "bg-primary/50"
+                                      : isCurrentLine || isWaitingLine
+                                        ? "bg-primary"
+                                        : "bg-muted-foreground/30"
+                                  }`}
+                                />
+
+                                {showTimingCircle && (
+                                  <>
+                                    <div
+                                      id="approach-circle"
+                                      className="absolute left-1/2 top-1/2 rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                      style={{ display: "none" }}
+                                    />
+                                    <svg
+                                      id="progress-circle"
+                                      className="absolute inset-0 h-full w-full -rotate-90 pointer-events-none"
+                                      viewBox="0 0 48 48"
+                                      style={{ display: "none" }}
+                                    >
+                                      <circle
+                                        cx="24"
+                                        cy="24"
+                                        r="22"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                        className="text-primary"
+                                        strokeDasharray="138.2"
+                                      />
+                                    </svg>
+                                  </>
+                                )}
+                              </div>
+
+                              <div
+                                className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${
+                                  isCurrentLine
+                                    ? "text-muted-foreground/55"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                {isCurrentLine
+                                  ? lineTokens.map((token, tokenIdx) => {
+                                      const tokenStart = tokenOffset;
+                                      tokenOffset += token.length;
+
+                                      return (
+                                        <span
+                                          key={tokenIdx}
+                                          className="inline-block whitespace-nowrap"
+                                        >
+                                          {token.split("").map((ch, tokenCharIdx) => {
+                                            const i = tokenStart + tokenCharIdx;
+                                            const result = charResults[i];
+                                            let className = "text-muted-foreground/55";
+                                            let showWrongChar = false;
+                                            let wrongCharText = "!";
+
+                                            if (i === charIdx) {
+                                              className =
+                                                "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
+                                            } else if (result?.status === "hit") {
+                                              className = "text-foreground font-black";
+                                            } else if (result?.status === "miss") {
+                                              className =
+                                                "text-incorrect font-black animate-miss-shake";
+                                              showWrongChar = true;
+                                              wrongCharText = result.char || "!";
+                                            }
+
+                                            return (
+                                              <span
+                                                key={i}
+                                                className={`inline-block relative ${className} transition-colors duration-100`}
+                                              >
+                                                {/* Floating feedback particles */}
+                                                {particles
+                                                  .filter((p) => p.charIdx === i)
+                                                  .map((p) => {
+                                                    let colorClass = "text-red-500 font-extrabold";
+                                                    if (p.type === "hit") {
+                                                      if (p.text === "+15")
+                                                        colorClass = "text-amber-400 font-bold";
+                                                      else if (p.text === "+20")
+                                                        colorClass = "text-fuchsia-400 font-bold";
+                                                      else if (p.text === "+30")
+                                                        colorClass = "text-pink-400 font-extrabold";
+                                                      else if (p.text === "+50")
+                                                        colorClass =
+                                                          "text-yellow-400 font-extrabold";
+                                                      else colorClass = "text-primary font-bold";
+                                                    }
+                                                    return (
+                                                      <span
+                                                        key={p.id}
+                                                        className={`absolute left-1/2 -translate-x-1/2 font-mono font-black text-xs select-none pointer-events-none z-50 animate-float-up-fade ${colorClass}`}
+                                                      >
+                                                        {p.text}
+                                                      </span>
+                                                    );
+                                                  })}
+                                                {ch === " " ? "\u00A0" : ch}
+                                                {showWrongChar && (
+                                                  <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-xs font-bold leading-none text-incorrect">
+                                                    {wrongCharText === " "
+                                                      ? "\u00A0"
+                                                      : wrongCharText}
+                                                  </span>
+                                                )}
+                                              </span>
+                                            );
+                                          })}
+                                        </span>
+                                      );
+                                    })
+                                  : lineText}
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        <div className="min-h-[96px]" />
+                      </div>
+
+                      <div className="absolute inset-x-8 bottom-5 z-30 flex items-center gap-3">
+                        <button
+                          onClick={togglePlay}
+                          disabled={!videoId || !audioReady}
+                          className="flex-1 rounded-lg bg-primary py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 animate-pulse-subtle"
+                        >
+                          {playing ? (
+                            <Pause className="w-3.5 h-3.5" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5" />
+                          )}
+                          <span>{playing ? "Pause" : "Play"}</span>
+                          <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
+                            Esc
+                          </kbd>
+                        </button>
+                        <button
+                          onClick={restart}
+                          className="rounded-lg border border-border/40 bg-background/55 backdrop-blur-sm py-2.5 px-5 text-xs font-semibold text-foreground hover:bg-muted/70 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Restart</span>
+                          <kbd className="rounded border border-border/50 bg-background/70 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
+                            Tab
+                          </kbd>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {!songEnded && waitingForNext && (
-                  <div className="pointer-events-none absolute bottom-20 left-1/2 z-30 -translate-x-1/2 whitespace-nowrap rounded-full border border-primary/20 bg-background/85 px-3 py-1 text-sm font-mono tracking-widest text-primary shadow-sm backdrop-blur-sm animate-pulse flex items-center gap-2">
+                  <div className="pointer-events-none absolute right-8 top-1/2 z-30 -translate-y-1/2 whitespace-nowrap rounded-full border border-primary/20 bg-card/85 px-3 py-1 text-xs font-mono tracking-widest text-primary shadow-sm backdrop-blur-sm animate-pulse flex items-center gap-2">
                     <svg className="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24">
                       <circle
                         className="opacity-25"
@@ -2139,31 +2201,6 @@ function PlayPage() {
                     {waitingForNext}s
                   </div>
                 )}
-              </div>
-
-              {/* Standard Playback controls */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={togglePlay}
-                  disabled={!videoId || !audioReady}
-                  className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 animate-pulse-subtle"
-                >
-                  {playing ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                  <span>{playing ? "Pause" : "Play"}</span>
-                  <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-primary-foreground/85">
-                    Esc
-                  </kbd>
-                </button>
-                <button
-                  onClick={restart}
-                  className="rounded-lg border border-border/40 bg-card/45 backdrop-blur-sm py-2.5 px-5 text-sm font-semibold hover:bg-muted transition-colors cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Restart</span>
-                  <kbd className="rounded border border-border/50 bg-background/60 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-muted-foreground">
-                    Tab
-                  </kbd>
-                </button>
               </div>
 
               <button
