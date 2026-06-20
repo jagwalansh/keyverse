@@ -1,19 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import {
-  Activity,
-  ArrowLeft,
-  CalendarDays,
-  LogIn,
-  Music2,
-  Settings2,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, LogIn, Music2, Settings2, Sparkles } from "lucide-react";
 import { AccountModal } from "@/components/ui/account-modal";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/ui/footer";
 import { Navbar } from "@/components/ui/navbar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/lib/auth-context";
 import { useModal } from "@/lib/modal-context";
 import { supabase } from "@/lib/supabase";
@@ -298,7 +291,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const start = new Date(today);
-  start.setDate(start.getDate() - (weeks * 7 - 1));
+  start.setDate(start.getDate() - start.getDay() - (weeks - 1) * 7);
 
   const counts = new Map<string, number>();
   performances.forEach((item) => {
@@ -319,9 +312,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
     <article className="overflow-hidden rounded-xl border border-border/35 bg-card/35 p-5 sm:p-6">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
-            <Activity className="h-4 w-4 text-primary" /> Activity
-          </p>
+          <p className="font-mono text-xs font-bold uppercase tracking-wider">Activity</p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             {activeDays} active days in the last {weeks} weeks
           </p>
@@ -335,17 +326,57 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
         </div>
       </div>
       <div className="overflow-x-auto pb-2">
-        <div
-          className="grid min-w-[620px] grid-flow-col grid-rows-7 gap-1.5"
-          aria-label="Saved round activity over the last 20 weeks"
-        >
-          {days.map(({ date, count }) => (
-            <div
-              key={date.toISOString()}
-              title={`${date.toLocaleDateString()}: ${count} saved ${count === 1 ? "round" : "rounds"}`}
-              className={`aspect-square min-w-3 rounded-[3px] ${activityColor(count)}`}
-            />
-          ))}
+        <div className="flex min-w-[680px] gap-3">
+          <div
+            className="grid w-16 shrink-0 grid-rows-7 gap-1.5 font-mono text-[9px] text-muted-foreground"
+            aria-hidden="true"
+          >
+            {["", "Monday", "", "Wednesday", "", "Friday", ""].map((label, index) => (
+              <span key={`${label}-${index}`} className="flex items-center">
+                {label}
+              </span>
+            ))}
+          </div>
+          <div
+            className="grid flex-1 grid-flow-col grid-rows-7 gap-1.5"
+            aria-label="Saved round activity over the last 20 weeks"
+          >
+            <TooltipProvider delayDuration={100}>
+              {days.map(({ date, count }) => {
+                const dateLabel = date.toLocaleDateString(undefined, {
+                  weekday: "long",
+                  month: "short",
+                  day: "numeric",
+                });
+                const playsLabel = `${count} saved ${count === 1 ? "play" : "plays"}`;
+
+                if (count === 0) {
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      aria-hidden="true"
+                      className={`aspect-square min-w-3 rounded-[3px] ${activityColor(count)}`}
+                    />
+                  );
+                }
+
+                return (
+                  <Tooltip key={date.toISOString()}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`${dateLabel}: ${playsLabel}`}
+                        className={`aspect-square min-w-3 rounded-[3px] outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${activityColor(count)}`}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="font-mono text-[10px]">
+                      {dateLabel} · {playsLabel}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </TooltipProvider>
+          </div>
         </div>
       </div>
       <p className="mt-3 text-center font-mono text-[9px] text-muted-foreground">

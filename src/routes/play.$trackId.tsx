@@ -33,7 +33,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 const DISCORD_USERNAME = "nxxei";
 const DISCORD_USER_ID = "1215184320424050698";
 const X_USERNAME = "jagwalansh";
-const FINISHING_SONG_GRACE_SECONDS = 4;
 
 interface Search {
   artist: string;
@@ -452,6 +451,29 @@ function shouldRemoveFirstLine(
   return false;
 }
 
+function getCurrentWordStart(text: string, index: number) {
+  const safeIndex = Math.min(Math.max(index, 0), text.length);
+  if (safeIndex === 0) return 0;
+
+  // Crossing a separator locks the completed word that came before it.
+  if (/\s/.test(text[safeIndex] ?? "")) return safeIndex;
+
+  let wordStart = safeIndex;
+  while (wordStart > 0 && !/\s/.test(text[wordStart - 1])) {
+    wordStart--;
+  }
+  return wordStart;
+}
+
+function feedbackColor(text: string, type: "hit" | "miss") {
+  if (type === "miss") return "text-red-500";
+  if (text === "+15") return "text-amber-400";
+  if (text === "+20") return "text-fuchsia-400";
+  if (text === "+30") return "text-pink-400";
+  if (text === "+50") return "text-yellow-400";
+  return "text-primary";
+}
+
 function PlayPage() {
   const { artist, track, art, duration, q, from } = Route.useSearch();
   const { user } = useAuth();
@@ -486,11 +508,19 @@ function PlayPage() {
     null,
   );
   const [particles, setParticles] = useState<
-    Array<{ id: number; text: string; type: "hit" | "miss"; charIdx: number; createdAt: number }>
+    Array<{
+      id: number;
+      text: string;
+      type: "hit" | "miss";
+      x: number;
+      y: number;
+      createdAt: number;
+    }>
   >([]);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lyricsRef = useRef<HTMLDivElement | null>(null);
+  const gameAreaRef = useRef<HTMLDivElement | null>(null);
 
   const ytPlayerRef = useRef<YouTubePlayer | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -501,11 +531,12 @@ function PlayPage() {
   const songStartedTrackedRef = useRef(false);
   const songCompletedTrackedRef = useRef(false);
   const completedLyricsRef = useRef(false);
-  const lyricsFinishedAtRef = useRef<number | null>(null);
   const inactivityMissesRef = useRef(0);
   const lastVideoCarouselScrollRef = useRef(0);
 
   const [playing, setPlaying] = useState(false);
+  const [playbackEnded, setPlaybackEnded] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
   const [currentLineIdx, setCurrentLineIdx] = useState(0);
 
@@ -594,6 +625,7 @@ function PlayPage() {
     inactivityMissesRef.current = 0;
     lastCompletedLineRef.current = -1;
     setPlaying(false);
+    setPlaybackEnded(false);
     setAudioReady(false);
     setSongEnded(false);
     setSongEndedAt(null);
@@ -824,6 +856,7 @@ function PlayPage() {
 
   const handleSongPlay = useCallback(() => {
     setPlaying(true);
+    setPlaybackEnded(false);
 
     if (songStartedTrackedRef.current) return;
     songStartedTrackedRef.current = true;
@@ -861,18 +894,6 @@ function PlayPage() {
         if (fillEl) fillEl.style.width = `${pct}%`;
         if (unplayedEl) unplayedEl.style.left = `${pct}%`;
         if (handleEl) handleEl.style.left = `${pct}%`;
-
-        if (lyricsFinished) {
-          if (lyricsFinishedAtRef.current === null) {
-            lyricsFinishedAtRef.current = currentTimeRef.current;
-          }
-
-          const finishingElapsed = currentTimeRef.current - lyricsFinishedAtRef.current;
-          if (timeRemaining <= 1.25 || finishingElapsed >= FINISHING_SONG_GRACE_SECONDS) {
-            endSong();
-            return;
-          }
-        }
       }
 
       if (lines && lines[currentLineIdx] && !lyricsFinished) {
@@ -947,32 +968,31 @@ function PlayPage() {
           if (lastCompletedLineRef.current !== currentLineIdx) {
             lastCompletedLineRef.current = currentLineIdx;
 
-            // Mark remaining characters as miss
-            const currentResults = [...charResultsRef.current];
-            let missedCharacters = 0;
-            for (let i = charIdxRef.current; i < line.text.length; i++) {
-              if (currentResults[i]?.status !== "hit" && currentResults[i]?.status !== "miss") {
-                currentResults[i] = { status: "miss" };
-                missedCharacters++;
-              }
-            }
-            if (missedCharacters > 0) {
-              inactivityMissesRef.current += missedCharacters;
-              charResultsRef.current = currentResults;
-              setCharResults(currentResults);
-              setStats((s) => ({
-                correct: s.correct,
-                total: s.total + missedCharacters,
-                started: s.started || Date.now(),
-              }));
-              setCombo(0);
-            }
-
             if (currentLineIdx === lines.length - 1) {
-              lyricsFinishedAtRef.current = currentTimeRef.current;
-              setLyricsFinished(true);
+              // Never time out the final line; results wait for the user to finish it.
               updateWaitingForNext(null);
             } else {
+              // Mark remaining characters as miss before advancing timed-out lines.
+              const currentResults = [...charResultsRef.current];
+              let missedCharacters = 0;
+              for (let i = charIdxRef.current; i < line.text.length; i++) {
+                if (currentResults[i]?.status !== "hit" && currentResults[i]?.status !== "miss") {
+                  currentResults[i] = { status: "miss" };
+                  missedCharacters++;
+                }
+              }
+              if (missedCharacters > 0) {
+                inactivityMissesRef.current += missedCharacters;
+                charResultsRef.current = currentResults;
+                setCharResults(currentResults);
+                setStats((s) => ({
+                  correct: s.correct,
+                  total: s.total + missedCharacters,
+                  started: s.started || Date.now(),
+                }));
+                setCombo(0);
+              }
+
               handleLineComplete(true);
             }
           }
@@ -990,15 +1010,7 @@ function PlayPage() {
 
       rafRef.current = requestAnimationFrame(updateTime);
     }
-  }, [
-    playing,
-    lines,
-    currentLineIdx,
-    lyricsFinished,
-    handleLineComplete,
-    updateWaitingForNext,
-    endSong,
-  ]);
+  }, [playing, lines, currentLineIdx, lyricsFinished, handleLineComplete, updateWaitingForNext]);
 
   useEffect(() => {
     if (playing) {
@@ -1011,6 +1023,35 @@ function PlayPage() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [playing, updateTime]);
+
+  useEffect(() => {
+    if (
+      !(playing || playbackEnded) ||
+      songEnded ||
+      lyricsFinished ||
+      inputFocused ||
+      syncReportOpen
+    )
+      return;
+
+    const focusTypingInput = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest(
+          "input, textarea, select, button, a, [contenteditable='true'], [role='dialog']",
+        )
+      ) {
+        return;
+      }
+
+      inputRef.current?.focus();
+    };
+
+    document.addEventListener("keydown", focusTypingInput);
+    return () => document.removeEventListener("keydown", focusTypingInput);
+  }, [inputFocused, lyricsFinished, playbackEnded, playing, songEnded, syncReportOpen]);
 
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Escape") {
@@ -1038,7 +1079,7 @@ function PlayPage() {
       return;
     }
 
-    if (!fullText || !lines || !playing || lyricsFinished) return;
+    if (!fullText || !lines || (!playing && !playbackEnded) || lyricsFinished) return;
 
     const line = lines[currentLineIdx];
     if (!line) return;
@@ -1049,15 +1090,11 @@ function PlayPage() {
     if (e.key === "Backspace") {
       e.preventDefault();
       if (charIdx > 0) {
-        let prevIdx = charIdx - 1;
+        const wordStart = getCurrentWordStart(line.text, charIdx);
+        let prevIdx = Math.max(wordStart, charIdx - 1);
 
-        if (e.metaKey) {
-          prevIdx = 0;
-        } else if (e.ctrlKey || e.altKey) {
-          prevIdx = charIdx;
-          while (prevIdx > 0 && /\s/.test(line.text[prevIdx - 1])) prevIdx--;
-          while (prevIdx > 0 && !/\s/.test(line.text[prevIdx - 1])) prevIdx--;
-        }
+        if (e.metaKey || e.ctrlKey || e.altKey) prevIdx = wordStart;
+        if (prevIdx === charIdx) return;
 
         // Reset combo on backspace to prevent score farming
         setCombo(0);
@@ -1086,6 +1123,23 @@ function PlayPage() {
 
     const expectedChar = line.text[charIdx];
     const typedChar = e.key;
+
+    const gameAreaRect = gameAreaRef.current?.getBoundingClientRect();
+    const characterRect = lyricsRef.current
+      ?.querySelector<HTMLElement>(
+        `[data-line-idx="${currentLineIdx}"] [data-char-idx="${charIdx}"]`,
+      )
+      ?.getBoundingClientRect();
+    const feedbackPosition = {
+      x:
+        gameAreaRect && characterRect
+          ? characterRect.left - gameAreaRect.left + characterRect.width / 2
+          : (gameAreaRef.current?.clientWidth ?? 0) / 2,
+      y:
+        gameAreaRect && characterRect
+          ? characterRect.top - gameAreaRect.top
+          : (gameAreaRef.current?.clientHeight ?? 0) / 2,
+    };
 
     const isHit = charsMatch(typedChar, expectedChar);
 
@@ -1119,7 +1173,7 @@ function PlayPage() {
           id: Math.random(),
           text: `+${points}`,
           type: "hit" as const,
-          charIdx,
+          ...feedbackPosition,
           createdAt: Date.now(),
         },
       ]);
@@ -1133,7 +1187,13 @@ function PlayPage() {
 
       setParticles((prev) => [
         ...prev,
-        { id: Math.random(), text: "Miss", type: "miss" as const, charIdx, createdAt: Date.now() },
+        {
+          id: Math.random(),
+          text: "Miss",
+          type: "miss" as const,
+          ...feedbackPosition,
+          createdAt: Date.now(),
+        },
       ]);
     }
 
@@ -1145,9 +1205,9 @@ function PlayPage() {
       setLineComplete(true);
       if (currentLineIdx === lines.length - 1) {
         completedLyricsRef.current = true;
-        lyricsFinishedAtRef.current = currentTimeRef.current;
         setLyricsFinished(true);
         updateWaitingForNext(null);
+        if (playbackEnded) endSong();
       }
     }
   }
@@ -1292,6 +1352,10 @@ function PlayPage() {
   function togglePlay() {
     const player = ytPlayerRef.current;
     if (!player) return;
+    if (playbackEnded) {
+      inputRef.current?.focus();
+      return;
+    }
 
     if (playing) {
       setPlaying(false);
@@ -1320,8 +1384,8 @@ function PlayPage() {
     songStartedTrackedRef.current = false;
     songCompletedTrackedRef.current = false;
     completedLyricsRef.current = false;
-    lyricsFinishedAtRef.current = null;
     setLyricsFinished(false);
+    setPlaybackEnded(false);
     inactivityMissesRef.current = 0;
     lastCompletedLineRef.current = -1;
     setSongEnded(false);
@@ -1648,7 +1712,13 @@ function PlayPage() {
                             onPlay={handleSongPlay}
                             onPause={() => setPlaying(false)}
                             onEnd={() => {
-                              endSong();
+                              setPlaying(false);
+                              setPlaybackEnded(true);
+                              if (completedLyricsRef.current) {
+                                endSong();
+                              } else {
+                                inputRef.current?.focus();
+                              }
                             }}
                             onError={(e) => {
                               console.error("YouTube Error", e);
@@ -1832,6 +1902,7 @@ function PlayPage() {
 
               {/* Game Area */}
               <div
+                ref={gameAreaRef}
                 className={`relative overflow-hidden rounded-xl border shadow-[0_24px_70px_rgba(0,0,0,0.22)] ${
                   songEnded
                     ? "h-[min(34vh,300px)] border-border/40 bg-card/40"
@@ -1971,13 +2042,21 @@ function PlayPage() {
                     /* ── Normal Lyrics Display ── */
                     <div className="relative z-10 h-full transition-opacity duration-300 opacity-100">
                       <div className="pt-0 text-center">
-                        <div className="mx-auto grid w-fit grid-cols-3 gap-8 sm:gap-12">
+                        <div className="mx-auto grid w-fit grid-cols-4 gap-5 sm:gap-10">
                           <div className="flex min-w-14 flex-col items-center">
                             <span className="font-mono text-xl font-black leading-none text-foreground">
                               {wpm}
                             </span>
                             <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
                               wpm
+                            </span>
+                          </div>
+                          <div className="flex min-w-14 flex-col items-center">
+                            <span className="font-mono text-xl font-black leading-none text-primary">
+                              {combo}x
+                            </span>
+                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              combo
                             </span>
                           </div>
                           <div className="flex min-w-14 flex-col items-center">
@@ -2123,36 +2202,9 @@ function PlayPage() {
                                               return (
                                                 <span
                                                   key={i}
+                                                  data-char-idx={i}
                                                   className={`inline-block relative ${className} transition-colors duration-100`}
                                                 >
-                                                  {/* Floating feedback particles */}
-                                                  {particles
-                                                    .filter((p) => p.charIdx === i)
-                                                    .map((p) => {
-                                                      let colorClass =
-                                                        "text-red-500 font-extrabold";
-                                                      if (p.type === "hit") {
-                                                        if (p.text === "+15")
-                                                          colorClass = "text-amber-400 font-bold";
-                                                        else if (p.text === "+20")
-                                                          colorClass = "text-fuchsia-400 font-bold";
-                                                        else if (p.text === "+30")
-                                                          colorClass =
-                                                            "text-pink-400 font-extrabold";
-                                                        else if (p.text === "+50")
-                                                          colorClass =
-                                                            "text-yellow-400 font-extrabold";
-                                                        else colorClass = "text-primary font-bold";
-                                                      }
-                                                      return (
-                                                        <span
-                                                          key={p.id}
-                                                          className={`absolute left-1/2 -translate-x-1/2 font-mono font-black text-xs select-none pointer-events-none z-50 animate-float-up-fade ${colorClass}`}
-                                                        >
-                                                          {p.text}
-                                                        </span>
-                                                      );
-                                                    })}
                                                   {ch === " " ? "\u00A0" : ch}
                                                   {showWrongChar && (
                                                     <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-xs font-bold leading-none text-incorrect">
@@ -2183,12 +2235,16 @@ function PlayPage() {
                           disabled={!videoId || !audioReady}
                           className="flex-1 rounded-lg bg-primary py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 animate-pulse-subtle"
                         >
-                          {playing ? (
+                          {playbackEnded ? (
+                            <Music className="w-3.5 h-3.5" />
+                          ) : playing ? (
                             <Pause className="w-3.5 h-3.5" />
                           ) : (
                             <Play className="w-3.5 h-3.5" />
                           )}
-                          <span>{playing ? "Pause" : "Play"}</span>
+                          <span>
+                            {playbackEnded ? "Finish last line" : playing ? "Pause" : "Play"}
+                          </span>
                           <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
                             Esc
                           </kbd>
@@ -2207,6 +2263,40 @@ function PlayPage() {
                     </div>
                   )}
                 </div>
+
+                <div className="pointer-events-none absolute inset-0 z-50" aria-hidden="true">
+                  {particles.map((particle) => (
+                    <span
+                      key={particle.id}
+                      className={`absolute whitespace-nowrap font-mono text-xs font-black animate-float-up-fade ${feedbackColor(particle.text, particle.type)}`}
+                      style={{ left: particle.x, top: particle.y }}
+                    >
+                      {particle.text}
+                    </span>
+                  ))}
+                </div>
+
+                <AnimatePresence>
+                  {!songEnded &&
+                    (playing || playbackEnded) &&
+                    !lyricsFinished &&
+                    !inputFocused &&
+                    !syncReportOpen && (
+                      <motion.button
+                        type="button"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18 }}
+                        onClick={() => inputRef.current?.focus()}
+                        className="absolute inset-0 z-40 flex cursor-text items-center justify-center bg-card/80 px-6 text-center backdrop-blur-sm"
+                      >
+                        <span className="font-mono text-sm font-semibold tracking-wide text-foreground sm:text-base">
+                          Click here or press any key to focus
+                        </span>
+                      </motion.button>
+                    )}
+                </AnimatePresence>
 
                 {!songEnded && waitingForNext && (
                   <div className="pointer-events-none absolute right-8 top-1/2 z-30 -translate-y-1/2 whitespace-nowrap rounded-full border border-primary/20 bg-card/85 px-3 py-1 text-xs font-mono tracking-widest text-primary shadow-sm backdrop-blur-sm animate-pulse flex items-center gap-2">
@@ -2246,6 +2336,8 @@ function PlayPage() {
                 value=""
                 onChange={() => {}}
                 onKeyDown={onKeyDown}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
                 onPaste={(e) => e.preventDefault()}
                 autoFocus
                 spellCheck={false}
