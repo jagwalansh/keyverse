@@ -11,9 +11,6 @@ type ViewTransitionDocument = Document & {
   };
 };
 
-const AccountModal = lazy(() =>
-  import("@/components/ui/account-modal").then((module) => ({ default: module.AccountModal })),
-);
 const AuthModal = lazy(() =>
   import("@/components/ui/auth-modal").then((module) => ({ default: module.AuthModal })),
 );
@@ -64,7 +61,6 @@ type NavbarProps = {
 export function Navbar({ staticLayout = false }: NavbarProps) {
   const { modalOpen, setModalOpen } = useModal();
   const { user, loading: authLoading } = useAuth();
-  const [accountOpen, setAccountOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   // Keep the first client render identical to SSR, then measure after hydration.
@@ -331,18 +327,23 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
               {authLoading ? (
                 <div className="h-8 w-24 rounded-md bg-muted/40 animate-pulse border border-border/40" />
               ) : user ? (
-                <motion.button
+                <motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setAccountOpen(true)}
-                  className="border border-input bg-background shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center relative z-50"
-                  aria-label="Open account"
+                  className="relative z-50"
                 >
-                  <UserRound
-                    className="h-4 w-4 text-foreground hover:text-primary transition-colors duration-200"
-                    aria-hidden="true"
-                  />
-                </motion.button>
+                  <Link
+                    to="/profile"
+                    className="border border-input bg-background shadow-sm hover:bg-accent transition-all rounded-md px-3 h-8 cursor-pointer flex items-center justify-center"
+                    aria-label="View profile and stats"
+                    title="Profile"
+                  >
+                    <UserRound
+                      className="h-4 w-4 text-foreground hover:text-primary transition-colors duration-200"
+                      aria-hidden="true"
+                    />
+                  </Link>
+                </motion.div>
               ) : (
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -364,7 +365,6 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
       <Suspense fallback={null}>
         {modalOpen && <AuthModal />}
         {searchOpen && <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />}
-        {accountOpen && <AccountModal open={accountOpen} onOpenChange={setAccountOpen} />}
       </Suspense>
     </>
   );

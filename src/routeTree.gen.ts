@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as RecommendedRouteImport } from './routes/recommended'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HowToPlayRouteImport } from './routes/how-to-play'
@@ -33,6 +34,11 @@ const SupportRoute = SupportRouteImport.update({
 const RecommendedRoute = RecommendedRouteImport.update({
   id: '/recommended',
   path: '/recommended',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
+  '/profile': typeof ProfileRoute
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/how-to-play'
     | '/leaderboard'
     | '/privacy'
+    | '/profile'
     | '/recommended'
     | '/support'
     | '/terms'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/how-to-play'
     | '/leaderboard'
     | '/privacy'
+    | '/profile'
     | '/recommended'
     | '/support'
     | '/terms'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/how-to-play'
     | '/leaderboard'
     | '/privacy'
+    | '/profile'
     | '/recommended'
     | '/support'
     | '/terms'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   HowToPlayRoute: typeof HowToPlayRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProfileRoute: typeof ProfileRoute
   RecommendedRoute: typeof RecommendedRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/recommended'
       fullPath: '/recommended'
       preLoaderRoute: typeof RecommendedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowToPlayRoute: HowToPlayRoute,
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
+  ProfileRoute: ProfileRoute,
   RecommendedRoute: RecommendedRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
