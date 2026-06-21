@@ -157,6 +157,69 @@ html {
   }
 }
 
+/* Opposing dotted rails that frame the homepage content. */
+.running-dot-rails::before,
+.running-dot-rails::after {
+  content: "";
+  position: fixed;
+  z-index: 10;
+  top: 5rem;
+  bottom: 0;
+  width: 4px;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--color-primary) 48%, transparent) 1.15px,
+    transparent 1.35px
+  );
+  background-position: center 0;
+  background-size: 4px 12px;
+  background-repeat: repeat-y;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent
+  );
+  animation: dots-run-down 1.4s linear infinite;
+}
+
+.running-dot-rails::before {
+  left: max(1.5rem, calc(50% - 36rem));
+}
+
+.running-dot-rails::after {
+  right: max(1.5rem, calc(50% - 36rem));
+  animation-name: dots-run-up;
+}
+
+@keyframes dots-run-down {
+  to {
+    background-position: center 12px;
+  }
+}
+
+@keyframes dots-run-up {
+  to {
+    background-position: center -12px;
+  }
+}
+
+@media (max-width: 639px) {
+  .running-dot-rails::before,
+  .running-dot-rails::after {
+    display: none;
+  }
+}
+
 .liquid-glass-navbar {
   border: 1px solid oklch(1 0 0 / 38%);
   border-top: 0;
@@ -182,6 +245,52 @@ html {
 
 .dark .liquid-glass-navbar.is-scrolled {
   border-top-color: oklch(1 0 0 / 18%);
+}
+
+/* Vertical side navigation pill — mirrors the liquid-glass-navbar aesthetic */
+.side-nav-pill {
+  border-radius: 1.25rem;
+  border: 1px solid oklch(1 0 0 / 38%);
+  background-color: oklch(0.97 0.025 100 / 92%);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 48%),
+    0 8px 24px oklch(0.3 0.03 120 / 12%);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+}
+
+.dark .side-nav-pill {
+  border-color: oklch(1 0 0 / 18%);
+  background-color: oklch(0.2 0.025 260 / 90%);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 16%),
+    0 8px 24px oklch(0 0 0 / 32%);
+}
+
+.side-nav-item {
+  position: relative;
+}
+
+.side-nav-item:hover {
+  background-color: oklch(0.84 0.045 120 / 45%);
+}
+
+.dark .side-nav-item:hover {
+  background-color: oklch(1 0 0 / 5%);
+}
+
+.side-nav-item--active {
+  background-color: oklch(0.84 0.045 120 / 55%);
+}
+
+.dark .side-nav-item--active {
+  background-color: oklch(1 0 0 / 8%);
+}
+
+@media (max-width: 1023px) {
+  .side-nav-pill {
+    display: none;
+  }
 }
 
 @media (max-width: 639px) {

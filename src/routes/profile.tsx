@@ -176,7 +176,7 @@ function ProfilePage() {
   return (
     <main className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+      <div className="mx-auto w-full max-w-4xl flex-1 px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
         <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Link
             to="/"
@@ -290,6 +290,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
   const weeks = 20;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const todayKey = getDayKey(today);
   const start = new Date(today);
   start.setDate(start.getDate() - start.getDay() - (weeks - 1) * 7);
 
@@ -309,7 +310,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
   const activeDays = days.filter((day) => day.count > 0).length;
 
   return (
-    <article className="overflow-hidden rounded-xl border border-border/35 bg-card/35 p-5 sm:p-6">
+    <article className="flex flex-col h-full justify-between overflow-hidden rounded-xl border border-border/35 bg-card/35 p-5 sm:p-6">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-wider">Activity</p>
@@ -325,10 +326,10 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
           More
         </div>
       </div>
-      <div className="overflow-x-auto pb-2">
-        <div className="flex min-w-[680px] gap-3">
+      <div className="overflow-x-auto pb-2 my-auto">
+        <div className="flex w-fit gap-3 mx-auto">
           <div
-            className="grid w-16 shrink-0 grid-rows-7 gap-1.5 font-mono text-[9px] text-muted-foreground"
+            className="grid w-16 shrink-0 grid-rows-7 gap-1.5 sm:gap-2 lg:gap-2.5 font-mono text-[9px] text-muted-foreground"
             aria-hidden="true"
           >
             {["", "Monday", "", "Wednesday", "", "Friday", ""].map((label, index) => (
@@ -338,7 +339,8 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
             ))}
           </div>
           <div
-            className="grid flex-1 grid-flow-col grid-rows-7 gap-1.5"
+            className="grid grid-flow-col grid-rows-7 gap-1.5 sm:gap-2 lg:gap-2.5"
+            style={{ gridTemplateColumns: "repeat(20, auto)" }}
             aria-label="Saved round activity over the last 20 weeks"
           >
             <TooltipProvider delayDuration={100}>
@@ -350,12 +352,22 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
                 });
                 const playsLabel = `${count} saved ${count === 1 ? "play" : "plays"}`;
 
+                if (getDayKey(date) > todayKey) {
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      aria-hidden="true"
+                      className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 lg:w-[24px] lg:h-[24px] rounded-[3.5px] opacity-0 pointer-events-none"
+                    />
+                  );
+                }
+
                 if (count === 0) {
                   return (
                     <div
                       key={date.toISOString()}
                       aria-hidden="true"
-                      className={`aspect-square min-w-3 rounded-[3px] ${activityColor(count)}`}
+                      className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 lg:w-[24px] lg:h-[24px] rounded-[3.5px] ${activityColor(count)}`}
                     />
                   );
                 }
@@ -366,7 +378,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
                       <button
                         type="button"
                         aria-label={`${dateLabel}: ${playsLabel}`}
-                        className={`aspect-square min-w-3 rounded-[3px] outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${activityColor(count)}`}
+                        className={`w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 lg:w-[24px] lg:h-[24px] rounded-[3.5px] outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${activityColor(count)}`}
                       />
                     </TooltipTrigger>
                     <TooltipContent side="top" className="font-mono text-[10px]">
@@ -465,7 +477,7 @@ function ProfileSkeleton() {
   return (
     <main className="flex min-h-screen flex-col bg-background">
       <Navbar />
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-20">
+      <div className="mx-auto w-full max-w-4xl flex-1 px-6 py-20">
         <div className="h-48 animate-pulse rounded-2xl bg-muted/40" />
         <StatsLoading />
       </div>

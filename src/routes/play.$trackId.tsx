@@ -474,6 +474,19 @@ function feedbackColor(text: string, type: "hit" | "miss") {
   return "text-primary";
 }
 
+function simplifyLyrics(lines: LyricLine[]) {
+  return lines
+    .map((line) => ({
+      ...line,
+      text: line.text
+        .toLocaleLowerCase()
+        .replace(/[^\p{L}\p{N}\s]/gu, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    }))
+    .filter((line) => line.text.length > 0);
+}
+
 function PlayPage() {
   const { artist, track, art, duration, q, from } = Route.useSearch();
   const { user } = useAuth();
@@ -487,6 +500,7 @@ function PlayPage() {
   const [scoreSaveSkippedReason, setScoreSaveSkippedReason] = useState<string | null>(null);
 
   const [lines, setLines] = useState<LyricLine[] | null>(null);
+  const [easyLyrics, setEasyLyrics] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   const [charIdx, setCharIdx] = useState(0);
@@ -521,6 +535,7 @@ function PlayPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const lyricsRef = useRef<HTMLDivElement | null>(null);
   const gameAreaRef = useRef<HTMLDivElement | null>(null);
+  const originalLinesRef = useRef<LyricLine[] | null>(null);
 
   const ytPlayerRef = useRef<YouTubePlayer | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -533,6 +548,7 @@ function PlayPage() {
   const completedLyricsRef = useRef(false);
   const inactivityMissesRef = useRef(0);
   const lastVideoCarouselScrollRef = useRef(0);
+  const shouldRemainPausedRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
   const [playbackEnded, setPlaybackEnded] = useState(false);
@@ -638,6 +654,8 @@ function PlayPage() {
     setScoreSaveSkippedReason(null);
     setLoadErr(null);
     setLines(null);
+    setEasyLyrics(false);
+    originalLinesRef.current = null;
     setLyricsFinished(false);
     setVideoId(null);
     setYtAuthor(null);
@@ -707,6 +725,7 @@ function PlayPage() {
         }
 
         if (lyricsRes && lyricsRes.lines.length > 0) {
+          originalLinesRef.current = lyricsRes.lines;
           setLines(lyricsRes.lines);
           return;
         }
@@ -855,6 +874,12 @@ function PlayPage() {
   }, []);
 
   const handleSongPlay = useCallback(() => {
+    if (shouldRemainPausedRef.current) {
+      ytPlayerRef.current?.pauseVideo();
+      setPlaying(false);
+      return;
+    }
+
     setPlaying(true);
     setPlaybackEnded(false);
 
@@ -1235,6 +1260,14 @@ function PlayPage() {
   // Save score when song ends
   useEffect(() => {
     if (songEnded && user && !scoreSaved && !savingScore && !saveAttempted) {
+      if (easyLyrics) {
+        setSaveAttempted(true);
+        setScoreSaveSkippedReason(
+          "Easy Lyrics rounds are for practice and are not eligible for the leaderboard.",
+        );
+        return;
+      }
+
       if (score <= 0 || stats.total <= 0) {
         setSaveAttempted(true);
         setScoreSaveSkippedReason("No score was saved because no lyrics were typed.");
@@ -1302,6 +1335,7 @@ function PlayPage() {
     scoreSaved,
     savingScore,
     saveAttempted,
+    easyLyrics,
     trackId,
     artist,
     track,
@@ -1361,6 +1395,7 @@ function PlayPage() {
       setPlaying(false);
       player.pauseVideo();
     } else {
+      shouldRemainPausedRef.current = false;
       setPlaying(true);
       player.playVideo();
     }
@@ -1368,6 +1403,7 @@ function PlayPage() {
   }
 
   function restart() {
+    shouldRemainPausedRef.current = true;
     resetActiveLineState();
     setCurrentLineIdx(0);
     setStats({ correct: 0, total: 0, started: 0 });
@@ -1418,12 +1454,22 @@ function PlayPage() {
     if (handleEl) handleEl.style.left = "0%";
 
     if (player) {
-      player.pauseVideo();
       player.seekTo(0, true);
+      player.pauseVideo();
       setPlaying(false);
     }
 
     inputRef.current?.focus();
+  }
+
+  function toggleEasyLyrics() {
+    const originalLines = originalLinesRef.current;
+    if (!originalLines) return;
+
+    const nextEasyMode = !easyLyrics;
+    setEasyLyrics(nextEasyMode);
+    setLines(nextEasyMode ? simplifyLyrics(originalLines) : originalLines);
+    restart();
   }
 
   const showSpotifyPlayer = !!(videoId && playing && !songEnded && !showBlurOverlay);
@@ -1536,7 +1582,7 @@ function PlayPage() {
       <Navbar staticLayout />
 
       {/* Content Overlay */}
-      <div className="relative z-20 w-full max-w-5xl px-6 pt-8 pb-6">
+      <div className="relative z-20 w-full max-w-3xl px-6 pt-8 pb-6">
         {loadErr ? (
           <div className="mt-10 max-w-lg mx-auto rounded-xl border border-border/40 bg-card/60 backdrop-blur-md p-10 text-center shadow-lg">
             <div className="w-16 h-16 mx-auto bg-muted/30 rounded-full flex items-center justify-center mb-6">
@@ -1559,7 +1605,7 @@ function PlayPage() {
         ) : !lines || ytLoading ? (
           <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
             {/* Video Skeleton */}
-            <div className="fixed left-1/2 top-[6.25rem] z-10 w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2">
+            <div className="fixed left-1/2 top-[6.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2">
               <Link
                 to={from === "/recommended" ? "/recommended" : "/"}
                 search={from !== "/recommended" && q ? { q } : undefined}
@@ -1577,7 +1623,7 @@ function PlayPage() {
             </div>
 
             {/* Game Skeleton */}
-            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-5xl -translate-x-1/2 flex-col gap-4">
+            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2 flex-col gap-4">
               <div className="relative h-[min(34vh,300px)] rounded-xl bg-card/90 border border-border/35 shadow-[0_24px_70px_rgba(0,0,0,0.16)] px-8 py-6 overflow-hidden dark:bg-card/80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.32)]">
                 <div className="flex justify-center gap-8">
                   {Array.from({ length: 4 }).map((_, idx) => (
@@ -1602,7 +1648,7 @@ function PlayPage() {
         ) : (
           <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
             {/* YouTube Video / Song Information Card */}
-            <div className="fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-3xl -translate-x-1/2">
+            <div className="fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2">
               <Link
                 to={from === "/recommended" ? "/recommended" : "/"}
                 search={from !== "/recommended" && q ? { q } : undefined}
@@ -1883,7 +1929,7 @@ function PlayPage() {
             </div>
 
             {/* Game/Lyrics or Sync Editor */}
-            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-5xl -translate-x-1/2 flex-col gap-4">
+            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2 flex-col gap-4">
               {/* Hit Feedback Overlay */}
               {hitFeedback && (
                 <div
@@ -2184,8 +2230,6 @@ function PlayPage() {
                                               const i = tokenStart + tokenCharIdx;
                                               const result = charResults[i];
                                               let className = "text-muted-foreground/55";
-                                              let showWrongChar = false;
-                                              let wrongCharText = "!";
 
                                               if (i === charIdx) {
                                                 className =
@@ -2194,9 +2238,7 @@ function PlayPage() {
                                                 className = "text-foreground font-black";
                                               } else if (result?.status === "miss") {
                                                 className =
-                                                  "text-incorrect font-black animate-miss-shake";
-                                                showWrongChar = true;
-                                                wrongCharText = result.char || "!";
+                                                  "text-incorrect font-black animate-miss-shake underline decoration-2 underline-offset-8 decoration-incorrect";
                                               }
 
                                               return (
@@ -2206,13 +2248,6 @@ function PlayPage() {
                                                   className={`inline-block relative ${className} transition-colors duration-100`}
                                                 >
                                                   {ch === " " ? "\u00A0" : ch}
-                                                  {showWrongChar && (
-                                                    <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 font-mono text-xs font-bold leading-none text-incorrect">
-                                                      {wrongCharText === " "
-                                                        ? "\u00A0"
-                                                        : wrongCharText}
-                                                    </span>
-                                                  )}
                                                 </span>
                                               );
                                             })}
@@ -2258,6 +2293,18 @@ function PlayPage() {
                           <kbd className="rounded border border-border/50 bg-background/70 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
                             Tab
                           </kbd>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={toggleEasyLyrics}
+                          aria-pressed={easyLyrics}
+                          className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer ${
+                            easyLyrics
+                              ? "border-primary bg-primary/15 text-primary"
+                              : "border-border/40 bg-background/55 text-foreground hover:bg-muted/70"
+                          }`}
+                        >
+                          Easy {easyLyrics ? "on" : "off"}
                         </button>
                       </div>
                     </div>

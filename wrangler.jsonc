@@ -6,16 +6,16 @@
   "main": "dist/server/server.js",
   "kv_namespaces": [
     {
-      "binding": "API_CACHE"
-    }
+      "binding": "API_CACHE",
+    },
   ],
   "assets": {
-    "directory": "dist/client"
+    "directory": "dist/client",
   },
   "send_email": [
     {
       "name": "CONTACT_EMAIL",
-      "destination_address": "anshjagwal02@gmail.com"
-    }
-  ]
+      "destination_address": "anshjagwal02@gmail.com",
+    },
+  ],
 }

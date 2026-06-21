@@ -21,6 +21,7 @@ import "@fontsource/jetbrains-mono/500.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ModalProvider } from "@/lib/modal-context";
 import { Toaster } from "@/components/ui/sonner";
+import { SideNav } from "@/components/ui/side-nav";
 
 function NotFoundComponent() {
   return (
@@ -158,7 +159,10 @@ function RootComponent() {
       <AdSenseLoader />
       <AuthProvider>
         <ModalProvider>
-          <Outlet />
+          <SideNav />
+          <div className="running-dot-rails">
+            <Outlet />
+          </div>
           <Toaster />
         </ModalProvider>
       </AuthProvider>

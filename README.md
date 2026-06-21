@@ -4,20 +4,20 @@ Keyverse is a web-based rhythm typing game where users type song lyrics in sync 
 
 ## Features
 
-* Search and play songs
-* Type lyrics synchronized with the music
-* Real-time WPM and accuracy tracking
-* Global leaderboard
-* Clean and responsive UI
-* User authentication and profiles
+- Search and play songs
+- Type lyrics synchronized with the music
+- Real-time WPM and accuracy tracking
+- Global leaderboard
+- Clean and responsive UI
+- User authentication and profiles
 
 ## Tech Stack
 
-* React
-* TypeScript
-* Tailwind CSS
-* Supabase
-* Cloudflare
+- React
+- TypeScript
+- Tailwind CSS
+- Supabase
+- Cloudflare
 
 ## Getting Started
 

@@ -8,8 +8,8 @@ Keyverse is a rhythm-based typing game where users type song lyrics in sync with
 
 ### Prerequisites
 
-* Node.js 18+
-* npm
+- Node.js 18+
+- npm
 
 ### Installation
 
@@ -43,27 +43,27 @@ npm run dev
 
 If you find a bug or encounter a problem, please open an issue and include:
 
-* A clear description of the problem
-* Steps to reproduce
-* Expected behavior
-* Screenshots (if applicable)
+- A clear description of the problem
+- Steps to reproduce
+- Expected behavior
+- Screenshots (if applicable)
 
 ## Suggesting Features
 
 Feature requests are welcome. Please open an issue describing:
 
-* The problem you're trying to solve
-* Your proposed solution
-* Any additional context
+- The problem you're trying to solve
+- Your proposed solution
+- Any additional context
 
 ## Pull Requests
 
 Before submitting a pull request:
 
-* Ensure your code builds successfully
-* Follow the existing code style
-* Keep pull requests focused on a single change
-* Provide a clear description of what was changed
+- Ensure your code builds successfully
+- Follow the existing code style
+- Keep pull requests focused on a single change
+- Provide a clear description of what was changed
 
 ## Security Issues
 
