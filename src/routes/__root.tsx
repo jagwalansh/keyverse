@@ -22,6 +22,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ModalProvider } from "@/lib/modal-context";
 import { Toaster } from "@/components/ui/sonner";
 import { SideNav } from "@/components/ui/side-nav";
+import { AmbientLyrics } from "@/components/ui/ambient-lyrics";
 
 function NotFoundComponent() {
   return (
@@ -161,6 +162,7 @@ function RootComponent() {
         <ModalProvider>
           <SideNav />
           <div className="running-dot-rails">
+            <AmbientLyrics />
             <Outlet />
           </div>
           <Toaster />

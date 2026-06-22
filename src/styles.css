@@ -112,38 +112,39 @@ html {
 }
 
 .dark {
-  --background: oklch(0.275 0.019 258.4);
-  --foreground: oklch(0.949 0 3.3);
-  --card: oklch(0.362 0.015 259.8);
-  --card-foreground: oklch(0.949 0 3.3);
-  --popover: oklch(0.362 0.015 259.8);
-  --popover-foreground: oklch(0.949 0 3.3);
-  --primary: oklch(0.68 0.116 200.7);
-  --primary-foreground: oklch(0.275 0.019 258.4);
-  --secondary: oklch(0.362 0.015 259.8);
-  --secondary-foreground: oklch(0.949 0 3.3);
-  --muted: oklch(0.362 0.015 259.8);
-  --muted-foreground: oklch(0.7 0.015 259.8);
-  --accent: oklch(0.362 0.015 259.8);
-  --accent-foreground: oklch(0.68 0.116 200.7);
+  /* Dark palette: orange, near-black, cool white, and neutral gray. */
+  --background: oklch(0.182 0 0);
+  --foreground: oklch(0.959 0.004 220);
+  --card: oklch(0.235 0 0);
+  --card-foreground: oklch(0.959 0.004 220);
+  --popover: oklch(0.235 0 0);
+  --popover-foreground: oklch(0.959 0.004 220);
+  --primary: oklch(0.721 0.187 47);
+  --primary-foreground: oklch(0.182 0 0);
+  --secondary: oklch(0.29 0 0);
+  --secondary-foreground: oklch(0.959 0.004 220);
+  --muted: oklch(0.29 0 0);
+  --muted-foreground: oklch(0.63 0.002 106);
+  --accent: oklch(0.29 0 0);
+  --accent-foreground: oklch(0.721 0.187 47);
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(0.48 0.015 259.8 / 60%);
-  --input: oklch(0.362 0.015 259.8 / 60%);
-  --ring: oklch(0.68 0.116 200.7);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.362 0.015 259.8);
-  --sidebar-foreground: oklch(0.949 0 3.3);
-  --sidebar-primary: oklch(0.68 0.116 200.7);
-  --sidebar-primary-foreground: oklch(0.275 0.019 258.4);
-  --sidebar-accent: oklch(0.362 0.015 259.8);
-  --sidebar-accent-foreground: oklch(0.949 0 3.3);
-  --sidebar-border: oklch(0.362 0.015 259.8 / 40%);
-  --sidebar-ring: oklch(0.68 0.116 200.7);
+  --border: oklch(0.63 0.002 106 / 42%);
+  --input: oklch(0.63 0.002 106 / 32%);
+  --ring: oklch(0.721 0.187 47);
+  --chart-1: oklch(0.721 0.187 47);
+  --chart-2: oklch(0.63 0.002 106);
+  --chart-3: oklch(0.959 0.004 220);
+  --chart-4: oklch(0.61 0.14 47);
+  --chart-5: oklch(0.42 0 0);
+  --sidebar: oklch(0.235 0 0);
+  --sidebar-foreground: oklch(0.959 0.004 220);
+  --sidebar-primary: oklch(0.721 0.187 47);
+  --sidebar-primary-foreground: oklch(0.182 0 0);
+  --sidebar-accent: oklch(0.29 0 0);
+  --sidebar-accent-foreground: oklch(0.959 0.004 220);
+  --sidebar-border: oklch(0.63 0.002 106 / 32%);
+  --sidebar-ring: oklch(0.721 0.187 47);
 }
 
 @layer base {
@@ -220,6 +221,95 @@ html {
   }
 }
 
+/* Continuously moving lyric fragments in the space outside the dotted rails. */
+.ambient-lyrics {
+  display: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ambient-lyrics-lane {
+  position: fixed;
+  z-index: 1;
+  top: 5rem;
+  bottom: 0;
+  width: max(0px, calc(50vw - 37.5rem));
+  overflow: hidden;
+  color: var(--color-primary);
+  opacity: 0.2;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+}
+
+.ambient-lyrics-lane--left {
+  left: 0;
+}
+
+.ambient-lyrics-lane--right {
+  right: 0;
+}
+
+.ambient-lyrics-track {
+  display: flex;
+  flex-direction: column;
+  animation: ambient-lyrics-up 52s linear infinite;
+  will-change: transform;
+}
+
+.ambient-lyrics-lane--right .ambient-lyrics-track {
+  animation-name: ambient-lyrics-down;
+  animation-duration: 58s;
+}
+
+.ambient-lyrics-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2.75rem;
+  padding: 2rem 1.25rem;
+}
+
+.ambient-lyric-line {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  text-wrap: balance;
+}
+
+.ambient-lyric-line:nth-child(3n + 1) {
+  text-align: right;
+}
+
+.ambient-lyric-line:nth-child(3n + 2) {
+  padding-inline: 0.75rem;
+  text-align: center;
+}
+
+@keyframes ambient-lyrics-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes ambient-lyrics-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 1400px) {
+  .ambient-lyrics {
+    display: block;
+  }
+}
+
 .liquid-glass-navbar {
   border: 1px solid oklch(1 0 0 / 38%);
   border-top: 0;
@@ -236,35 +326,43 @@ html {
 }
 
 .dark .liquid-glass-navbar {
-  border-color: oklch(1 0 0 / 18%);
-  background-color: oklch(0.2 0.025 260 / 92%);
+  border-color: oklch(0.63 0.002 106 / 28%);
+  background-color: oklch(0.182 0 0 / 92%);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 16%),
     0 12px 30px oklch(0 0 0 / 34%);
 }
 
 .dark .liquid-glass-navbar.is-scrolled {
-  border-top-color: oklch(1 0 0 / 18%);
+  border-top-color: oklch(0.63 0.002 106 / 28%);
 }
 
-/* Vertical side navigation pill — mirrors the liquid-glass-navbar aesthetic */
+/* Vertical side navigation using the same glass recipe as the navbar. */
 .side-nav-pill {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   border-radius: 1.25rem;
   border: 1px solid oklch(1 0 0 / 38%);
-  background-color: oklch(0.97 0.025 100 / 92%);
+  background-color: oklch(0.97 0.025 100 / 94%);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 48%),
-    0 8px 24px oklch(0.3 0.03 120 / 12%);
+    0 10px 28px oklch(0.3 0.03 120 / 14%);
   backdrop-filter: blur(16px) saturate(120%);
   -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
+.side-nav-pill > * {
+  position: relative;
+  z-index: 1;
+}
+
 .dark .side-nav-pill {
-  border-color: oklch(1 0 0 / 18%);
-  background-color: oklch(0.2 0.025 260 / 90%);
+  border-color: oklch(0.63 0.002 106 / 28%);
+  background-color: oklch(0.182 0 0 / 92%);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 16%),
-    0 8px 24px oklch(0 0 0 / 32%);
+    0 12px 30px oklch(0 0 0 / 34%);
 }
 
 .side-nav-item {
@@ -276,7 +374,7 @@ html {
 }
 
 .dark .side-nav-item:hover {
-  background-color: oklch(1 0 0 / 5%);
+  background-color: oklch(0.63 0.002 106 / 12%);
 }
 
 .side-nav-item--active {
@@ -284,7 +382,7 @@ html {
 }
 
 .dark .side-nav-item--active {
-  background-color: oklch(1 0 0 / 8%);
+  background-color: oklch(0.721 0.187 47 / 14%);
 }
 
 @media (max-width: 1023px) {
@@ -306,7 +404,7 @@ html {
   }
 
   .dark .liquid-glass-navbar {
-    background-color: oklch(0.2 0.025 260 / 98%);
+    background-color: oklch(0.182 0 0 / 98%);
   }
 }
 
@@ -344,9 +442,9 @@ html {
 .dark .animate-shimmer {
   background: linear-gradient(
     90deg,
-    oklch(0.3 0.015 259.8) 25%,
-    oklch(0.35 0.015 259.8) 50%,
-    oklch(0.3 0.015 259.8) 75%
+    oklch(0.235 0 0) 25%,
+    oklch(0.29 0 0) 50%,
+    oklch(0.235 0 0) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
