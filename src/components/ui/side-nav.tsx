@@ -1,13 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { BookOpen, Moon, Newspaper, Sun, Search, LifeBuoy } from "lucide-react";
 import { lazy, Suspense, useState, useEffect, type ReactNode } from "react";
-import { motion } from "motion/react";
-
-type ViewTransitionDocument = Document & {
-  startViewTransition: (callback: () => void) => {
-    ready: Promise<void>;
-  };
-};
 
 const SearchModal = lazy(() =>
   import("@/components/ui/search-modal").then((m) => ({ default: m.SearchModal })),
@@ -45,22 +38,18 @@ function NavLink({ to, label, icon, exact = false, isActive }: NavLinkProps) {
       to={to}
       aria-label={label}
       title={label}
-      className={`side-nav-item group relative flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl transition-all duration-200 ${active ? "side-nav-item--active" : ""}`}
+      className={`side-nav-item group relative flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl ${active ? "side-nav-item--active" : ""}`}
     >
       {active && (
-        <motion.span
-          layoutId="side-nav-active-bar"
-          className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary"
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
+        <span className="absolute left-0.5 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary" />
       )}
       <span
-        className={`transition-colors duration-200 ${active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+        className={active ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}
       >
         {icon}
       </span>
       <span
-        className={`font-mono text-[8px] uppercase tracking-widest font-bold transition-colors duration-200 ${active ? "text-primary" : "text-muted-foreground/70 group-hover:text-muted-foreground"}`}
+        className={`font-mono text-[8px] uppercase tracking-widest font-bold ${active ? "text-primary" : "text-muted-foreground/70 group-hover:text-muted-foreground"}`}
       >
         {label}
       </span>
@@ -85,47 +74,12 @@ export function SideNav() {
     return () => window.removeEventListener(THEME_CHANGE_EVENT, syncTheme);
   }, []);
 
-  const toggleTheme = (event: React.MouseEvent) => {
+  const toggleTheme = () => {
     const isDarkNow = document.documentElement.classList.contains("dark");
-    const applyTheme = () => {
-      if (isDarkNow) {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-        setIsDark(false);
-      } else {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-        setIsDark(true);
-      }
-      window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
-    };
-
-    if (!("startViewTransition" in document)) {
-      applyTheme();
-      return;
-    }
-
-    const x = event.clientX;
-    const y = event.clientY;
-    const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-
-    if (isDarkNow) document.documentElement.classList.add("dark-to-light-transition");
-
-    const transition = (document as ViewTransitionDocument).startViewTransition(applyTheme);
-    transition.ready.then(() => {
-      const clipPath = [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`];
-      document.documentElement.animate(
-        { clipPath: isDarkNow ? [...clipPath].reverse() : clipPath },
-        {
-          duration: 400,
-          easing: "ease-in-out",
-          pseudoElement: isDarkNow ? "::view-transition-old(root)" : "::view-transition-new(root)",
-        },
-      );
-    });
-    transition.finished.then(() => {
-      document.documentElement.classList.remove("dark-to-light-transition");
-    });
+    document.documentElement.classList.toggle("dark", !isDarkNow);
+    localStorage.setItem("theme", isDarkNow ? "light" : "dark");
+    setIsDark(!isDarkNow);
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   };
 
   const isActive = (to: string, exact = false) =>
@@ -133,10 +87,7 @@ export function SideNav() {
 
   return (
     <>
-      <motion.aside
-        initial={{ opacity: 0, x: -16 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.45, ease: "easeOut", delay: 0.1 }}
+      <aside
         className="fixed left-4 top-1/2 -translate-y-1/2 z-40 hidden lg:flex flex-col"
         aria-label="Side navigation"
       >
@@ -170,40 +121,36 @@ export function SideNav() {
           <NavLink to="/leaderboard" label="Ranks" icon={<LeaderboardIcon />} isActive={isActive} />
 
           {/* Search — button, not a link */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={() => setSearchOpen(true)}
-            className="side-nav-item group flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl transition-all duration-200 cursor-pointer"
+            className="side-nav-item group flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl cursor-pointer"
             title="Search Songs"
             aria-label="Search songs"
           >
-            <span className="text-muted-foreground transition-colors duration-200 group-hover:text-foreground">
+            <span className="text-muted-foreground group-hover:text-foreground">
               <Search size={15} />
             </span>
-            <span className="font-mono text-[8px] uppercase tracking-widest font-bold text-muted-foreground/70 group-hover:text-muted-foreground transition-colors duration-200">
+            <span className="font-mono text-[8px] uppercase tracking-widest font-bold text-muted-foreground/70 group-hover:text-muted-foreground">
               Search
             </span>
-          </motion.button>
+          </button>
 
           {/* Theme toggle */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             onClick={toggleTheme}
-            className="side-nav-item group flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl transition-all duration-200 cursor-pointer"
+            className="side-nav-item group flex flex-col items-center gap-1.5 w-11 py-3 rounded-2xl cursor-pointer"
             title="Toggle theme"
             aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
           >
-            <span className="text-muted-foreground transition-colors duration-200 group-hover:text-foreground">
+            <span className="text-muted-foreground group-hover:text-foreground">
               {isDark ? <Sun size={15} /> : <Moon size={15} />}
             </span>
-            <span className="font-mono text-[8px] uppercase tracking-widest font-bold text-muted-foreground/70 group-hover:text-muted-foreground transition-colors duration-200">
+            <span className="font-mono text-[8px] uppercase tracking-widest font-bold text-muted-foreground/70 group-hover:text-muted-foreground">
               Theme
             </span>
-          </motion.button>
+          </button>
         </div>
-      </motion.aside>
+      </aside>
 
       <Suspense fallback={null}>
         {searchOpen && <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />}

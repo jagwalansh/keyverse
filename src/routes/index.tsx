@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, Fragment, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/ui/navbar";
 import { searchTracks, type TrackSearchResult } from "@/lib/lrc";
 import { motion } from "motion/react";
@@ -24,109 +24,6 @@ export const Route = createFileRoute("/")({
   }),
   component: Index,
 });
-
-const floatingElements = [
-  {
-    char: "♪",
-    size: "text-3xl font-sans text-primary/45",
-    top: "8%",
-    left: "10%",
-    delay: 0,
-    duration: 6,
-  },
-  {
-    char: "♫",
-    size: "text-2xl font-sans text-primary/45",
-    top: "72%",
-    left: "8%",
-    delay: 1.5,
-    duration: 7,
-  },
-  {
-    char: "♩",
-    size: "text-xl font-sans text-primary/45",
-    top: "5%",
-    left: "85%",
-    delay: 0.5,
-    duration: 5.5,
-  },
-  {
-    char: "♬",
-    size: "text-3xl font-sans text-primary/45",
-    top: "78%",
-    left: "88%",
-    delay: 2,
-    duration: 8,
-  },
-  {
-    char: "A",
-    size: "text-[11px] font-mono border border-primary/20 px-2 py-0.5 rounded bg-primary/5 shadow-md text-primary/55",
-    top: "25%",
-    left: "90%",
-    delay: 1,
-    duration: 6.5,
-  },
-  {
-    char: "S",
-    size: "text-[11px] font-mono border border-primary/20 px-2 py-0.5 rounded bg-primary/5 shadow-md text-primary/55",
-    top: "45%",
-    left: "5%",
-    delay: 2.5,
-    duration: 7.2,
-  },
-  {
-    char: "space",
-    size: "text-[9px] uppercase tracking-wider font-mono border border-primary/20 px-3.5 py-0.5 rounded bg-primary/5 shadow-md text-primary/55",
-    top: "85%",
-    left: "48%",
-    delay: 0.8,
-    duration: 8.5,
-  },
-  {
-    char: "♩",
-    size: "text-lg font-sans text-primary/45",
-    top: "35%",
-    left: "94%",
-    delay: 3,
-    duration: 6.8,
-  },
-];
-
-const titleContainerVariants = {
-  hidden: { opacity: 1 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.02,
-    },
-  },
-};
-
-const titleCharVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring" as const,
-      stiffness: 260,
-      damping: 14,
-    },
-  },
-};
-
-const paragraphVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: 0.6,
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
-  },
-};
 
 const RECOMMENDED_SONGS_HOMEPAGE = [
   {
@@ -284,31 +181,12 @@ function Index() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [disableAnimation, setDisableAnimation] = useState(hasVisitedHome);
-  const [showAmbientMotion, setShowAmbientMotion] = useState(false);
+  const [disableAnimation] = useState(hasVisitedHome);
   const navigate = useNavigate();
 
   useEffect(() => {
     hasVisitedHome = true;
     trackEvent("homepage_viewed");
-  }, []);
-
-  useEffect(() => {
-    const mobileQuery = window.matchMedia("(max-width: 639px)");
-    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updateAmbientMotion = () => {
-      setShowAmbientMotion(!mobileQuery.matches && !reducedMotionQuery.matches);
-    };
-
-    updateAmbientMotion();
-    mobileQuery.addEventListener("change", updateAmbientMotion);
-    reducedMotionQuery.addEventListener("change", updateAmbientMotion);
-
-    return () => {
-      mobileQuery.removeEventListener("change", updateAmbientMotion);
-      reducedMotionQuery.removeEventListener("change", updateAmbientMotion);
-    };
   }, []);
 
   useEffect(() => {
@@ -344,39 +222,6 @@ function Index() {
       <Navbar />
 
       <div className="w-full max-w-4xl mx-auto px-6 py-28 flex flex-col items-center text-center justify-start flex-1 gap-10 relative">
-        {showAmbientMotion && (
-          <div
-            className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none"
-            aria-hidden="true"
-          >
-            {floatingElements.map((el, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{
-                  opacity: [0.35, 0.65, 0.35],
-                  y: [0, -14, 0],
-                  x: [0, 6, 0],
-                  rotate: [0, 10, -10, 0],
-                }}
-                transition={{
-                  duration: el.duration,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: el.delay,
-                }}
-                className={`absolute ${el.size}`}
-                style={{
-                  top: el.top,
-                  left: el.left,
-                }}
-              >
-                {el.char}
-              </motion.div>
-            ))}
-          </div>
-        )}
-
         {/* Hero Header Section */}
         <div className="w-full max-w-2xl flex flex-col items-center text-center relative z-20">
           <header className="mb-2">
