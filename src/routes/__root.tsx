@@ -222,8 +222,8 @@ function RootComponent() {
           <div
             className={
               showAmbientDecoration
-                ? "running-dot-rails running-dot-rails--ambient"
-                : "running-dot-rails"
+                ? "homepage-rhythm-rails homepage-rhythm-rails--ambient"
+                : undefined
             }
           >
             <Outlet />
