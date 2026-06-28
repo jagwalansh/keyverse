@@ -108,6 +108,7 @@ type SyncReportModalProps = {
   expectedDuration?: number;
   videoDuration?: number;
   playbackTime: number;
+  defaultName?: string;
   defaultEmail?: string;
 };
 
@@ -122,6 +123,7 @@ function SyncReportModal({
   expectedDuration,
   videoDuration,
   playbackTime,
+  defaultName,
   defaultEmail,
 }: SyncReportModalProps) {
   const [email, setEmail] = useState(defaultEmail ?? "");
@@ -170,7 +172,7 @@ function SyncReportModal({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          name: "KeyVerse player",
+          name: defaultName?.trim() || "KeyVerse player",
           email: email.trim(),
           subject: `Out-of-sync report: ${track} by ${artist}`,
           message: reportMessage,
@@ -484,7 +486,7 @@ function simplifyLyrics(lines: LyricLine[]) {
 
 function PlayPage() {
   const { artist, track, art, duration, q, from } = Route.useSearch();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { setModalOpen } = useModal();
   const { trackId } = Route.useParams();
 
@@ -2407,6 +2409,7 @@ function PlayPage() {
         expectedDuration={duration}
         videoDuration={syncReportVideoDuration}
         playbackTime={syncReportPlaybackTime}
+        defaultName={profile?.username || user?.email?.split("@")[0]}
         defaultEmail={user?.email}
       />
     </main>
