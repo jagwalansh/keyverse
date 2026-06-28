@@ -158,6 +158,69 @@ html {
   }
 }
 
+/* Global CSS-only dotted rails. No text or decorative DOM nodes are rendered. */
+.running-dot-rails::before,
+.running-dot-rails::after {
+  content: "";
+  position: fixed;
+  z-index: 10;
+  top: 5rem;
+  bottom: 0;
+  width: 4px;
+  pointer-events: none;
+  background-image: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--color-primary) 48%, transparent) 1.15px,
+    transparent 1.35px
+  );
+  background-position: center 0;
+  background-size: 4px 12px;
+  background-repeat: repeat-y;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 4rem,
+    black calc(100% - 4rem),
+    transparent
+  );
+  animation: dots-run-down 1.4s linear infinite;
+}
+
+.running-dot-rails::before {
+  left: max(1.5rem, calc(50% - 36rem));
+}
+
+.running-dot-rails::after {
+  right: max(1.5rem, calc(50% - 36rem));
+  animation-name: dots-run-up;
+}
+
+@keyframes dots-run-down {
+  to {
+    background-position: center 12px;
+  }
+}
+
+@keyframes dots-run-up {
+  to {
+    background-position: center -12px;
+  }
+}
+
+@media (max-width: 639px) {
+  .running-dot-rails::before,
+  .running-dot-rails::after {
+    display: none;
+  }
+}
+
 .cookie-noscript {
   position: fixed;
   inset-inline: 1rem;

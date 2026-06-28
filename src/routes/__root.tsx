@@ -215,7 +215,9 @@ function RootComponent() {
       <AuthProvider>
         <ModalProvider>
           <SideNav />
-          <Outlet />
+          <div className="running-dot-rails">
+            <Outlet />
+          </div>
           <ConsentBanner />
           <Toaster />
         </ModalProvider>
