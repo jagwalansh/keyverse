@@ -221,99 +221,82 @@ html {
   }
 }
 
-/* Continuously moving decorative rhythm marks outside the dotted rails. */
-.ambient-lyrics {
-  display: none;
-  pointer-events: none;
-  user-select: none;
+.cookie-noscript {
+  position: fixed;
+  inset-inline: 1rem;
+  bottom: 1rem;
+  z-index: 60;
+  margin-inline: auto;
+  max-width: 48rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  background: var(--color-background);
+  padding: 1rem;
+  color: var(--color-muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
-.ambient-lyrics-lane {
+/* CSS-only moving rhythm marks. No lyric text or repeated decorative nodes are rendered. */
+.running-dot-rails--ambient::before,
+.running-dot-rails--ambient::after {
+  display: none;
+  content: "";
   position: fixed;
   z-index: 1;
   top: 5rem;
   bottom: 0;
   width: max(0px, calc(50vw - 37.5rem));
-  overflow: hidden;
-  color: var(--color-primary);
+  pointer-events: none;
   opacity: 0.2;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2.25rem,
+      color-mix(in oklch, var(--color-primary) 60%, transparent) 2.25rem,
+      color-mix(in oklch, var(--color-primary) 60%, transparent) 2.625rem,
+      transparent 2.625rem,
+      transparent 4.5rem
+    );
+  background-size: 100% 18rem;
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
   mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+  animation: ambient-lyrics-up 52s linear infinite;
+  will-change: background-position;
 }
 
-.ambient-lyrics-lane--left {
+.running-dot-rails--ambient::before {
   left: 0;
 }
 
-.ambient-lyrics-lane--right {
+.running-dot-rails--ambient::after {
   right: 0;
-}
-
-.ambient-lyrics-track {
-  display: flex;
-  flex-direction: column;
-  animation: ambient-lyrics-up 52s linear infinite;
-  will-change: transform;
-}
-
-.ambient-lyrics-lane--right .ambient-lyrics-track {
   animation-name: ambient-lyrics-down;
   animation-duration: 58s;
 }
 
-.ambient-lyrics-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2.85rem;
-  padding: 2rem 1.25rem;
-}
-
-.ambient-lyric-line {
-  display: block;
-  height: 0.375rem;
-  width: 58%;
-  border-radius: 999px;
-  background:
-    linear-gradient(90deg, currentColor 0 48%, transparent 48% 62%, currentColor 62% 100%);
-  opacity: 0.55;
-}
-
-.ambient-lyric-line:nth-child(3n + 1) {
-  align-self: flex-end;
-  width: 72%;
-}
-
-.ambient-lyric-line:nth-child(3n + 2) {
-  align-self: center;
-  width: 44%;
-  opacity: 0.35;
-}
-
-.ambient-lyric-line:nth-child(4n) {
-  width: 30%;
-  opacity: 0.7;
-}
-
 @keyframes ambient-lyrics-up {
   from {
-    transform: translateY(0);
+    background-position-y: 0;
   }
   to {
-    transform: translateY(-50%);
+    background-position-y: -18rem;
   }
 }
 
 @keyframes ambient-lyrics-down {
   from {
-    transform: translateY(-50%);
+    background-position-y: -18rem;
   }
   to {
-    transform: translateY(0);
+    background-position-y: 0;
   }
 }
 
 @media (min-width: 1400px) {
-  .ambient-lyrics {
+  .running-dot-rails--ambient::before,
+  .running-dot-rails--ambient::after {
     display: block;
   }
 }

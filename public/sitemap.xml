@@ -21,6 +21,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://keyverse.me/articles/best-songs-for-typing-speed</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/how-rhythm-typing-works</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/choosing-songs-for-better-practice</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://keyverse.me/recommended</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

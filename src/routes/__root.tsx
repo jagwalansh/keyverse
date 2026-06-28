@@ -22,7 +22,6 @@ import { AuthProvider } from "@/lib/auth-context";
 import { ModalProvider } from "@/lib/modal-context";
 import { Toaster } from "@/components/ui/sonner";
 import { SideNav } from "@/components/ui/side-nav";
-import { AmbientLyrics } from "@/components/ui/ambient-lyrics";
 import { Button } from "@/components/ui/button";
 
 const CONSENT_STORAGE_KEY = "keyverse_cookie_consent";
@@ -194,6 +193,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <noscript>
+          <div className="cookie-noscript">
+            KeyVerse uses cookies and similar technologies for analytics, embedded media, and ads.
+            Read the Privacy Policy at /privacy.
+          </div>
+        </noscript>
         {children}
         <Scripts />
       </body>
@@ -203,6 +208,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
+  const showAmbientDecoration = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -210,8 +219,13 @@ function RootComponent() {
       <AuthProvider>
         <ModalProvider>
           <SideNav />
-          <div className="running-dot-rails">
-            <AmbientLyrics />
+          <div
+            className={
+              showAmbientDecoration
+                ? "running-dot-rails running-dot-rails--ambient"
+                : "running-dot-rails"
+            }
+          >
             <Outlet />
           </div>
           <ConsentBanner />
@@ -230,6 +244,9 @@ function AdSenseLoader() {
     "/",
     "/about",
     "/articles",
+    "/articles/best-songs-for-typing-speed",
+    "/articles/choosing-songs-for-better-practice",
+    "/articles/how-rhythm-typing-works",
     "/guide",
     "/how-to-play",
     "/recommended",

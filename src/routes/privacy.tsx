@@ -146,7 +146,7 @@ function Privacy() {
               , and about how Google uses information from sites and apps that use Google services
               at{" "}
               <a
-                href="https://policies.google.com/technologies/partner-sites"
+                href="https://www.google.com/policies/privacy/partners/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2"

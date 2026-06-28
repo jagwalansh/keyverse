@@ -21,6 +21,9 @@ import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTrackIdRouteImport } from './routes/play.$trackId'
+import { Route as ArticlesHowRhythmTypingWorksRouteImport } from './routes/articles.how-rhythm-typing-works'
+import { Route as ArticlesChoosingSongsForBetterPracticeRouteImport } from './routes/articles.choosing-songs-for-better-practice'
+import { Route as ArticlesBestSongsForTypingSpeedRouteImport } from './routes/articles.best-songs-for-typing-speed'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -82,11 +85,29 @@ const PlayTrackIdRoute = PlayTrackIdRouteImport.update({
   path: '/play/$trackId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArticlesHowRhythmTypingWorksRoute =
+  ArticlesHowRhythmTypingWorksRouteImport.update({
+    id: '/how-rhythm-typing-works',
+    path: '/how-rhythm-typing-works',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesChoosingSongsForBetterPracticeRoute =
+  ArticlesChoosingSongsForBetterPracticeRouteImport.update({
+    id: '/choosing-songs-for-better-practice',
+    path: '/choosing-songs-for-better-practice',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesBestSongsForTypingSpeedRoute =
+  ArticlesBestSongsForTypingSpeedRouteImport.update({
+    id: '/best-songs-for-typing-speed',
+    path: '/best-songs-for-typing-speed',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
+  '/articles': typeof ArticlesRouteWithChildren
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -95,12 +116,15 @@ export interface FileRoutesByFullPath {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
+  '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
+  '/articles': typeof ArticlesRouteWithChildren
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -109,13 +133,16 @@ export interface FileRoutesByTo {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
+  '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/articles': typeof ArticlesRoute
+  '/articles': typeof ArticlesRouteWithChildren
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -124,6 +151,9 @@ export interface FileRoutesById {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
+  '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +170,9 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/best-songs-for-typing-speed'
+    | '/articles/choosing-songs-for-better-practice'
+    | '/articles/how-rhythm-typing-works'
     | '/play/$trackId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +187,9 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/best-songs-for-typing-speed'
+    | '/articles/choosing-songs-for-better-practice'
+    | '/articles/how-rhythm-typing-works'
     | '/play/$trackId'
   id:
     | '__root__'
@@ -168,13 +204,16 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/best-songs-for-typing-speed'
+    | '/articles/choosing-songs-for-better-practice'
+    | '/articles/how-rhythm-typing-works'
     | '/play/$trackId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ArticlesRoute: typeof ArticlesRoute
+  ArticlesRoute: typeof ArticlesRouteWithChildren
   GuideRoute: typeof GuideRoute
   HowToPlayRoute: typeof HowToPlayRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -272,13 +311,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayTrackIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/articles/how-rhythm-typing-works': {
+      id: '/articles/how-rhythm-typing-works'
+      path: '/how-rhythm-typing-works'
+      fullPath: '/articles/how-rhythm-typing-works'
+      preLoaderRoute: typeof ArticlesHowRhythmTypingWorksRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/choosing-songs-for-better-practice': {
+      id: '/articles/choosing-songs-for-better-practice'
+      path: '/choosing-songs-for-better-practice'
+      fullPath: '/articles/choosing-songs-for-better-practice'
+      preLoaderRoute: typeof ArticlesChoosingSongsForBetterPracticeRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/best-songs-for-typing-speed': {
+      id: '/articles/best-songs-for-typing-speed'
+      path: '/best-songs-for-typing-speed'
+      fullPath: '/articles/best-songs-for-typing-speed'
+      preLoaderRoute: typeof ArticlesBestSongsForTypingSpeedRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
   }
 }
+
+interface ArticlesRouteChildren {
+  ArticlesBestSongsForTypingSpeedRoute: typeof ArticlesBestSongsForTypingSpeedRoute
+  ArticlesChoosingSongsForBetterPracticeRoute: typeof ArticlesChoosingSongsForBetterPracticeRoute
+  ArticlesHowRhythmTypingWorksRoute: typeof ArticlesHowRhythmTypingWorksRoute
+}
+
+const ArticlesRouteChildren: ArticlesRouteChildren = {
+  ArticlesBestSongsForTypingSpeedRoute: ArticlesBestSongsForTypingSpeedRoute,
+  ArticlesChoosingSongsForBetterPracticeRoute:
+    ArticlesChoosingSongsForBetterPracticeRoute,
+  ArticlesHowRhythmTypingWorksRoute: ArticlesHowRhythmTypingWorksRoute,
+}
+
+const ArticlesRouteWithChildren = ArticlesRoute._addFileChildren(
+  ArticlesRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ArticlesRoute: ArticlesRoute,
+  ArticlesRoute: ArticlesRouteWithChildren,
   GuideRoute: GuideRoute,
   HowToPlayRoute: HowToPlayRoute,
   LeaderboardRoute: LeaderboardRoute,

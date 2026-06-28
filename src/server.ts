@@ -645,6 +645,9 @@ export default {
   <url><loc>https://keyverse.me/how-to-play</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/guide</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/articles</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/articles/best-songs-for-typing-speed</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/articles/how-rhythm-typing-works</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/articles/choosing-songs-for-better-practice</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/recommended</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/leaderboard</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/about</loc><lastmod>${lastmod}</lastmod></url>
