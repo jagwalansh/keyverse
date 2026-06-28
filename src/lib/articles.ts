@@ -1,5 +1,6 @@
 export type Article = {
   slug: string;
+  path: `/articles/${string}`;
   title: string;
   description: string;
   intro: string;
@@ -12,6 +13,7 @@ export type Article = {
 export const articles: Article[] = [
   {
     slug: "best-songs-for-typing-speed",
+    path: "/articles/best-songs-for-typing-speed",
     title: "Best Songs to Improve Your Typing Speed",
     description:
       "Learn how to choose songs that build typing speed, accuracy, rhythm, and repeatable practice habits in KeyVerse.",
@@ -34,6 +36,7 @@ export const articles: Article[] = [
   },
   {
     slug: "how-rhythm-typing-works",
+    path: "/articles/how-rhythm-typing-works",
     title: "How Rhythm Typing Works",
     description:
       "A practical explanation of rhythm typing, lyric timing, reading ahead, and why accuracy matters during music-based typing games.",
@@ -56,6 +59,7 @@ export const articles: Article[] = [
   },
   {
     slug: "choosing-songs-for-better-practice",
+    path: "/articles/choosing-songs-for-better-practice",
     title: "Choosing Songs for Better Practice",
     description:
       "Use song tempo, vocal clarity, lyric density, and sync quality to pick better KeyVerse practice tracks.",

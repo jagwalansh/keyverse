@@ -49,15 +49,21 @@ function Articles() {
 
         <div className="grid gap-5 md:grid-cols-3">
           {articles.map((article) => (
-            <article key={article.slug} className="border border-border/30 bg-card/35 p-5">
-              <h2 className="text-xl font-semibold tracking-tight">{article.title}</h2>
-              <p className="mt-4 text-sm leading-7 text-muted-foreground">{article.description}</p>
-              <Link
-                to={`/articles/${article.slug}`}
-                className="mt-5 inline-flex rounded-md bg-primary px-4 py-2 text-xs font-mono font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            <article key={article.slug}>
+              <a
+                href={article.path}
+                className="group flex h-full flex-col border border-border/30 bg-card/35 p-5 transition-colors hover:border-primary/35 hover:bg-card/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
-                Read article
-              </Link>
+                <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary">
+                  {article.title}
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                  {article.description}
+                </p>
+                <span className="mt-5 inline-flex w-fit rounded-md bg-primary px-4 py-2 text-xs font-mono font-semibold text-primary-foreground transition-opacity group-hover:opacity-90">
+                  Read article
+                </span>
+              </a>
             </article>
           ))}
         </div>
