@@ -1,6 +1,11 @@
+type ArticlePath =
+  | "/articles/best-songs-for-typing-speed"
+  | "/articles/how-rhythm-typing-works"
+  | "/articles/choosing-songs-for-better-practice";
+
 export type Article = {
   slug: string;
-  path: `/articles/${string}`;
+  path: ArticlePath;
   title: string;
   description: string;
   intro: string;

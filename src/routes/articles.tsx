@@ -57,8 +57,9 @@ function Articles() {
         <div className="grid gap-5 md:grid-cols-3">
           {articles.map((article) => (
             <article key={article.slug}>
-              <a
-                href={article.path}
+              <Link
+                to={article.path}
+                preload="intent"
                 className="group flex h-full flex-col border border-border/30 bg-card/35 p-5 transition-colors hover:border-primary/35 hover:bg-card/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary">
@@ -70,7 +71,7 @@ function Articles() {
                 <span className="mt-5 inline-flex w-fit rounded-md bg-primary px-4 py-2 text-xs font-mono font-semibold text-primary-foreground transition-opacity group-hover:opacity-90">
                   Read article
                 </span>
-              </a>
+              </Link>
             </article>
           ))}
         </div>
