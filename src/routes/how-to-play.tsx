@@ -61,7 +61,8 @@ function HowToPlay() {
             </div>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">How to Play KeyVerse</h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              A quick reference for the rhythm typing flow, score behavior, and sync reports.
+              A complete guide to the rhythm typing flow, score behavior, song sync, and better
+              practice habits.
             </p>
           </div>
           <Link
@@ -88,11 +89,18 @@ function HowToPlay() {
         <section className="grid gap-8 border-t border-border/20 pt-8 md:grid-cols-[0.9fr_1.1fr]">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">What the score rewards</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              Score is not just words per minute. A strong run combines accurate input, consistent
-              timing, and completed lyric lines with few corrections. Fast verses, clipped words,
-              and unusual phrasing naturally raise the difficulty.
-            </p>
+            <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
+              <p>
+                Score is not just words per minute. A strong run combines accurate input, consistent
+                timing, and completed lyric lines with few corrections. Fast verses, clipped words,
+                and unusual phrasing naturally raise the difficulty.
+              </p>
+              <p>
+                Treat each line like a small checkpoint. If a word goes wrong, recover cleanly
+                instead of forcing the rest of the line at full speed. The best runs usually come
+                from steady typing, quick recognition, and fewer repeated corrections.
+              </p>
+            </div>
           </div>
 
           <div className="border-l border-border/30 pl-0 md:pl-6">
@@ -109,12 +117,45 @@ function HowToPlay() {
 
         <section className="border-t border-border/20 pt-8">
           <h2 className="text-xl font-semibold tracking-tight">Song sync and sources</h2>
-          <p className="mt-4 text-sm leading-7 text-muted-foreground">
-            KeyVerse uses third-party services for lyrics, videos, artwork, and metadata. Public
-            videos can vary by region or version, so a track may occasionally feel slightly out of
-            sync. The in-game report option includes the song and video details so mismatches can be
-            reviewed.
-          </p>
+          <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
+            <p>
+              KeyVerse uses third-party services for lyrics, videos, artwork, and metadata. Public
+              videos can vary by region or version, so a track may occasionally feel slightly out of
+              sync. The in-game report option includes the song and video details so mismatches can
+              be reviewed.
+            </p>
+            <p>
+              If a round feels wrong from the first line, try another search result or report the
+              sync issue. Studio versions, live performances, remixes, lyric videos, and shortened
+              uploads can all share similar titles while having different timing.
+            </p>
+          </div>
+        </section>
+
+        <section className="grid gap-8 border-t border-border/20 pt-8 md:grid-cols-3">
+          <article>
+            <h2 className="text-lg font-semibold tracking-tight">Before you start</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Pick a song with clear vocals for your first few rounds. Slower pop tracks are easier
+              than dense rap verses because they give you time to read the next line before the
+              active line changes.
+            </p>
+          </article>
+          <article>
+            <h2 className="text-lg font-semibold tracking-tight">During a round</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Keep your eyes slightly ahead of the cursor. The current line matters most, but
+              noticing the next phrase early prevents panic when the song moves into a quick
+              transition.
+            </p>
+          </article>
+          <article>
+            <h2 className="text-lg font-semibold tracking-tight">After the score</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Replay the same track when you miss the same section twice. Improvement comes from
+              recognizing the rhythm of a song, not just from typing harder on the next attempt.
+            </p>
+          </article>
         </section>
       </div>
 

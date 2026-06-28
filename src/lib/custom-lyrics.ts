@@ -19,6 +19,55 @@ const SUMMERS_YOUNG_SHADIENT = {
 [02:42.00] I think we've just begun Life's sweet and summer's young`,
 };
 
+export const CUSTOM_LYRIC_TIMINGS: Record<string, { timedDraft: string; duration?: number }> = {
+  "sza - good days": {
+    duration: 279,
+    timedDraft: `[00:24.24]Good day in my mind, safe to take a step out
+[00:27.78] Get some air now, let your edge out
+[00:30.76] Too soon, I spoke, you be heavy in my mind
+[00:34.00] Can you get the heck out?
+[00:35.84] I need rest now, got me bummed out
+[00:38.54] You so, you so, you, baby, baby, babe
+[00:43.16] I've been on my empty mind shit
+[00:47.08] I try to keep from losin' the rest of me
+[00:50.84] I worry that I wasted the best of me on you, baby
+[00:54.06] You don't care
+[00:56.22] Said, not tryna be a nuisance, it's just urgent
+[01:00.04] Tryna make sense of loose change got me at war in my mind
+[01:04.08] Gotta let go of weight, can't keep what's holding me
+[01:08.10] Choose to watch while the world break up and fall on me
+[01:12.74]16 21 22 24 27 29 31 34 36 39 45 48 52 54 58 01 03 07 12 15 19 22
+[01:12.74] All the while, I'll await my armored fate with a smile
+[01:16.40] Still wanna try, still believe in (good days)
+[01:21.22] Good days
+[01:24.02] Always inside, Good day living in my mind
+[01:27.88] Tell me I'm not my fears, my limitations, I disappear, if you let me
+[01:36.00] Feeling like (on your own), Feeling like Jericho
+[01:38.76] Feeling like Job when he lost his shit Gotta hold my own, my cross to bear alone, I
+[01:44.00] Ooh, paid a deal, way to kill the mood
+[01:49.22] Know you like that shit, yeah, groovy baby, baby
+[01:54.38] Heavy on my empty mind shit
+[01:58.16] I gotta keep from losin' the rest of me
+[02:02.00] Still worry that I wasted the best of me on you, babe, you dont care
+[02:08.44] Said, not tryna be a nuisance, it's just urgent 
+[02:12.10] Tryna make sense of loose change got me at war in my mind
+[02:16.48] Gotta let go of weight, can't keep what's holding me
+[02:19.22] Choose to watch While the world break up and fall on me
+[02:24.32] All the while, I'll await my armored fate with a smile
+[02:28.84] Still wanna try, still believe in 
+[02:32.50] Good days 
+[02:35.78] Always sunny inside
+[02:37.54] Good day living in my mind
+[02:39.66] Gotta get right, tryna free my mind before the end of the world
+[02:43.32] I don't miss no ex, I don't miss no text I choose not to respond
+[02:47.38] I don't regret, just pretend shit never happened
+[02:51.52] Half of us layin' waste to our youth, is in the present
+[02:59.00] Half of us chasin' fountains of youth and it's in the present now
+[04:02.38] Always in my mind, always in my mind, mind
+[04:09.00] You've been making me feel like I'm Always in my mind, always in my mind, mind`,
+  },
+};
+
 export const CUSTOM_LYRICS: Record<
   string,
   { plainLyrics?: string; syncedLyrics?: string; duration?: number }

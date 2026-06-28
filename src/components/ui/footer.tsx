@@ -33,12 +33,6 @@ export function Footer() {
                   How to Play
                 </Link>
                 <Link
-                  to="/guide"
-                  className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
-                >
-                  Rhythm Typing Guide
-                </Link>
-                <Link
                   to="/support"
                   className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
                 >
@@ -66,6 +60,11 @@ export function Footer() {
                 <li>
                   <Link to="/guide" className="hover:text-primary transition-colors">
                     Guide
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/articles" className="hover:text-primary transition-colors">
+                    Articles
                   </Link>
                 </li>
                 <li>

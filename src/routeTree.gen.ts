@@ -17,6 +17,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as HowToPlayRouteImport } from './routes/how-to-play'
 import { Route as GuideRouteImport } from './routes/guide'
+import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTrackIdRouteImport } from './routes/play.$trackId'
@@ -61,6 +62,11 @@ const GuideRoute = GuideRouteImport.update({
   path: '/guide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArticlesRoute = ArticlesRouteImport.update({
+  id: '/articles',
+  path: '/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -80,6 +86,7 @@ const PlayTrackIdRoute = PlayTrackIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/articles': typeof ArticlesRoute
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/articles': typeof ArticlesRoute
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/articles': typeof ArticlesRoute
   '/guide': typeof GuideRoute
   '/how-to-play': typeof HowToPlayRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -122,6 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/articles'
     | '/guide'
     | '/how-to-play'
     | '/leaderboard'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/articles'
     | '/guide'
     | '/how-to-play'
     | '/leaderboard'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/articles'
     | '/guide'
     | '/how-to-play'
     | '/leaderboard'
@@ -162,6 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ArticlesRoute: typeof ArticlesRoute
   GuideRoute: typeof GuideRoute
   HowToPlayRoute: typeof HowToPlayRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -231,6 +244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GuideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/articles': {
+      id: '/articles'
+      path: '/articles'
+      fullPath: '/articles'
+      preLoaderRoute: typeof ArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -258,6 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ArticlesRoute: ArticlesRoute,
   GuideRoute: GuideRoute,
   HowToPlayRoute: HowToPlayRoute,
   LeaderboardRoute: LeaderboardRoute,

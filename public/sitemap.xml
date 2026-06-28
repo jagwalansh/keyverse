@@ -16,6 +16,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://keyverse.me/articles</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://keyverse.me/recommended</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

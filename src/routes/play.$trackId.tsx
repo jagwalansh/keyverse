@@ -17,7 +17,6 @@ import {
   Home,
   Award,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   Flag,
   Send,
@@ -373,10 +372,6 @@ function findLineIdxForTime(time: number, lyricLines: LyricLine[]): number {
   return targetIdx;
 }
 
-function charsMatch(typedChar: string, expectedChar: string): boolean {
-  return typedChar === expectedChar;
-}
-
 export const Route = createFileRoute("/play/$trackId")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     artist: String(s.artist ?? "").replace(/\+/g, " "),
@@ -548,6 +543,7 @@ function PlayPage() {
   const completedLyricsRef = useRef(false);
   const inactivityMissesRef = useRef(0);
   const lastVideoCarouselScrollRef = useRef(0);
+  const videoCarouselCueTimeoutRef = useRef<number | null>(null);
   const shouldRemainPausedRef = useRef(false);
 
   const [playing, setPlaying] = useState(false);
@@ -571,6 +567,7 @@ function PlayPage() {
   const [syncReportPlaybackTime, setSyncReportPlaybackTime] = useState(0);
   const [syncReportVideoDuration, setSyncReportVideoDuration] = useState<number | undefined>();
   const [videoCarouselDirection, setVideoCarouselDirection] = useState<1 | -1>(1);
+  const [videoCarouselCue, setVideoCarouselCue] = useState<1 | -1 | null>(null);
 
   useEffect(() => {
     trackEvent("song_page_opened", {
@@ -579,6 +576,14 @@ function PlayPage() {
       artist,
     });
   }, [artist, track, trackId]);
+
+  useEffect(() => {
+    return () => {
+      if (videoCarouselCueTimeoutRef.current !== null) {
+        window.clearTimeout(videoCarouselCueTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Prevent multiple triggers in rAF loop
   const lastCompletedLineRef = useRef(-1);
@@ -1146,7 +1151,6 @@ function PlayPage() {
     // Line is already complete
     if (charIdx >= line.text.length) return;
 
-    const expectedChar = line.text[charIdx];
     const typedChar = e.key;
 
     const gameAreaRect = gameAreaRef.current?.getBoundingClientRect();
@@ -1166,61 +1170,39 @@ function PlayPage() {
           : (gameAreaRef.current?.clientHeight ?? 0) / 2,
     };
 
-    const isHit = charsMatch(typedChar, expectedChar);
-
     const newResults = [...charResults];
-    newResults[charIdx] = { status: isHit ? "hit" : "miss", char: typedChar };
+    newResults[charIdx] = { status: "hit", char: typedChar };
     charResultsRef.current = newResults;
     setCharResults(newResults);
 
-    if (isHit) {
-      const newCombo = combo + 1;
-      setCombo(newCombo);
-      setMaxCombo((m) => Math.max(m, newCombo));
+    const newCombo = combo + 1;
+    setCombo(newCombo);
+    setMaxCombo((m) => Math.max(m, newCombo));
 
-      let multiplier = 1;
-      if (newCombo >= 100) multiplier = 5;
-      else if (newCombo >= 50) multiplier = 3;
-      else if (newCombo >= 25) multiplier = 2;
-      else if (newCombo >= 10) multiplier = 1.5;
+    let multiplier = 1;
+    if (newCombo >= 100) multiplier = 5;
+    else if (newCombo >= 50) multiplier = 3;
+    else if (newCombo >= 25) multiplier = 2;
+    else if (newCombo >= 10) multiplier = 1.5;
 
-      const points = Math.floor(10 * multiplier);
-      setScore((s) => s + points);
-      setStats((s) => ({
-        correct: s.correct + 1,
-        total: s.total + 1,
-        started: s.started || Date.now(),
-      }));
+    const points = Math.floor(10 * multiplier);
+    setScore((s) => s + points);
+    setStats((s) => ({
+      correct: s.correct + 1,
+      total: s.total + 1,
+      started: s.started || Date.now(),
+    }));
 
-      setParticles((prev) => [
-        ...prev,
-        {
-          id: Math.random(),
-          text: `+${points}`,
-          type: "hit" as const,
-          ...feedbackPosition,
-          createdAt: Date.now(),
-        },
-      ]);
-    } else {
-      setCombo(0);
-      setStats((s) => ({
-        correct: s.correct,
-        total: s.total + 1,
-        started: s.started || Date.now(),
-      }));
-
-      setParticles((prev) => [
-        ...prev,
-        {
-          id: Math.random(),
-          text: "Miss",
-          type: "miss" as const,
-          ...feedbackPosition,
-          createdAt: Date.now(),
-        },
-      ]);
-    }
+    setParticles((prev) => [
+      ...prev,
+      {
+        id: Math.random(),
+        text: `+${points}`,
+        type: "hit" as const,
+        ...feedbackPosition,
+        createdAt: Date.now(),
+      },
+    ]);
 
     const nextIdx = charIdx + 1;
     charIdxRef.current = nextIdx;
@@ -1481,11 +1463,11 @@ function PlayPage() {
       ? ytCandidates[selectedVideoIndex + 1]
       : null;
 
-  const selectVideoCandidate = (candidate: YoutubeCandidate) => {
+  const selectVideoCandidate = (candidate: YoutubeCandidate, direction?: 1 | -1) => {
     if (candidate.videoId === videoId) return;
 
     const nextIndex = ytCandidates.findIndex((item) => item.videoId === candidate.videoId);
-    setVideoCarouselDirection(nextIndex > selectedVideoIndex ? 1 : -1);
+    setVideoCarouselDirection(direction ?? (nextIndex > selectedVideoIndex ? 1 : -1));
     restart();
     setAudioReady(false);
     setVideoId(candidate.videoId);
@@ -1548,19 +1530,29 @@ function PlayPage() {
   };
 
   const handleVideoCarouselWheel = (event: React.WheelEvent<HTMLDivElement>) => {
-    if (Math.abs(event.deltaY) < 8 || ytCandidates.length < 2) return;
+    if (Math.abs(event.deltaY) < 18 || ytCandidates.length < 2) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    const candidate = event.deltaY > 0 ? nextVideoCandidate : previousVideoCandidate;
+    const direction = event.deltaY > 0 ? 1 : -1;
+    const candidate = direction === 1 ? nextVideoCandidate : previousVideoCandidate;
     if (!candidate) return;
 
+    setVideoCarouselCue(direction);
+    if (videoCarouselCueTimeoutRef.current !== null) {
+      window.clearTimeout(videoCarouselCueTimeoutRef.current);
+    }
+    videoCarouselCueTimeoutRef.current = window.setTimeout(() => {
+      setVideoCarouselCue(null);
+      videoCarouselCueTimeoutRef.current = null;
+    }, 260);
+
     const now = Date.now();
-    if (now - lastVideoCarouselScrollRef.current < 450) return;
+    if (now - lastVideoCarouselScrollRef.current < 650) return;
 
     lastVideoCarouselScrollRef.current = now;
-    selectVideoCandidate(candidate);
+    selectVideoCandidate(candidate, direction);
   };
 
   const openSyncReport = () => {
@@ -1666,11 +1658,15 @@ function PlayPage() {
                     <motion.button
                       key={`previous-${previousVideoCandidate.videoId}`}
                       type="button"
-                      onClick={() => selectVideoCandidate(previousVideoCandidate)}
-                      initial={{ opacity: 0, y: 32, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -32, scale: 0.96 }}
-                      transition={{ duration: 0.28, ease: "easeOut" }}
+                      onClick={() => selectVideoCandidate(previousVideoCandidate, -1)}
+                      initial={{ opacity: 0, y: -12, scale: 0.98 }}
+                      animate={{
+                        opacity: 1,
+                        y: videoCarouselCue === -1 ? 10 : 0,
+                        scale: videoCarouselCue === -1 ? 1.02 : 1,
+                      }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 360, damping: 30 }}
                       className="absolute -top-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-white/20 bg-white/10 shadow-md shadow-black/20 backdrop-blur-xl transition-all hover:-top-9 hover:border-primary/45 dark:bg-white/5"
                       aria-label={`Use previous video: ${previousVideoCandidate.title || previousVideoCandidate.authorName}`}
                     >
@@ -1692,11 +1688,15 @@ function PlayPage() {
                     <motion.button
                       key={`next-${nextVideoCandidate.videoId}`}
                       type="button"
-                      onClick={() => selectVideoCandidate(nextVideoCandidate)}
-                      initial={{ opacity: 0, y: -32, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 32, scale: 0.96 }}
-                      transition={{ duration: 0.28, ease: "easeOut" }}
+                      onClick={() => selectVideoCandidate(nextVideoCandidate, 1)}
+                      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                      animate={{
+                        opacity: 1,
+                        y: videoCarouselCue === 1 ? -10 : 0,
+                        scale: videoCarouselCue === 1 ? 1.02 : 1,
+                      }}
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 360, damping: 30 }}
                       className="absolute -bottom-7 left-5 right-5 z-0 h-24 overflow-hidden rounded-xl border border-white/20 bg-white/10 shadow-md shadow-black/20 backdrop-blur-xl transition-all hover:-bottom-9 hover:border-primary/45 dark:bg-white/5"
                       aria-label={`Use next video: ${nextVideoCandidate.title || nextVideoCandidate.authorName}`}
                     >
@@ -1720,8 +1720,8 @@ function PlayPage() {
                     variants={{
                       enter: (direction: 1 | -1) => ({
                         opacity: 0,
-                        y: direction * 90,
-                        scale: 0.97,
+                        y: direction * 34,
+                        scale: 0.99,
                       }),
                       center: {
                         opacity: 1,
@@ -1730,14 +1730,14 @@ function PlayPage() {
                       },
                       exit: (direction: 1 | -1) => ({
                         opacity: 0,
-                        y: direction * -90,
-                        scale: 0.97,
+                        y: direction * -34,
+                        scale: 0.99,
                       }),
                     }}
                     initial="enter"
                     animate="center"
                     exit="exit"
-                    transition={{ duration: 0.32, ease: "easeInOut" }}
+                    transition={{ type: "spring", stiffness: 300, damping: 32, mass: 0.9 }}
                     className="absolute inset-0 z-10 w-full h-full rounded-xl overflow-hidden border border-border/40 shadow-lg bg-black flex flex-col items-center justify-center p-5 text-center"
                   >
                     {videoId ? (
@@ -2329,19 +2329,17 @@ function PlayPage() {
                     !lyricsFinished &&
                     !inputFocused &&
                     !syncReportOpen && (
-                      <motion.button
-                        type="button"
+                      <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.18 }}
-                        onClick={() => inputRef.current?.focus()}
-                        className="absolute inset-0 z-40 flex cursor-text items-center justify-center bg-card/80 px-6 text-center backdrop-blur-sm"
+                        className="pointer-events-none absolute inset-0 z-40 flex cursor-text items-center justify-center bg-card/80 px-6 text-center backdrop-blur-sm"
                       >
                         <span className="font-mono text-sm font-semibold tracking-wide text-foreground sm:text-base">
                           Click here or press any key to focus
                         </span>
-                      </motion.button>
+                      </motion.div>
                     )}
                 </AnimatePresence>
 

@@ -2,7 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { CUSTOM_LYRICS } from "./lib/custom-lyrics";
+import { CUSTOM_LYRICS, CUSTOM_LYRIC_TIMINGS } from "./lib/custom-lyrics";
 import { POST as saveScoreHandler } from "./server/api/save-score";
 import { GET as leaderboardHandler } from "./server/api/leaderboard";
 import { GET as profileHandler } from "./server/api/profile";
@@ -204,6 +204,26 @@ type LyricsCacheData = {
   syncedLyrics?: string | null;
   duration?: number;
 };
+
+function getCustomLyricTiming(artist: string, track: string) {
+  const key = `${cleanArtist(artist).toLowerCase().trim()} - ${cleanTitle(track).toLowerCase().trim()}`;
+  return CUSTOM_LYRIC_TIMINGS[key] ?? null;
+}
+
+function applyCustomLyricTiming(
+  data: LyricsCacheData,
+  artist: string,
+  track: string,
+): LyricsCacheData {
+  const timing = getCustomLyricTiming(artist, track);
+  if (!timing) return data;
+
+  return {
+    ...data,
+    duration: timing.duration ?? data.duration,
+    syncedLyrics: timing.timedDraft,
+  };
+}
 
 type YoutubeSearchData = {
   videoId: string;
@@ -463,6 +483,7 @@ function scoreYoutubeVideo(
   const trackMatchesTitle = textIncludesMusicValue(title, cleanedTrack);
   const authorMatchesArtist = textIncludesAnyArtistAlias(author, artistAliases);
   const titleMatchesArtist = textIncludesAnyArtistAlias(title, artistAliases);
+  const trackNorm = normalizeMusicText(cleanedTrack);
 
   let score = 0;
 
@@ -486,10 +507,15 @@ function scoreYoutubeVideo(
   )
     score += 4;
 
+  const hasUnexpectedFeature =
+    /\b(feat|ft|featuring)\b/.test(normalizedTitle) &&
+    !/\b(feat|ft|featuring)\b/.test(trackNorm) &&
+    !/\b(feat|ft|featuring)\b/.test(normalizeMusicText(artist));
+  if (hasUnexpectedFeature) score -= 32;
+
   if (normalizedSourceQuery.includes("official audio")) score += 4;
   if (normalizedSourceQuery.includes("topic")) score += 3;
 
-  const trackNorm = normalizeMusicText(cleanedTrack);
   const versionPenalties: Array<[string, number]> = [
     ["karaoke", 45],
     ["sped up", 40],
@@ -618,6 +644,7 @@ export default {
   <url><loc>https://keyverse.me/</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/how-to-play</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/guide</loc><lastmod>${lastmod}</lastmod></url>
+  <url><loc>https://keyverse.me/articles</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/recommended</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/leaderboard</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/about</loc><lastmod>${lastmod}</lastmod></url>
@@ -662,17 +689,19 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           cached?.data?.syncedLyrics &&
           Date.now() - cached.timestamp < LYRICS_CACHE_TTL_SECONDS * 1000
         ) {
-          return new Response(JSON.stringify(cached.data), {
+          const data = applyCustomLyricTiming(cached.data, artist, track);
+          return new Response(JSON.stringify(data), {
             status: 200,
             headers: { "content-type": "application/json" },
           });
         }
 
-        const sharedCacheKey = `lyrics:v2:${cacheKey}`;
+        const sharedCacheKey = `lyrics:v6:${cacheKey}`;
         const sharedCached = await getSharedCache<LyricsCacheData>(env, sharedCacheKey);
         if (sharedCached?.syncedLyrics) {
-          lyricsCache.set(cacheKey, { data: sharedCached, timestamp: Date.now() });
-          return new Response(JSON.stringify(sharedCached), {
+          const data = applyCustomLyricTiming(sharedCached, artist, track);
+          lyricsCache.set(cacheKey, { data, timestamp: Date.now() });
+          return new Response(JSON.stringify(data), {
             status: 200,
             headers: { "content-type": "application/json" },
           });
@@ -838,10 +867,13 @@ Sitemap: https://keyverse.me/sitemap.xml`;
 
           if (response) {
             const clone = response.clone();
-            const data = await clone.json();
+            const data = applyCustomLyricTiming(await clone.json(), artist, track);
             lyricsCache.set(cacheKey, { data, timestamp: Date.now() });
             putSharedCache(env, ctx, sharedCacheKey, data, LYRICS_CACHE_TTL_SECONDS);
-            return response;
+            return new Response(JSON.stringify(data), {
+              status: response.status,
+              headers: { "content-type": "application/json" },
+            });
           }
 
           // Return 404 if all fail
@@ -925,7 +957,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
         }
 
         const cacheKey =
-          `v8:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
+          `v9:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
         const cached = youtubeCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < YOUTUBE_CACHE_TTL_SECONDS * 1000) {
           return new Response(JSON.stringify(cached.data), {

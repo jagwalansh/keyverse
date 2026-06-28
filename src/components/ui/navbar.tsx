@@ -7,6 +7,7 @@ import {
   LogIn,
   Menu,
   Moon,
+  Newspaper,
   Search,
   Sun,
   UserRound,
@@ -111,6 +112,11 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
                 <DropdownMenuItem asChild>
                   <Link to="/guide">
                     <BookOpen /> Guide
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/articles">
+                    <Newspaper /> Articles
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>

@@ -143,6 +143,16 @@ function Privacy() {
               >
                 Google Advertising Technologies
               </a>
+              , and about how Google uses information from sites and apps that use Google services
+              at{" "}
+              <a
+                href="https://policies.google.com/technologies/partner-sites"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground underline decoration-border hover:text-primary hover:decoration-primary underline-offset-2"
+              >
+                How Google uses data when you use our partners' sites or apps
+              </a>
               . You may also opt out of some third-party personalized advertising through{" "}
               <a
                 href="https://www.aboutads.info/choices/"
@@ -153,6 +163,11 @@ function Privacy() {
                 aboutads.info
               </a>
               .
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-3">
+              Where consent is required, optional analytics and advertising cookies are controlled
+              by the cookie banner. If you reject optional cookies, KeyVerse keeps those Google
+              storage settings denied through Google Consent Mode.
             </p>
           </div>
 

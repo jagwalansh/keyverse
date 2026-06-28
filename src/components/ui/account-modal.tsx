@@ -136,9 +136,13 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 minLength={3}
+                maxLength={24}
                 disabled={profileLoading}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                Public on leaderboards. Use 3-24 letters, numbers, underscores, or hyphens.
+              </p>
             </div>
 
             {error && (

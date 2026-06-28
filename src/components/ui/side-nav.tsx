@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Moon, Sun, Search, LifeBuoy } from "lucide-react";
+import { BookOpen, Moon, Newspaper, Sun, Search, LifeBuoy } from "lucide-react";
 import { lazy, Suspense, useState, useEffect, type ReactNode } from "react";
 import { motion } from "motion/react";
 
@@ -150,6 +150,12 @@ export function SideNav() {
 
           {/* ── Section 2: Guide + Support ── */}
           <NavLink to="/guide" label="Guide" icon={<BookOpen size={15} />} isActive={isActive} />
+          <NavLink
+            to="/articles"
+            label="Articles"
+            icon={<Newspaper size={15} />}
+            isActive={isActive}
+          />
           <NavLink
             to="/support"
             label="Support"

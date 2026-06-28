@@ -10,7 +10,8 @@ export const Route = createFileRoute("/about")({
       { title: "About KeyVerse" },
       {
         name: "description",
-        content: "Learn about KeyVerse, a rhythm typing game built for music lovers.",
+        content:
+          "Learn about KeyVerse, an independent rhythm typing game built to make typing practice feel musical, focused, and replayable.",
       },
     ],
     links: [{ rel: "canonical", href: "https://keyverse.me/about" }],
@@ -52,7 +53,8 @@ function About() {
             </div>
             <h1 className="text-3xl font-bold tracking-tight md:text-4xl">About KeyVerse</h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              A rhythm typing game where your favorite songs become the challenge.
+              An independent rhythm typing project built for people who learn faster when practice
+              feels like play.
             </p>
           </div>
           <Link
@@ -72,23 +74,53 @@ function About() {
         >
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent" />
           <div className="relative z-10 max-w-3xl">
-            <h2 className="font-mono text-xl font-bold tracking-wide">
-              Type along. Find your flow.
-            </h2>
+            <h2 className="font-mono text-xl font-bold tracking-wide">Why KeyVerse exists</h2>
             <div className="mt-5 space-y-4 text-sm leading-7 text-muted-foreground">
               <p>
-                KeyVerse began with a simple idea: typing practice feels better when it is connected
-                to music you already love. Instead of copying disconnected words, you follow lyrics
-                as the song plays and try to stay in sync.
+                KeyVerse began as a small experiment by Ansh Jagwal: what if typing practice could
+                feel closer to playing a rhythm game than completing a worksheet? Most typing tools
+                measure speed with static passages. KeyVerse adds timing, music, and pressure, so
+                the player has to read ahead, stay relaxed, and keep the next line moving with the
+                track.
               </p>
               <p>
-                Each round measures speed and accuracy while leaderboards give you a reason to
-                return, improve, and compete. The game is free, minimal, and built to make a few
-                minutes of practice feel like play.
+                The site is intentionally simple: search for a song, start a round, type the active
+                lyric line, and review the score. That narrow loop makes short practice sessions
+                useful without turning the page into a noisy dashboard. Scores reward accuracy and
+                completed lines, while leaderboards give returning players a reason to improve
+                gradually instead of rushing every word.
+              </p>
+              <p>
+                KeyVerse is also a practical web project. It combines synced lyric data, public
+                video playback, account-based score saving, and community sync reports. When a video
+                version drifts from the lyric timing, players can flag it so the experience can be
+                reviewed and improved over time.
               </p>
             </div>
           </div>
         </motion.section>
+
+        <section className="grid gap-8 border-t border-border/20 pt-8 md:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">What makes it different</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              Traditional typing practice is usually built around fixed paragraphs. KeyVerse uses
+              music as the pacing layer. The challenge is not only spelling each word correctly, but
+              entering the right line while the song is moving. That creates a different kind of
+              focus: one part reading, one part rhythm, and one part recovery when a fast section
+              throws you off.
+            </p>
+          </div>
+
+          <div className="border-l border-border/30 pl-0 md:pl-6">
+            <h2 className="text-xl font-semibold tracking-tight">Built in public spirit</h2>
+            <p className="mt-4 text-sm leading-7 text-muted-foreground">
+              KeyVerse is maintained as an independent project and is shaped by real play sessions,
+              bug reports, and song suggestions. The goal is to keep the game fast, understandable,
+              and respectful of the services that provide lyrics, videos, artwork, and metadata.
+            </p>
+          </div>
+        </section>
 
         <section className="grid gap-4 md:grid-cols-3">
           {values.map(({ icon: Icon, title, description }, index) => (
@@ -113,7 +145,8 @@ function About() {
             <div className="font-mono text-sm font-bold">Built with the community</div>
             <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted-foreground">
               KeyVerse uses services including LRCLIB and YouTube, and grows through player
-              feedback, bug reports, and song suggestions.
+              feedback, bug reports, song suggestions, and reports when a specific video does not
+              match the synced lyrics.
             </p>
           </div>
           <Link

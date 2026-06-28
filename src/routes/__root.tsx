@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import appCss from "../styles.css?url";
 import "@fontsource/inter/300.css";
@@ -23,6 +23,40 @@ import { ModalProvider } from "@/lib/modal-context";
 import { Toaster } from "@/components/ui/sonner";
 import { SideNav } from "@/components/ui/side-nav";
 import { AmbientLyrics } from "@/components/ui/ambient-lyrics";
+import { Button } from "@/components/ui/button";
+
+const CONSENT_STORAGE_KEY = "keyverse_cookie_consent";
+const CONSENT_CHANGE_EVENT = "keyverse-consent-change";
+
+type ConsentChoice = "accepted" | "rejected";
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+function hasAnalyticsConsent() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(CONSENT_STORAGE_KEY) === "accepted";
+}
+
+function updateGoogleConsent(choice: ConsentChoice) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+
+  const granted = choice === "accepted" ? "granted" : "denied";
+  window.gtag("consent", "update", {
+    ad_storage: granted,
+    ad_user_data: granted,
+    ad_personalization: granted,
+    analytics_storage: granted,
+  });
+
+  if (choice === "accepted") {
+    window.gtag("config", "G-LMRN63VC3L");
+  }
+}
 
 function NotFoundComponent() {
   return (
@@ -137,8 +171,23 @@ function RootShell({ children }: { children: React.ReactNode }) {
             __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
+              gtag('consent', 'default', {
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied',
+                analytics_storage: 'denied',
+                wait_for_update: 500
+              });
               gtag('js', new Date());
-              gtag('config', 'G-LMRN63VC3L');
+              if (localStorage.getItem('${CONSENT_STORAGE_KEY}') === 'accepted') {
+                gtag('consent', 'update', {
+                  ad_storage: 'granted',
+                  ad_user_data: 'granted',
+                  ad_personalization: 'granted',
+                  analytics_storage: 'granted'
+                });
+                gtag('config', 'G-LMRN63VC3L');
+              }
             `,
           }}
         />
@@ -165,6 +214,7 @@ function RootComponent() {
             <AmbientLyrics />
             <Outlet />
           </div>
+          <ConsentBanner />
           <Toaster />
         </ModalProvider>
       </AuthProvider>
@@ -176,7 +226,14 @@ function AdSenseLoader() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
-  const adEligibleRoutes = new Set(["/", "/about", "/guide", "/how-to-play", "/recommended"]);
+  const adEligibleRoutes = new Set([
+    "/",
+    "/about",
+    "/articles",
+    "/guide",
+    "/how-to-play",
+    "/recommended",
+  ]);
   const canLoadAds = adEligibleRoutes.has(pathname);
 
   useEffect(() => {
@@ -199,6 +256,7 @@ function AdSenseLoader() {
 
     let loaded = false;
     const loadAdSense = () => {
+      if (!hasAnalyticsConsent()) return;
       if (loaded) return;
       loaded = true;
       if (document.querySelector("script[data-keyverse-adsense='true']")) return;
@@ -212,6 +270,11 @@ function AdSenseLoader() {
       document.head.appendChild(script);
     };
 
+    const handleConsentChange = () => {
+      loadAdSense();
+    };
+    window.addEventListener(CONSENT_CHANGE_EVENT, handleConsentChange);
+
     const interactionEvents = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
     interactionEvents.forEach((eventName) => {
       window.addEventListener(eventName, loadAdSense, { once: true, passive: true });
@@ -222,9 +285,57 @@ function AdSenseLoader() {
       interactionEvents.forEach((eventName) => {
         window.removeEventListener(eventName, loadAdSense);
       });
+      window.removeEventListener(CONSENT_CHANGE_EVENT, handleConsentChange);
       window.clearTimeout(timer);
     };
   }, [canLoadAds]);
 
   return null;
+}
+
+function ConsentBanner() {
+  const [choice, setChoice] = useState<ConsentChoice | null>(null);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(CONSENT_STORAGE_KEY);
+    if (stored === "accepted" || stored === "rejected") {
+      setChoice(stored);
+      updateGoogleConsent(stored);
+    }
+  }, []);
+
+  const saveChoice = (nextChoice: ConsentChoice) => {
+    window.localStorage.setItem(CONSENT_STORAGE_KEY, nextChoice);
+    setChoice(nextChoice);
+    updateGoogleConsent(nextChoice);
+    window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
+  };
+
+  if (choice) return null;
+
+  return (
+    <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-3xl rounded-lg border border-border/50 bg-background/95 p-4 shadow-xl backdrop-blur-md">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs leading-6 text-muted-foreground">
+          KeyVerse uses cookies and similar technologies for analytics, embedded media, and ads.
+          Accepting helps us measure usage and support the site. You can continue with optional
+          analytics and advertising cookies turned off.
+          <Link
+            to="/privacy"
+            className="ml-1 text-foreground underline decoration-border underline-offset-2 hover:text-primary hover:decoration-primary"
+          >
+            Privacy Policy
+          </Link>
+        </p>
+        <div className="flex shrink-0 gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => saveChoice("rejected")}>
+            Reject
+          </Button>
+          <Button type="button" size="sm" onClick={() => saveChoice("accepted")}>
+            Accept
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }

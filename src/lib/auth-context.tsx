@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase";
 import { trackEvent } from "@/lib/analytics";
+import { validatePublicUsername } from "@/lib/username";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -228,10 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!isSupabaseConfigured) throw new Error("Account features are temporarily unavailable.");
       if (!user) throw new Error("You need to be signed in to update your account.");
 
-      const trimmedUsername = username.trim();
-      if (trimmedUsername.length < 3) {
-        throw new Error("Username must be at least 3 characters.");
-      }
+      const publicUsername = validatePublicUsername(username);
 
       const { data, error } = await supabase
         .from("profiles")
@@ -240,7 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             {
               id: user.id,
               email: user.email ?? profile?.email ?? "",
-              username: trimmedUsername,
+              username: publicUsername,
               updated_at: new Date().toISOString(),
             },
           ],
