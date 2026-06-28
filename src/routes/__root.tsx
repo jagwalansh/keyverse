@@ -208,10 +208,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
-  });
-  const showAmbientDecoration = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -219,15 +215,7 @@ function RootComponent() {
       <AuthProvider>
         <ModalProvider>
           <SideNav />
-          <div
-            className={
-              showAmbientDecoration
-                ? "homepage-rhythm-rails homepage-rhythm-rails--ambient"
-                : undefined
-            }
-          >
-            <Outlet />
-          </div>
+          <Outlet />
           <ConsentBanner />
           <Toaster />
         </ModalProvider>

@@ -122,6 +122,35 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+function stripLegacyDecorativeLyrics(html: string): string {
+  return html
+    .replace(
+      /<span\b(?=[^>]*\bclass=(["'])[^"']*\bambient-lyric-line\b[^"']*\1)[^>]*>[\s\S]*?<\/span>/gi,
+      "",
+    )
+    .replace(
+      /<([a-z][\w:-]*)\b(?=[^>]*\bclass=(["'])[^"']*\bhero-scroll\b[^"']*\2)[^>]*>[\s\S]*?<\/\1>/gi,
+      "",
+    );
+}
+
+async function sanitizeHtmlResponse(response: Response): Promise<Response> {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("text/html")) return response;
+
+  const body = await response.text();
+  const sanitizedBody = stripLegacyDecorativeLyrics(body);
+  const headers = new Headers(response.headers);
+  headers.set("cache-control", "no-store, max-age=0");
+  headers.delete("content-length");
+
+  return new Response(sanitizedBody, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 function extractOriginalArtist(track: string): string | null {
   const pattern =
     /[([{(](?:originally\s+performed\s+by|originally\s+by|in\s+the\s+style\s+of|tribute\s+to|cover\s+of)\s+(.*?)[)\]}]/i;
@@ -1102,7 +1131,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalizedResponse = await normalizeCatastrophicSsrResponse(response);
-      return normalizedResponse;
+      return await sanitizeHtmlResponse(normalizedResponse);
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();

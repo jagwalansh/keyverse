@@ -158,69 +158,6 @@ html {
   }
 }
 
-/* CSS-only homepage decoration. No lyric text or decorative nodes are rendered. */
-.homepage-rhythm-rails::before,
-.homepage-rhythm-rails::after {
-  content: "";
-  position: fixed;
-  z-index: 10;
-  top: 5rem;
-  bottom: 0;
-  width: 4px;
-  pointer-events: none;
-  background-image: radial-gradient(
-    circle,
-    color-mix(in oklch, var(--color-primary) 48%, transparent) 1.15px,
-    transparent 1.35px
-  );
-  background-position: center 0;
-  background-size: 4px 12px;
-  background-repeat: repeat-y;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 4rem,
-    black calc(100% - 4rem),
-    transparent
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 4rem,
-    black calc(100% - 4rem),
-    transparent
-  );
-  animation: dots-run-down 1.4s linear infinite;
-}
-
-.homepage-rhythm-rails::before {
-  left: max(1.5rem, calc(50% - 36rem));
-}
-
-.homepage-rhythm-rails::after {
-  right: max(1.5rem, calc(50% - 36rem));
-  animation-name: dots-run-up;
-}
-
-@keyframes dots-run-down {
-  to {
-    background-position: center 12px;
-  }
-}
-
-@keyframes dots-run-up {
-  to {
-    background-position: center -12px;
-  }
-}
-
-@media (max-width: 639px) {
-  .homepage-rhythm-rails::before,
-  .homepage-rhythm-rails::after {
-    display: none;
-  }
-}
-
 .cookie-noscript {
   position: fixed;
   inset-inline: 1rem;
@@ -235,69 +172,6 @@ html {
   color: var(--color-muted-foreground);
   font-size: 0.75rem;
   line-height: 1.5;
-}
-
-.homepage-rhythm-rails--ambient::before,
-.homepage-rhythm-rails--ambient::after {
-  display: none;
-  content: "";
-  position: fixed;
-  z-index: 1;
-  top: 5rem;
-  bottom: 0;
-  width: max(0px, calc(50vw - 37.5rem));
-  pointer-events: none;
-  opacity: 0.2;
-  background-image:
-    repeating-linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent 2.25rem,
-      color-mix(in oklch, var(--color-primary) 60%, transparent) 2.25rem,
-      color-mix(in oklch, var(--color-primary) 60%, transparent) 2.625rem,
-      transparent 2.625rem,
-      transparent 4.5rem
-    );
-  background-size: 100% 18rem;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
-  animation: homepage-rhythm-up 52s linear infinite;
-  will-change: background-position;
-}
-
-.homepage-rhythm-rails--ambient::before {
-  left: 0;
-}
-
-.homepage-rhythm-rails--ambient::after {
-  right: 0;
-  animation-name: homepage-rhythm-down;
-  animation-duration: 58s;
-}
-
-@keyframes homepage-rhythm-up {
-  from {
-    background-position-y: 0;
-  }
-  to {
-    background-position-y: -18rem;
-  }
-}
-
-@keyframes homepage-rhythm-down {
-  from {
-    background-position-y: -18rem;
-  }
-  to {
-    background-position-y: 0;
-  }
-}
-
-@media (min-width: 1400px) {
-  .homepage-rhythm-rails--ambient::before,
-  .homepage-rhythm-rails--ambient::after {
-    display: block;
-  }
 }
 
 .liquid-glass-navbar {
