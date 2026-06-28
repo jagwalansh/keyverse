@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/ui/footer";
 import { Navbar } from "@/components/ui/navbar";
@@ -20,6 +20,13 @@ export const Route = createFileRoute("/articles")({
 });
 
 function Articles() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isArticlesIndex = pathname === "/articles" || pathname === "/articles/";
+
+  if (!isArticlesIndex) {
+    return <Outlet />;
+  }
+
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-background font-sans text-foreground">
       <Navbar />
