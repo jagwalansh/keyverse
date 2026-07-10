@@ -36,6 +36,41 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://keyverse.me/articles/increase-wpm-with-music</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/keyverse-vs-monkeytype</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/rhythm-and-muscle-memory</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/best-keyboard-layouts</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/fix-common-typing-mistakes</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/beginners-guide-to-touch-typing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://keyverse.me/articles/why-lyrics-beat-random-text</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://keyverse.me/recommended</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

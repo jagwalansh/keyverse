@@ -21,9 +21,16 @@ import { Route as ArticlesRouteImport } from './routes/articles'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PlayTrackIdRouteImport } from './routes/play.$trackId'
+import { Route as ArticlesWhyLyricsBeatRandomTextRouteImport } from './routes/articles.why-lyrics-beat-random-text'
+import { Route as ArticlesRhythmAndMuscleMemoryRouteImport } from './routes/articles.rhythm-and-muscle-memory'
+import { Route as ArticlesKeyverseVsMonkeytypeRouteImport } from './routes/articles.keyverse-vs-monkeytype'
+import { Route as ArticlesIncreaseWpmWithMusicRouteImport } from './routes/articles.increase-wpm-with-music'
 import { Route as ArticlesHowRhythmTypingWorksRouteImport } from './routes/articles.how-rhythm-typing-works'
+import { Route as ArticlesFixCommonTypingMistakesRouteImport } from './routes/articles.fix-common-typing-mistakes'
 import { Route as ArticlesChoosingSongsForBetterPracticeRouteImport } from './routes/articles.choosing-songs-for-better-practice'
 import { Route as ArticlesBestSongsForTypingSpeedRouteImport } from './routes/articles.best-songs-for-typing-speed'
+import { Route as ArticlesBestKeyboardLayoutsRouteImport } from './routes/articles.best-keyboard-layouts'
+import { Route as ArticlesBeginnersGuideToTouchTypingRouteImport } from './routes/articles.beginners-guide-to-touch-typing'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -85,10 +92,40 @@ const PlayTrackIdRoute = PlayTrackIdRouteImport.update({
   path: '/play/$trackId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ArticlesWhyLyricsBeatRandomTextRoute =
+  ArticlesWhyLyricsBeatRandomTextRouteImport.update({
+    id: '/why-lyrics-beat-random-text',
+    path: '/why-lyrics-beat-random-text',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesRhythmAndMuscleMemoryRoute =
+  ArticlesRhythmAndMuscleMemoryRouteImport.update({
+    id: '/rhythm-and-muscle-memory',
+    path: '/rhythm-and-muscle-memory',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesKeyverseVsMonkeytypeRoute =
+  ArticlesKeyverseVsMonkeytypeRouteImport.update({
+    id: '/keyverse-vs-monkeytype',
+    path: '/keyverse-vs-monkeytype',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesIncreaseWpmWithMusicRoute =
+  ArticlesIncreaseWpmWithMusicRouteImport.update({
+    id: '/increase-wpm-with-music',
+    path: '/increase-wpm-with-music',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
 const ArticlesHowRhythmTypingWorksRoute =
   ArticlesHowRhythmTypingWorksRouteImport.update({
     id: '/how-rhythm-typing-works',
     path: '/how-rhythm-typing-works',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesFixCommonTypingMistakesRoute =
+  ArticlesFixCommonTypingMistakesRouteImport.update({
+    id: '/fix-common-typing-mistakes',
+    path: '/fix-common-typing-mistakes',
     getParentRoute: () => ArticlesRoute,
   } as any)
 const ArticlesChoosingSongsForBetterPracticeRoute =
@@ -101,6 +138,18 @@ const ArticlesBestSongsForTypingSpeedRoute =
   ArticlesBestSongsForTypingSpeedRouteImport.update({
     id: '/best-songs-for-typing-speed',
     path: '/best-songs-for-typing-speed',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesBestKeyboardLayoutsRoute =
+  ArticlesBestKeyboardLayoutsRouteImport.update({
+    id: '/best-keyboard-layouts',
+    path: '/best-keyboard-layouts',
+    getParentRoute: () => ArticlesRoute,
+  } as any)
+const ArticlesBeginnersGuideToTouchTypingRoute =
+  ArticlesBeginnersGuideToTouchTypingRouteImport.update({
+    id: '/beginners-guide-to-touch-typing',
+    path: '/beginners-guide-to-touch-typing',
     getParentRoute: () => ArticlesRoute,
   } as any)
 
@@ -116,9 +165,16 @@ export interface FileRoutesByFullPath {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
+  '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
   '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/fix-common-typing-mistakes': typeof ArticlesFixCommonTypingMistakesRoute
   '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
+  '/articles/increase-wpm-with-music': typeof ArticlesIncreaseWpmWithMusicRoute
+  '/articles/keyverse-vs-monkeytype': typeof ArticlesKeyverseVsMonkeytypeRoute
+  '/articles/rhythm-and-muscle-memory': typeof ArticlesRhythmAndMuscleMemoryRoute
+  '/articles/why-lyrics-beat-random-text': typeof ArticlesWhyLyricsBeatRandomTextRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesByTo {
@@ -133,9 +189,16 @@ export interface FileRoutesByTo {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
+  '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
   '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/fix-common-typing-mistakes': typeof ArticlesFixCommonTypingMistakesRoute
   '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
+  '/articles/increase-wpm-with-music': typeof ArticlesIncreaseWpmWithMusicRoute
+  '/articles/keyverse-vs-monkeytype': typeof ArticlesKeyverseVsMonkeytypeRoute
+  '/articles/rhythm-and-muscle-memory': typeof ArticlesRhythmAndMuscleMemoryRoute
+  '/articles/why-lyrics-beat-random-text': typeof ArticlesWhyLyricsBeatRandomTextRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRoutesById {
@@ -151,9 +214,16 @@ export interface FileRoutesById {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
+  '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
   '/articles/choosing-songs-for-better-practice': typeof ArticlesChoosingSongsForBetterPracticeRoute
+  '/articles/fix-common-typing-mistakes': typeof ArticlesFixCommonTypingMistakesRoute
   '/articles/how-rhythm-typing-works': typeof ArticlesHowRhythmTypingWorksRoute
+  '/articles/increase-wpm-with-music': typeof ArticlesIncreaseWpmWithMusicRoute
+  '/articles/keyverse-vs-monkeytype': typeof ArticlesKeyverseVsMonkeytypeRoute
+  '/articles/rhythm-and-muscle-memory': typeof ArticlesRhythmAndMuscleMemoryRoute
+  '/articles/why-lyrics-beat-random-text': typeof ArticlesWhyLyricsBeatRandomTextRoute
   '/play/$trackId': typeof PlayTrackIdRoute
 }
 export interface FileRouteTypes {
@@ -170,9 +240,16 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/beginners-guide-to-touch-typing'
+    | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
     | '/articles/choosing-songs-for-better-practice'
+    | '/articles/fix-common-typing-mistakes'
     | '/articles/how-rhythm-typing-works'
+    | '/articles/increase-wpm-with-music'
+    | '/articles/keyverse-vs-monkeytype'
+    | '/articles/rhythm-and-muscle-memory'
+    | '/articles/why-lyrics-beat-random-text'
     | '/play/$trackId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -187,9 +264,16 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/beginners-guide-to-touch-typing'
+    | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
     | '/articles/choosing-songs-for-better-practice'
+    | '/articles/fix-common-typing-mistakes'
     | '/articles/how-rhythm-typing-works'
+    | '/articles/increase-wpm-with-music'
+    | '/articles/keyverse-vs-monkeytype'
+    | '/articles/rhythm-and-muscle-memory'
+    | '/articles/why-lyrics-beat-random-text'
     | '/play/$trackId'
   id:
     | '__root__'
@@ -204,9 +288,16 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/articles/beginners-guide-to-touch-typing'
+    | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
     | '/articles/choosing-songs-for-better-practice'
+    | '/articles/fix-common-typing-mistakes'
     | '/articles/how-rhythm-typing-works'
+    | '/articles/increase-wpm-with-music'
+    | '/articles/keyverse-vs-monkeytype'
+    | '/articles/rhythm-and-muscle-memory'
+    | '/articles/why-lyrics-beat-random-text'
     | '/play/$trackId'
   fileRoutesById: FileRoutesById
 }
@@ -311,11 +402,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayTrackIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/articles/why-lyrics-beat-random-text': {
+      id: '/articles/why-lyrics-beat-random-text'
+      path: '/why-lyrics-beat-random-text'
+      fullPath: '/articles/why-lyrics-beat-random-text'
+      preLoaderRoute: typeof ArticlesWhyLyricsBeatRandomTextRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/rhythm-and-muscle-memory': {
+      id: '/articles/rhythm-and-muscle-memory'
+      path: '/rhythm-and-muscle-memory'
+      fullPath: '/articles/rhythm-and-muscle-memory'
+      preLoaderRoute: typeof ArticlesRhythmAndMuscleMemoryRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/keyverse-vs-monkeytype': {
+      id: '/articles/keyverse-vs-monkeytype'
+      path: '/keyverse-vs-monkeytype'
+      fullPath: '/articles/keyverse-vs-monkeytype'
+      preLoaderRoute: typeof ArticlesKeyverseVsMonkeytypeRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/increase-wpm-with-music': {
+      id: '/articles/increase-wpm-with-music'
+      path: '/increase-wpm-with-music'
+      fullPath: '/articles/increase-wpm-with-music'
+      preLoaderRoute: typeof ArticlesIncreaseWpmWithMusicRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
     '/articles/how-rhythm-typing-works': {
       id: '/articles/how-rhythm-typing-works'
       path: '/how-rhythm-typing-works'
       fullPath: '/articles/how-rhythm-typing-works'
       preLoaderRoute: typeof ArticlesHowRhythmTypingWorksRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/fix-common-typing-mistakes': {
+      id: '/articles/fix-common-typing-mistakes'
+      path: '/fix-common-typing-mistakes'
+      fullPath: '/articles/fix-common-typing-mistakes'
+      preLoaderRoute: typeof ArticlesFixCommonTypingMistakesRouteImport
       parentRoute: typeof ArticlesRoute
     }
     '/articles/choosing-songs-for-better-practice': {
@@ -332,20 +458,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ArticlesBestSongsForTypingSpeedRouteImport
       parentRoute: typeof ArticlesRoute
     }
+    '/articles/best-keyboard-layouts': {
+      id: '/articles/best-keyboard-layouts'
+      path: '/best-keyboard-layouts'
+      fullPath: '/articles/best-keyboard-layouts'
+      preLoaderRoute: typeof ArticlesBestKeyboardLayoutsRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
+    '/articles/beginners-guide-to-touch-typing': {
+      id: '/articles/beginners-guide-to-touch-typing'
+      path: '/beginners-guide-to-touch-typing'
+      fullPath: '/articles/beginners-guide-to-touch-typing'
+      preLoaderRoute: typeof ArticlesBeginnersGuideToTouchTypingRouteImport
+      parentRoute: typeof ArticlesRoute
+    }
   }
 }
 
 interface ArticlesRouteChildren {
+  ArticlesBeginnersGuideToTouchTypingRoute: typeof ArticlesBeginnersGuideToTouchTypingRoute
+  ArticlesBestKeyboardLayoutsRoute: typeof ArticlesBestKeyboardLayoutsRoute
   ArticlesBestSongsForTypingSpeedRoute: typeof ArticlesBestSongsForTypingSpeedRoute
   ArticlesChoosingSongsForBetterPracticeRoute: typeof ArticlesChoosingSongsForBetterPracticeRoute
+  ArticlesFixCommonTypingMistakesRoute: typeof ArticlesFixCommonTypingMistakesRoute
   ArticlesHowRhythmTypingWorksRoute: typeof ArticlesHowRhythmTypingWorksRoute
+  ArticlesIncreaseWpmWithMusicRoute: typeof ArticlesIncreaseWpmWithMusicRoute
+  ArticlesKeyverseVsMonkeytypeRoute: typeof ArticlesKeyverseVsMonkeytypeRoute
+  ArticlesRhythmAndMuscleMemoryRoute: typeof ArticlesRhythmAndMuscleMemoryRoute
+  ArticlesWhyLyricsBeatRandomTextRoute: typeof ArticlesWhyLyricsBeatRandomTextRoute
 }
 
 const ArticlesRouteChildren: ArticlesRouteChildren = {
+  ArticlesBeginnersGuideToTouchTypingRoute:
+    ArticlesBeginnersGuideToTouchTypingRoute,
+  ArticlesBestKeyboardLayoutsRoute: ArticlesBestKeyboardLayoutsRoute,
   ArticlesBestSongsForTypingSpeedRoute: ArticlesBestSongsForTypingSpeedRoute,
   ArticlesChoosingSongsForBetterPracticeRoute:
     ArticlesChoosingSongsForBetterPracticeRoute,
+  ArticlesFixCommonTypingMistakesRoute: ArticlesFixCommonTypingMistakesRoute,
   ArticlesHowRhythmTypingWorksRoute: ArticlesHowRhythmTypingWorksRoute,
+  ArticlesIncreaseWpmWithMusicRoute: ArticlesIncreaseWpmWithMusicRoute,
+  ArticlesKeyverseVsMonkeytypeRoute: ArticlesKeyverseVsMonkeytypeRoute,
+  ArticlesRhythmAndMuscleMemoryRoute: ArticlesRhythmAndMuscleMemoryRoute,
+  ArticlesWhyLyricsBeatRandomTextRoute: ArticlesWhyLyricsBeatRandomTextRoute,
 }
 
 const ArticlesRouteWithChildren = ArticlesRoute._addFileChildren(

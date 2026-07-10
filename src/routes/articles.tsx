@@ -54,7 +54,7 @@ function Articles() {
           </Link>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {articles.map((article) => (
             <article key={article.slug}>
               <Link
@@ -68,6 +68,17 @@ function Articles() {
                 <p className="mt-4 text-sm leading-7 text-muted-foreground">
                   {article.description}
                 </p>
+                <div className="mt-4 flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+                  <time dateTime={article.publishDate}>
+                    {new Date(article.publishDate + "T00:00:00").toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </time>
+                  <span>·</span>
+                  <span>{article.readingTime} min read</span>
+                </div>
                 <span className="mt-5 inline-flex w-fit rounded-md bg-primary px-4 py-2 text-xs font-mono font-semibold text-primary-foreground transition-opacity group-hover:opacity-90">
                   Read article
                 </span>
