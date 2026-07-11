@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VersesRouteImport } from './routes/verses'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as RecommendedRouteImport } from './routes/recommended'
@@ -32,6 +33,11 @@ import { Route as ArticlesBestSongsForTypingSpeedRouteImport } from './routes/ar
 import { Route as ArticlesBestKeyboardLayoutsRouteImport } from './routes/articles.best-keyboard-layouts'
 import { Route as ArticlesBeginnersGuideToTouchTypingRouteImport } from './routes/articles.beginners-guide-to-touch-typing'
 
+const VersesRoute = VersesRouteImport.update({
+  id: '/verses',
+  path: '/verses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verses': typeof VersesRoute
   '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
   '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verses': typeof VersesRoute
   '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
   '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
+  '/verses': typeof VersesRoute
   '/articles/beginners-guide-to-touch-typing': typeof ArticlesBeginnersGuideToTouchTypingRoute
   '/articles/best-keyboard-layouts': typeof ArticlesBestKeyboardLayoutsRoute
   '/articles/best-songs-for-typing-speed': typeof ArticlesBestSongsForTypingSpeedRoute
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/verses'
     | '/articles/beginners-guide-to-touch-typing'
     | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/verses'
     | '/articles/beginners-guide-to-touch-typing'
     | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/recommended'
     | '/support'
     | '/terms'
+    | '/verses'
     | '/articles/beginners-guide-to-touch-typing'
     | '/articles/best-keyboard-layouts'
     | '/articles/best-songs-for-typing-speed'
@@ -313,11 +325,19 @@ export interface RootRouteChildren {
   RecommendedRoute: typeof RecommendedRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  VersesRoute: typeof VersesRoute
   PlayTrackIdRoute: typeof PlayTrackIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/verses': {
+      id: '/verses'
+      path: '/verses'
+      fullPath: '/verses'
+      preLoaderRoute: typeof VersesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -519,6 +539,7 @@ const rootRouteChildren: RootRouteChildren = {
   RecommendedRoute: RecommendedRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  VersesRoute: VersesRoute,
   PlayTrackIdRoute: PlayTrackIdRoute,
 }
 export const routeTree = rootRouteImport

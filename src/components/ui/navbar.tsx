@@ -11,6 +11,7 @@ import {
   Newspaper,
   Search,
   Sun,
+  Swords,
   UserRound,
 } from "lucide-react";
 import { lazy, Suspense, useState, useEffect } from "react";
@@ -112,6 +113,11 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
                   <DropdownMenuItem asChild>
                     <Link to="/">
                       <Home /> Home
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/verses">
+                      <Swords /> Verses
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
