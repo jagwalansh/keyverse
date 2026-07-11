@@ -35,6 +35,17 @@ export const Route = createFileRoute("/verses")({
   validateSearch: (search: Record<string, unknown>): VersesSearchParams => ({
     lobbyId: typeof search.lobbyId === "string" ? search.lobbyId : undefined,
   }),
+  head: () => ({
+    meta: [
+      { title: "Verses — Live Rhythm Typing Multiplayer | KeyVerse" },
+      {
+        name: "description",
+        content:
+          "Type along to your favorite music in real-time alongside friends or players worldwide in the KeyVerse lobby.",
+      },
+    ],
+    links: [{ rel: "canonical", href: "https://keyverse.me/verses" }],
+  }),
   component: VersesRoute,
 });
 
