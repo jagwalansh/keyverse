@@ -5,7 +5,7 @@ import { searchTracks, type TrackSearchResult } from "@/lib/lrc";
 import { motion } from "motion/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Footer } from "@/components/ui/footer";
-import { Play } from "lucide-react";
+import { Play, Swords } from "lucide-react";
 import { DeflectCard } from "@/components/ui/deflect-card";
 import { trackEvent } from "@/lib/analytics";
 
@@ -431,6 +431,29 @@ function Index() {
                 </DeflectCard>
               ))}
             </div>
+
+            {/* Play with Friends */}
+            <DeflectCard className="w-full rounded-xl mt-6">
+              <div className="flex flex-col sm:flex-row items-center justify-between p-5 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/20 gap-4 text-left w-full relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0">
+                    <Swords className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-foreground">Play with Friends</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Challenge your friends to a live rhythm typing battle!
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/verses"
+                  className="w-full sm:w-auto px-5 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-md shadow-primary/10 flex items-center justify-center gap-2 hover:scale-[1.02] cursor-pointer"
+                >
+                  PLAY VERSES
+                </Link>
+              </div>
+            </DeflectCard>
           </motion.div>
         )}
 

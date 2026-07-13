@@ -1698,23 +1698,10 @@ function VersesRoute() {
                       </div>
 
                       {/* Action status notification */}
-                      <div className="border-t border-border/10 pt-3 mt-4 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                      <div className="border-t border-border/10 pt-3 mt-4 flex items-center justify-between text-[10px] font-mono text-muted-foreground relative z-20">
                         <span className="flex items-center gap-1">
                           <CheckCircle className="h-3 w-3 text-primary" /> Auto-focuses keyboard.
                           Just type!
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <button
-                            onClick={() => setMuted((m) => !m)}
-                            className="hover:text-foreground flex items-center gap-1 cursor-pointer"
-                          >
-                            {muted ? (
-                              <VolumeX className="h-3 w-3" />
-                            ) : (
-                              <Volume2 className="h-3 w-3" />
-                            )}
-                            {muted ? "Unmute" : "Mute"}
-                          </button>
                         </span>
                       </div>
 
@@ -1776,7 +1763,6 @@ function VersesRoute() {
                               rel: 0,
                               showinfo: 0,
                               iv_load_policy: 3,
-                              mute: muted ? 1 : 0,
                             },
                           }}
                           onPlay={() => setPlaying(true)}
@@ -1785,21 +1771,42 @@ function VersesRoute() {
                           onReady={(e) => {
                             ytPlayerRef.current = e.target;
                             e.target.playVideo();
+                            if (muted) {
+                              e.target.mute();
+                            } else {
+                              e.target.unMute();
+                            }
                           }}
                           className="w-full h-full"
                         />
                         {/* overlay masking details */}
-                        <div className="absolute inset-0 bg-transparent select-none z-10 pointer-events-none" />
+                        <div className="absolute inset-0 bg-transparent select-none z-10" />
                       </div>
 
                       {/* Track info card */}
-                      <div className="w-full flex flex-col text-left">
-                        <span className="text-[9px] font-mono text-primary font-bold uppercase">
-                          {selectedTrack.artistName}
-                        </span>
-                        <h4 className="text-xs font-bold leading-tight mt-1 truncate">
-                          {selectedTrack.trackName}
-                        </h4>
+                      <div className="w-full flex items-center justify-between text-left gap-4">
+                        <div className="flex-1 min-w-0 flex flex-col">
+                          <span className="text-[9px] font-mono text-primary font-bold uppercase">
+                            {selectedTrack.artistName}
+                          </span>
+                          <h4 className="text-xs font-bold leading-tight mt-1 truncate">
+                            {selectedTrack.trackName}
+                          </h4>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setMuted((m) => !m);
+                            setTimeout(() => inputRef.current?.focus(), 50);
+                          }}
+                          className="hover:text-foreground text-muted-foreground flex items-center gap-1.5 cursor-pointer text-[10px] font-mono font-bold bg-muted/40 hover:bg-muted/70 px-3 py-1.5 rounded-lg border border-border/30 transition-all select-none shrink-0"
+                        >
+                          {muted ? (
+                            <VolumeX className="h-3.5 w-3.5" />
+                          ) : (
+                            <Volume2 className="h-3.5 w-3.5" />
+                          )}
+                          {muted ? "UNMUTE" : "MUTE"}
+                        </button>
                       </div>
                     </div>
                   </div>

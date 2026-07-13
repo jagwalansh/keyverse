@@ -1172,14 +1172,19 @@ function PlayPage() {
           : (gameAreaRef.current?.clientHeight ?? 0) / 2,
     };
 
+    const expectedChar = line.text[charIdx];
+    const isCorrect = typedChar === expectedChar;
+
     const newResults = [...charResults];
-    newResults[charIdx] = { status: "hit", char: typedChar };
+    newResults[charIdx] = { status: isCorrect ? "hit" : "miss", char: typedChar };
     charResultsRef.current = newResults;
     setCharResults(newResults);
 
-    const newCombo = combo + 1;
+    const newCombo = isCorrect ? combo + 1 : 0;
     setCombo(newCombo);
-    setMaxCombo((m) => Math.max(m, newCombo));
+    if (isCorrect) {
+      setMaxCombo((m) => Math.max(m, newCombo));
+    }
 
     let multiplier = 1;
     if (newCombo >= 100) multiplier = 5;
@@ -1187,10 +1192,12 @@ function PlayPage() {
     else if (newCombo >= 25) multiplier = 2;
     else if (newCombo >= 10) multiplier = 1.5;
 
-    const points = Math.floor(10 * multiplier);
-    setScore((s) => s + points);
+    const points = isCorrect ? Math.floor(10 * multiplier) : 0;
+    if (isCorrect) {
+      setScore((s) => s + points);
+    }
     setStats((s) => ({
-      correct: s.correct + 1,
+      correct: s.correct + (isCorrect ? 1 : 0),
       total: s.total + 1,
       started: s.started || Date.now(),
     }));
@@ -1199,8 +1206,8 @@ function PlayPage() {
       ...prev,
       {
         id: Math.random(),
-        text: `+${points}`,
-        type: "hit" as const,
+        text: isCorrect ? `+${points}` : "❌",
+        type: isCorrect ? ("hit" as const) : ("miss" as const),
         ...feedbackPosition,
         createdAt: Date.now(),
       },
