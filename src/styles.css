@@ -168,28 +168,22 @@ html {
   bottom: 0;
   width: 4px;
   pointer-events: none;
-  background-image: radial-gradient(
-    circle,
-    color-mix(in oklch, var(--color-primary) 48%, transparent) 1.15px,
-    transparent 1.35px
-  );
+  background-image: radial-gradient(circle,
+      color-mix(in oklch, var(--color-primary) 48%, transparent) 1.15px,
+      transparent 1.35px);
   background-position: center 0;
   background-size: 4px 12px;
   background-repeat: repeat-y;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 4rem,
-    black calc(100% - 4rem),
-    transparent
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 4rem,
-    black calc(100% - 4rem),
-    transparent
-  );
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent,
+      black 4rem,
+      black calc(100% - 4rem),
+      transparent);
+  mask-image: linear-gradient(to bottom,
+      transparent,
+      black 4rem,
+      black calc(100% - 4rem),
+      transparent);
   animation: dots-run-down 1.4s linear infinite;
 }
 
@@ -215,6 +209,7 @@ html {
 }
 
 @media (max-width: 639px) {
+
   .running-dot-rails::before,
   .running-dot-rails::after {
     display: none;
@@ -279,7 +274,7 @@ html {
   -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
-.side-nav-pill > * {
+.side-nav-pill>* {
   position: relative;
   z-index: 1;
 }
@@ -319,6 +314,7 @@ html {
 }
 
 @media (max-width: 639px) {
+
   .liquid-glass-navbar,
   .backdrop-blur-sm,
   .backdrop-blur-md {
@@ -336,6 +332,7 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -350,29 +347,26 @@ html {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
 }
 
 .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.88 0.03 120) 25%,
-    oklch(0.92 0.02 120) 50%,
-    oklch(0.88 0.03 120) 75%
-  );
+  background: linear-gradient(90deg,
+      oklch(0.88 0.03 120) 25%,
+      oklch(0.92 0.02 120) 50%,
+      oklch(0.88 0.03 120) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
 }
 
 .dark .animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.235 0 0) 25%,
-    oklch(0.29 0 0) 50%,
-    oklch(0.235 0 0) 75%
-  );
+  background: linear-gradient(90deg,
+      oklch(0.235 0 0) 25%,
+      oklch(0.29 0 0) 50%,
+      oklch(0.235 0 0) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.6s infinite linear;
 }
@@ -382,6 +376,7 @@ html {
     opacity: 0;
     transform: scale(0.97);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -397,6 +392,7 @@ html {
     opacity: 0;
     transform: translateY(15px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -411,6 +407,7 @@ html {
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-24px);
   }
@@ -421,11 +418,13 @@ html {
 }
 
 @keyframes cursorBlink {
+
   0%,
   100% {
     opacity: 1;
     border-bottom-color: var(--color-primary);
   }
+
   50% {
     opacity: 0.3;
     border-bottom-color: transparent;
@@ -437,13 +436,16 @@ html {
 }
 
 @keyframes missShake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   25% {
     transform: translateX(-3px);
   }
+
   75% {
     transform: translateX(3px);
   }
@@ -458,10 +460,12 @@ html {
     opacity: 0;
     transform: translate(-50%, 0) scale(0.8);
   }
+
   15% {
     opacity: 1;
     transform: translate(-50%, -10px) scale(1.1);
   }
+
   100% {
     opacity: 0;
     transform: translate(-50%, -40px) scale(0.9);
@@ -489,6 +493,7 @@ html {
 ::view-transition-old(root) {
   z-index: 1;
 }
+
 ::view-transition-new(root) {
   z-index: 2;
 }
@@ -497,6 +502,7 @@ html {
 .dark-to-light-transition::view-transition-old(root) {
   z-index: 2;
 }
+
 .dark-to-light-transition::view-transition-new(root) {
   z-index: 1;
 }

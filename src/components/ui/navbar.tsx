@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import {
   BookOpen,
-  Heart,
   Home,
   LifeBuoy,
   ListOrdered,
@@ -180,18 +179,6 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
             </div>
           </div>
         </div>
-
-        <a
-          href="https://www.patreon.com/cw/playKeyverse"
-          target="_blank"
-          rel="noreferrer"
-          className="group flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-4 py-2 text-center text-xs font-mono font-semibold text-foreground shadow-sm transition-all hover:border-primary/40 hover:bg-primary/15"
-          aria-label="Help keep KeyVerse running"
-        >
-          <Heart className="h-4 w-4 shrink-0 text-primary transition-transform group-hover:scale-105" />
-          <span>Help keep KeyVerse running</span>
-          <span className="hidden text-primary sm:inline">Support on Patreon</span>
-        </a>
       </div>
 
       <Suspense fallback={null}>{modalOpen && <AuthModal />}</Suspense>

@@ -1788,11 +1788,10 @@ function PlayPage() {
                         </div>
                         {/* Translucent cover to blur out YouTube video recommendations / pause state */}
                         <div
-                          className={`absolute inset-0 z-10 bg-black/55 backdrop-blur-lg transition-opacity duration-500 rounded-xl ${
-                            !playing || showBlurOverlay || songEnded
+                          className={`absolute inset-0 z-10 bg-black/55 backdrop-blur-lg transition-opacity duration-500 rounded-xl ${!playing || showBlurOverlay || songEnded
                               ? "opacity-100"
                               : "opacity-0 pointer-events-none"
-                          }`}
+                            }`}
                         />
 
                         {ytCandidates.length > 1 && (
@@ -1816,28 +1815,25 @@ function PlayPage() {
                     )}
 
                     <div
-                      className={`z-20 bg-background/40 backdrop-blur-md shadow-lg border border-white/10 dark:border-white/5 transition-all duration-500 ease-in-out flex flex-col justify-center ${
-                        videoId ? "absolute left-1/2 top-1/2" : "relative mt-auto mb-4 mx-auto"
-                      } ${
-                        showSpotifyPlayer
+                      className={`z-20 bg-background/40 backdrop-blur-md shadow-lg border border-white/10 dark:border-white/5 transition-all duration-500 ease-in-out flex flex-col justify-center ${videoId ? "absolute left-1/2 top-1/2" : "relative mt-auto mb-4 mx-auto"
+                        } ${showSpotifyPlayer
                           ? "w-[80%] max-w-[320px] h-[56px] px-5 rounded-xl"
                           : "w-[240px] h-[150px] px-5 rounded-2xl"
-                      }`}
+                        }`}
                       style={
                         videoId
                           ? {
-                              transform: `translate(-50%, ${showSpotifyPlayer ? "110px" : "-50%"})`,
-                            }
+                            transform: `translate(-50%, ${showSpotifyPlayer ? "110px" : "-50%"})`,
+                          }
                           : undefined
                       }
                     >
                       {/* Layout A: Song Info */}
                       <div
-                        className={`transition-all duration-500 flex flex-col justify-center items-center text-center absolute inset-x-6 top-1/2 -translate-y-1/2 ${
-                          showSpotifyPlayer
+                        className={`transition-all duration-500 flex flex-col justify-center items-center text-center absolute inset-x-6 top-1/2 -translate-y-1/2 ${showSpotifyPlayer
                             ? "opacity-0 scale-95 pointer-events-none"
                             : "opacity-100 scale-100 pointer-events-auto"
-                        }`}
+                          }`}
                       >
                         <h2 className="text-xl font-bold tracking-tight text-foreground line-clamp-1 w-full">
                           {track}
@@ -1863,11 +1859,10 @@ function PlayPage() {
                               type="button"
                               onClick={voteForCurrentVideo}
                               disabled={savingVideoVote}
-                              className={`inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors disabled:opacity-50 ${
-                                userVideoVotes[videoId] === 1
+                              className={`inline-flex h-7 w-7 items-center justify-center rounded-full border transition-colors disabled:opacity-50 ${userVideoVotes[videoId] === 1
                                   ? "border-emerald-400/50 bg-emerald-400/15 text-emerald-400"
                                   : "border-white/10 bg-black/15 text-muted-foreground hover:text-foreground"
-                              }`}
+                                }`}
                               aria-label="Upvote this video's lyric sync"
                             >
                               <ThumbsUp className="h-3.5 w-3.5" />
@@ -1881,11 +1876,10 @@ function PlayPage() {
 
                       {/* Layout B: Spotify Player */}
                       <div
-                        className={`transition-all duration-500 flex flex-col justify-center absolute inset-x-6 top-1/2 -translate-y-1/2 w-[calc(100%-3rem)] ${
-                          showSpotifyPlayer
+                        className={`transition-all duration-500 flex flex-col justify-center absolute inset-x-6 top-1/2 -translate-y-1/2 w-[calc(100%-3rem)] ${showSpotifyPlayer
                             ? "opacity-100 scale-100 pointer-events-auto"
                             : "opacity-0 scale-95 pointer-events-none"
-                        }`}
+                          }`}
                       >
                         <div className="w-full h-6 relative flex items-center group cursor-pointer">
                           {/* Background Track (Flat, unplayed portion) */}
@@ -1943,13 +1937,12 @@ function PlayPage() {
               {hitFeedback && (
                 <div
                   key={hitFeedback.id}
-                  className={`absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black italic tracking-widest pointer-events-none z-50 animate-bounce drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
-                    hitFeedback.type === "perfect"
+                  className={`absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black italic tracking-widest pointer-events-none z-50 animate-bounce drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] ${hitFeedback.type === "perfect"
                       ? "text-blue-400"
                       : hitFeedback.type === "good"
                         ? "text-green-400"
                         : "text-red-500"
-                  }`}
+                    }`}
                 >
                   {hitFeedback.text}
                 </div>
@@ -1958,11 +1951,10 @@ function PlayPage() {
               {/* Game Area */}
               <div
                 ref={gameAreaRef}
-                className={`relative overflow-hidden rounded-xl border shadow-[0_24px_70px_rgba(0,0,0,0.22)] ${
-                  songEnded
+                className={`relative overflow-hidden rounded-xl border shadow-[0_24px_70px_rgba(0,0,0,0.22)] ${songEnded
                     ? "h-[min(34vh,300px)] border-border/40 bg-card/40"
                     : "h-[min(34vh,300px)] border-border/35 bg-card/90 text-card-foreground dark:bg-card/80"
-                }`}
+                  }`}
                 onClick={() => inputRef.current?.focus()}
               >
                 <div className="h-full cursor-pointer overflow-hidden px-8 py-6">
@@ -2174,20 +2166,18 @@ function PlayPage() {
                               >
                                 <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
                                   <div
-                                    className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${
-                                      isCurrentLine || isWaitingLine
+                                    className={`absolute inset-0 rounded-full border-2 transition-colors duration-300 ${isCurrentLine || isWaitingLine
                                         ? "border-primary"
                                         : "border-muted-foreground/30"
-                                    }`}
+                                      }`}
                                   />
                                   <div
-                                    className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${
-                                      isPassed
+                                    className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${isPassed
                                         ? "bg-primary/50"
                                         : isCurrentLine || isWaitingLine
                                           ? "bg-primary"
                                           : "bg-muted-foreground/30"
-                                    }`}
+                                      }`}
                                   />
 
                                   {showTimingCircle && (
@@ -2219,50 +2209,49 @@ function PlayPage() {
                                 </div>
 
                                 <div
-                                  className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${
-                                    isCurrentLine
+                                  className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${isCurrentLine
                                       ? "text-muted-foreground/55"
                                       : "text-muted-foreground"
-                                  }`}
+                                    }`}
                                 >
                                   {isCurrentLine
                                     ? lineTokens.map((token, tokenIdx) => {
-                                        const tokenStart = tokenOffset;
-                                        tokenOffset += token.length;
+                                      const tokenStart = tokenOffset;
+                                      tokenOffset += token.length;
 
-                                        return (
-                                          <span
-                                            key={tokenIdx}
-                                            className="inline-block whitespace-nowrap"
-                                          >
-                                            {token.split("").map((ch, tokenCharIdx) => {
-                                              const i = tokenStart + tokenCharIdx;
-                                              const result = charResults[i];
-                                              let className = "text-muted-foreground/55";
+                                      return (
+                                        <span
+                                          key={tokenIdx}
+                                          className="inline-block whitespace-nowrap"
+                                        >
+                                          {token.split("").map((ch, tokenCharIdx) => {
+                                            const i = tokenStart + tokenCharIdx;
+                                            const result = charResults[i];
+                                            let className = "text-muted-foreground/55";
 
-                                              if (i === charIdx) {
-                                                className =
-                                                  "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
-                                              } else if (result?.status === "hit") {
-                                                className = "text-foreground font-black";
-                                              } else if (result?.status === "miss") {
-                                                className =
-                                                  "text-incorrect font-black animate-miss-shake underline decoration-2 underline-offset-8 decoration-incorrect";
-                                              }
+                                            if (i === charIdx) {
+                                              className =
+                                                "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
+                                            } else if (result?.status === "hit") {
+                                              className = "text-foreground font-black";
+                                            } else if (result?.status === "miss") {
+                                              className =
+                                                "text-incorrect font-black animate-miss-shake underline decoration-2 underline-offset-8 decoration-incorrect";
+                                            }
 
-                                              return (
-                                                <span
-                                                  key={i}
-                                                  data-char-idx={i}
-                                                  className={`inline-block relative ${className} transition-colors duration-100`}
-                                                >
-                                                  {ch === " " ? "\u00A0" : ch}
-                                                </span>
-                                              );
-                                            })}
-                                          </span>
-                                        );
-                                      })
+                                            return (
+                                              <span
+                                                key={i}
+                                                data-char-idx={i}
+                                                className={`inline-block relative ${className} transition-colors duration-100`}
+                                              >
+                                                {ch === " " ? "\u00A0" : ch}
+                                              </span>
+                                            );
+                                          })}
+                                        </span>
+                                      );
+                                    })
                                     : lineText}
                                 </div>
                               </div>
@@ -2307,11 +2296,10 @@ function PlayPage() {
                           type="button"
                           onClick={toggleEasyLyrics}
                           aria-pressed={easyLyrics}
-                          className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer ${
-                            easyLyrics
+                          className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer ${easyLyrics
                               ? "border-primary bg-primary/15 text-primary"
                               : "border-border/40 bg-background/55 text-foreground hover:bg-muted/70"
-                          }`}
+                            }`}
                         >
                           Easy {easyLyrics ? "on" : "off"}
                         </button>
@@ -2388,7 +2376,7 @@ function PlayPage() {
               <input
                 ref={inputRef}
                 value=""
-                onChange={() => {}}
+                onChange={() => { }}
                 onKeyDown={onKeyDown}
                 onFocus={() => setInputFocused(true)}
                 onBlur={() => setInputFocused(false)}

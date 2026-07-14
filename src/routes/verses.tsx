@@ -1334,11 +1334,10 @@ function VersesRoute() {
                         {players.map((p) => (
                           <li
                             key={p.userId + "-" + p.socketId}
-                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
-                              p.userId === myUserId
+                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${p.userId === myUserId
                                 ? "bg-primary/5 border-primary/20"
                                 : "bg-card/45 border-border/20"
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-xs font-mono font-bold text-primary shrink-0 uppercase border border-border/30">
@@ -1402,11 +1401,10 @@ function VersesRoute() {
                         ) : (
                           <button
                             onClick={toggleReady}
-                            className={`w-full h-11 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
-                              players.find((p) => p.userId === myUserId)?.isReady
+                            className={`w-full h-11 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${players.find((p) => p.userId === myUserId)?.isReady
                                 ? "border border-correct text-correct hover:bg-correct/5 bg-correct/5"
                                 : "bg-primary text-primary-foreground hover:bg-primary/95"
-                            }`}
+                              }`}
                           >
                             <CheckCircle className="h-4 w-4 shrink-0" />
                             {players.find((p) => p.userId === myUserId)?.isReady
@@ -1561,11 +1559,10 @@ function VersesRoute() {
                         <div
                           className="bg-secondary h-full rounded-full transition-all duration-300"
                           style={{
-                            width: `${
-                              opponentProgress
+                            width: `${opponentProgress
                                 ? (opponentProgress.currentLineIdx / lyrics.length) * 100
                                 : 0
-                            }%`,
+                              }%`,
                           }}
                         />
                       </div>
@@ -1669,14 +1666,13 @@ function VersesRoute() {
                                       {/* space placeholder if not last word */}
                                       {wordIdx < array.length - 1 && (
                                         <span
-                                          className={`inline-block ${
-                                            precedingWordLength + word.length === charIdx
+                                          className={`inline-block ${precedingWordLength + word.length === charIdx
                                               ? "border-b-2 border-primary animate-pulse"
                                               : charResults[precedingWordLength + word.length]
-                                                    ?.status === "hit"
+                                                ?.status === "hit"
                                                 ? "text-primary font-black"
                                                 : "text-muted-foreground/45"
-                                          }`}
+                                            }`}
                                         >
                                           &nbsp;
                                         </span>
@@ -1710,7 +1706,7 @@ function VersesRoute() {
                         ref={inputRef}
                         type="text"
                         value=""
-                        onChange={() => {}}
+                        onChange={() => { }}
                         onKeyDown={handleKeyDown}
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
@@ -1849,11 +1845,10 @@ function VersesRoute() {
                         key={uid}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`liquid-glass-card p-6 border flex flex-col justify-between gap-6 relative overflow-hidden ${
-                          isUserWinner
+                        className={`liquid-glass-card p-6 border flex flex-col justify-between gap-6 relative overflow-hidden ${isUserWinner
                             ? "border-amber-400/35 bg-amber-400/[0.03]"
                             : "border-border/20 bg-card/45"
-                        }`}
+                          }`}
                       >
                         {isUserWinner && (
                           <div className="absolute top-3 right-3 text-xs bg-amber-400/15 border border-amber-400/30 text-amber-500 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
