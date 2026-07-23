@@ -24,7 +24,7 @@ Keyverse is a web-based rhythm typing game where users type song lyrics in sync 
 Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/keyverse.git
+git clone https://github.com/jagwalansh/keyverse.git
 cd keyverse
 ```
 
@@ -47,10 +47,21 @@ Run the development server:
 npm run dev
 ```
 
+For Supabase database setup (tables, RLS policies, auth), see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
+
 ## Build
 
 ```bash
 npm run build
+```
+
+## Deployment
+
+This project deploys to Cloudflare Workers via Wrangler — see [`wrangler.jsonc`](wrangler.jsonc) for configuration.
+
+```bash
+npm run build
+npx wrangler deploy
 ```
 
 ## License

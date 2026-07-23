@@ -39,17 +39,17 @@ function ArticleJsonLd({ article }: { article: Article }) {
   const faqSchema =
     article.faqs.length > 0
       ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: article.faqs.map((faq) => ({
-          "@type": "Question",
-          name: faq.question,
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: faq.answer,
-          },
-        })),
-      }
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: article.faqs.map((faq) => ({
+            "@type": "Question",
+            name: faq.question,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: faq.answer,
+            },
+          })),
+        }
       : null;
 
   return (
@@ -138,7 +138,10 @@ export function ArticlePage({ article }: { article?: Article }) {
         <p className="mt-6 text-base leading-8 text-muted-foreground">{article.intro}</p>
 
         {/* Table of Contents */}
-        <nav className="mt-8 rounded-xl border border-border/40 bg-card/30 p-5" aria-label="Table of contents">
+        <nav
+          className="mt-8 rounded-xl border border-border/40 bg-card/30 p-5"
+          aria-label="Table of contents"
+        >
           <div className="mb-3 text-xs font-mono font-bold uppercase tracking-wider text-foreground">
             In this article
           </div>

@@ -5,7 +5,7 @@
 1. Go to https://app.supabase.com and log in to your project
 2. Click **SQL Editor** in the left sidebar
 3. Click **+ New Query**
-4. Copy the entire content of `supabase-migration.sql` from this project
+4. Copy the entire content of `supabase/migrations/00_initial_schema.sql` from this project
 5. Paste it into the SQL editor
 6. Click **Run** to execute all migrations
 
@@ -22,8 +22,6 @@
 
 ```bash
 npm install
-# or
-bun install
 ```
 
 This installs `@supabase/supabase-js` which we added to package.json
@@ -82,4 +80,4 @@ The following files have been created and need to be integrated:
 - If auth fails: Ensure email/password meet requirements (min 6 chars)
 - If scores don't save: Check browser console for errors
 
-Let me know once you've completed Step 1 and I'll integrate everything into the UI! 🚀
+Run `npm run dev` to start the development server after completing setup.

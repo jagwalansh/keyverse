@@ -210,7 +210,6 @@ function VersesRoute() {
     }
   }, [muted]);
 
-
   const handleSaveScreenName = (e: React.FormEvent) => {
     e.preventDefault();
     let finalName = screenName.trim();
@@ -974,7 +973,7 @@ function VersesRoute() {
         const newTotal = stats.total + 1;
         const finalAcc = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 0;
         const finalMins = activeTypingMsRef.current / 1000 / 60;
-        const finalWpm = finalMins > 0 ? Math.round((newCorrect / 5) / finalMins) : 0;
+        const finalWpm = finalMins > 0 ? Math.round(newCorrect / 5 / finalMins) : 0;
 
         setMatchResults((prev) => ({
           ...prev,
@@ -1022,7 +1021,9 @@ function VersesRoute() {
     if (ytPlayerRef.current) {
       try {
         ytPlayerRef.current.stopVideo();
-      } catch (_) { /* ignore if player not ready */ }
+      } catch (_) {
+        /* ignore if player not ready */
+      }
     }
     // Cancel the animation frame loop
     if (rafRef.current) {
@@ -1334,10 +1335,11 @@ function VersesRoute() {
                         {players.map((p) => (
                           <li
                             key={p.userId + "-" + p.socketId}
-                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${p.userId === myUserId
+                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                              p.userId === myUserId
                                 ? "bg-primary/5 border-primary/20"
                                 : "bg-card/45 border-border/20"
-                              }`}
+                            }`}
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-xs font-mono font-bold text-primary shrink-0 uppercase border border-border/30">
@@ -1401,10 +1403,11 @@ function VersesRoute() {
                         ) : (
                           <button
                             onClick={toggleReady}
-                            className={`w-full h-11 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${players.find((p) => p.userId === myUserId)?.isReady
+                            className={`w-full h-11 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+                              players.find((p) => p.userId === myUserId)?.isReady
                                 ? "border border-correct text-correct hover:bg-correct/5 bg-correct/5"
                                 : "bg-primary text-primary-foreground hover:bg-primary/95"
-                              }`}
+                            }`}
                           >
                             <CheckCircle className="h-4 w-4 shrink-0" />
                             {players.find((p) => p.userId === myUserId)?.isReady
@@ -1521,7 +1524,7 @@ function VersesRoute() {
                         <b className="text-foreground">
                           {/* E5: Guard against Infinity when activeTypingMs is 0 */}
                           {activeTypingMs > 0 && stats.total > 0
-                            ? Math.round((stats.correct / 5) / (activeTypingMs / 1000 / 60)) || 0
+                            ? Math.round(stats.correct / 5 / (activeTypingMs / 1000 / 60)) || 0
                             : 0}
                         </b>
                       </span>
@@ -1559,10 +1562,11 @@ function VersesRoute() {
                         <div
                           className="bg-secondary h-full rounded-full transition-all duration-300"
                           style={{
-                            width: `${opponentProgress
+                            width: `${
+                              opponentProgress
                                 ? (opponentProgress.currentLineIdx / lyrics.length) * 100
                                 : 0
-                              }%`,
+                            }%`,
                           }}
                         />
                       </div>
@@ -1666,13 +1670,14 @@ function VersesRoute() {
                                       {/* space placeholder if not last word */}
                                       {wordIdx < array.length - 1 && (
                                         <span
-                                          className={`inline-block ${precedingWordLength + word.length === charIdx
+                                          className={`inline-block ${
+                                            precedingWordLength + word.length === charIdx
                                               ? "border-b-2 border-primary animate-pulse"
                                               : charResults[precedingWordLength + word.length]
-                                                ?.status === "hit"
+                                                    ?.status === "hit"
                                                 ? "text-primary font-black"
                                                 : "text-muted-foreground/45"
-                                            }`}
+                                          }`}
                                         >
                                           &nbsp;
                                         </span>
@@ -1706,7 +1711,7 @@ function VersesRoute() {
                         ref={inputRef}
                         type="text"
                         value=""
-                        onChange={() => { }}
+                        onChange={() => {}}
                         onKeyDown={handleKeyDown}
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
@@ -1845,10 +1850,11 @@ function VersesRoute() {
                         key={uid}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className={`liquid-glass-card p-6 border flex flex-col justify-between gap-6 relative overflow-hidden ${isUserWinner
+                        className={`liquid-glass-card p-6 border flex flex-col justify-between gap-6 relative overflow-hidden ${
+                          isUserWinner
                             ? "border-amber-400/35 bg-amber-400/[0.03]"
                             : "border-border/20 bg-card/45"
-                          }`}
+                        }`}
                       >
                         {isUserWinner && (
                           <div className="absolute top-3 right-3 text-xs bg-amber-400/15 border border-amber-400/30 text-amber-500 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
