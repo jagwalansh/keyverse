@@ -2242,7 +2242,7 @@ function PlayPage() {
 
                                               if (i === charIdx) {
                                                 className =
-                                                  "text-foreground animate-cursor-blink underline decoration-2 underline-offset-8 decoration-primary";
+                                                  "text-foreground animate-cursor-blink";
                                               } else if (result?.status === "hit") {
                                                 className = "text-foreground font-black";
                                               } else if (result?.status === "miss") {

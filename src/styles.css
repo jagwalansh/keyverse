@@ -427,18 +427,18 @@ html {
 @keyframes cursorBlink {
   0%,
   100% {
-    opacity: 1;
-    border-bottom-color: var(--color-primary);
+    border-left-color: var(--color-primary);
   }
 
   50% {
-    opacity: 0.3;
-    border-bottom-color: transparent;
+    border-left-color: transparent;
   }
 }
 
 .animate-cursor-blink {
   animation: cursorBlink 1s ease-in-out infinite;
+  border-left: 2px solid var(--color-primary);
+  margin-left: -1px;
 }
 
 @keyframes missShake {
