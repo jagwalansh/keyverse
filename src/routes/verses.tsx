@@ -579,7 +579,9 @@ function VersesRoute() {
         // Load YouTube video details, community votes from song_video_votes, and lyrics in parallel
         const [ytRes, voteRes, lyricsData] = await Promise.all([
           fetch(`/api/youtube-search?${youtubeParams.toString()}`),
-          fetch(`/api/video-votes?songId=${encodeURIComponent(selectedTrack.trackId)}`).catch(() => null),
+          fetch(`/api/video-votes?songId=${encodeURIComponent(selectedTrack.trackId)}`).catch(
+            () => null,
+          ),
           fetchSyncedLyrics(artistName, trackName, duration),
         ]);
 
@@ -1148,9 +1150,7 @@ function VersesRoute() {
               >
                 <div className="text-center flex flex-col items-center gap-2">
                   <h1 className="text-3xl font-bold tracking-tight">Verses</h1>
-                  <p className="text-xs text-muted-foreground">
-                    Live rhythm typing multiplayer
-                  </p>
+                  <p className="text-xs text-muted-foreground">Live rhythm typing multiplayer</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
@@ -1268,7 +1268,8 @@ function VersesRoute() {
                         <div className="max-h-60 overflow-y-auto divide-y divide-border/10 mt-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                           {searchLoading ? (
                             <div className="py-6 flex justify-center items-center text-xs text-muted-foreground gap-2">
-                              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> Searching...
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />{" "}
+                              Searching...
                             </div>
                           ) : (
                             searchResults.map((track) => (
@@ -1476,7 +1477,7 @@ function VersesRoute() {
               </motion.div>
             )}
 
-                {/* 4. State: PLAYING - Active Match */}
+            {/* 4. State: PLAYING - Active Match */}
             {gameState === "playing" && lyrics && selectedTrack && (
               <motion.div
                 key="playing"
@@ -1503,9 +1504,7 @@ function VersesRoute() {
                   {/* Local player stats */}
                   <div className="p-3.5 rounded-xl border border-border/30 bg-card/45 flex flex-col gap-2">
                     <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-primary font-semibold">
-                        {myUsername} (You)
-                      </span>
+                      <span className="text-primary font-semibold">{myUsername} (You)</span>
                       <span className="text-muted-foreground font-mono text-[11px]">
                         Line {currentLineIdx + 1}/{lyrics.length}
                       </span>
@@ -1574,11 +1573,11 @@ function VersesRoute() {
                           WPM: <b className="text-foreground">{opponentProgress?.wpm || 0}</b>
                         </span>
                         <span>
-                          Acc:{" "}
-                          <b className="text-foreground">{opponentProgress?.accuracy || 0}%</b>
+                          Acc: <b className="text-foreground">{opponentProgress?.accuracy || 0}%</b>
                         </span>
                         <span>
-                          Combo: <b className="text-foreground">{opponentProgress?.maxCombo || 0}</b>
+                          Combo:{" "}
+                          <b className="text-foreground">{opponentProgress?.maxCombo || 0}</b>
                         </span>
                         <span>
                           Score: <b className="text-foreground">{opponentProgress?.score || 0}</b>
@@ -1788,9 +1787,7 @@ function VersesRoute() {
                   <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
                     Match Complete
                   </span>
-                  <h1 className="text-3xl font-bold tracking-tight">
-                    {selectedTrack?.trackName}
-                  </h1>
+                  <h1 className="text-3xl font-bold tracking-tight">{selectedTrack?.trackName}</h1>
                   <p className="text-xs text-muted-foreground font-medium">
                     {selectedTrack?.artistName}
                   </p>
@@ -1849,9 +1846,7 @@ function VersesRoute() {
                         }}
                         style={{ transformOrigin: "bottom center" }}
                         className={`flex-1 w-full rounded-2xl border border-border/30 bg-card/45 flex flex-col items-center justify-between gap-5 text-center relative overflow-hidden backdrop-blur-sm transition-all ${
-                          isUserWinner
-                            ? "p-8 min-h-[280px]"
-                            : "p-5 min-h-[220px]"
+                          isUserWinner ? "p-8 min-h-[280px]" : "p-5 min-h-[220px]"
                         }`}
                       >
                         {/* Crown Icon on Top Left Corner of Winner's Div */}
@@ -1862,7 +1857,9 @@ function VersesRoute() {
                         )}
                         {/* Top info header */}
                         <div className="flex flex-col items-center justify-center gap-1 text-center w-full">
-                          <p className={`font-bold flex items-center justify-center gap-1.5 ${isUserWinner ? "text-base" : "text-sm"}`}>
+                          <p
+                            className={`font-bold flex items-center justify-center gap-1.5 ${isUserWinner ? "text-base" : "text-sm"}`}
+                          >
                             {result.username}
                             {uid === myUserId && (
                               <span className="text-[9px] font-mono text-primary border border-primary/30 px-1 rounded">
@@ -1884,7 +1881,9 @@ function VersesRoute() {
                             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                               Score
                             </span>
-                            <span className={`font-bold font-mono text-primary mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                            <span
+                              className={`font-bold font-mono text-primary mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}
+                            >
                               {result.score.toLocaleString()}
                             </span>
                           </div>
@@ -1893,7 +1892,9 @@ function VersesRoute() {
                             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                               Accuracy
                             </span>
-                            <span className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                            <span
+                              className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}
+                            >
                               {result.accuracy}%
                             </span>
                           </div>
@@ -1902,7 +1903,9 @@ function VersesRoute() {
                             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                               Speed
                             </span>
-                            <span className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                            <span
+                              className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}
+                            >
                               {result.wpm}{" "}
                               <span className="text-xs font-normal text-muted-foreground">WPM</span>
                             </span>
@@ -1912,7 +1915,9 @@ function VersesRoute() {
                             <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                               Max Combo
                             </span>
-                            <span className={`font-bold font-mono text-primary/90 mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                            <span
+                              className={`font-bold font-mono text-primary/90 mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}
+                            >
                               {result.maxCombo || 0}
                               <span className="text-xs font-normal text-muted-foreground">x</span>
                             </span>

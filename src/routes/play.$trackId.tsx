@@ -2241,8 +2241,7 @@ function PlayPage() {
                                               let className = "text-muted-foreground/55";
 
                                               if (i === charIdx) {
-                                                className =
-                                                  "text-foreground animate-cursor-blink";
+                                                className = "text-foreground animate-cursor-blink";
                                               } else if (result?.status === "hit") {
                                                 className = "text-foreground font-black";
                                               } else if (result?.status === "miss") {
