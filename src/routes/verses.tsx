@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { searchTracks, fetchSyncedLyrics, type LyricLine, type TrackSearchResult } from "@/lib/lrc";
+import { hasCustomLyrics } from "@/lib/custom-lyrics";
 import YouTube, { type YouTubePlayer } from "react-youtube";
 import { motion, AnimatePresence } from "motion/react";
 import { Navbar } from "@/components/ui/navbar";
@@ -23,6 +24,8 @@ import {
   User,
   Gamepad2,
   Loader2,
+  Music,
+  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { type RealtimeChannel } from "@supabase/supabase-js";
@@ -71,6 +74,7 @@ interface ProgressPayload {
   accuracy: number;
   score: number;
   wpm: number;
+  maxCombo?: number;
   finished: boolean;
 }
 
@@ -84,6 +88,19 @@ interface CharResult {
   status: "pending" | "hit" | "miss";
   char?: string;
 }
+
+const CONFETTI_COLORS = ["#f97316", "#eab308", "#3b82f6", "#10b981", "#ec4899", "#a855f7"];
+const SPRINKLE_PARTICLES = Array.from({ length: 42 }).map((_, i) => ({
+  id: i,
+  x: (Math.random() - 0.5) * 450,
+  y: -130 - Math.random() * 240,
+  rotate: Math.random() * 720 - 360,
+  size: 4 + Math.random() * 6,
+  isCircle: i % 3 === 0,
+  color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+  delay: 0.95 + (i % 12) * 0.03,
+  duration: 1.4 + Math.random() * 0.8,
+}));
 
 interface PresenceDetail {
   username: string;
@@ -196,6 +213,7 @@ function VersesRoute() {
       score: number;
       accuracy: number;
       wpm: number;
+      maxCombo: number;
       finished: boolean;
     };
   }>({});
@@ -349,6 +367,7 @@ function VersesRoute() {
           score: payload.score,
           accuracy: payload.accuracy,
           wpm: payload.wpm,
+          maxCombo: payload.maxCombo || 0,
           finished: true,
         },
       }));
@@ -469,8 +488,14 @@ function VersesRoute() {
     setSearchLoading(true);
     try {
       const results = await searchTracks(searchQuery);
-      setSearchResults(results);
-      if (results.length === 0) {
+      const sorted = [...results].sort((a, b) => {
+        const aCustom = hasCustomLyrics(a.artistName, a.trackName) ? 1 : 0;
+        const bCustom = hasCustomLyrics(b.artistName, b.trackName) ? 1 : 0;
+        return bCustom - aCustom;
+      });
+
+      setSearchResults(sorted);
+      if (sorted.length === 0) {
         toast.error("No tracks found matching query.");
       }
     } catch (err) {
@@ -551,9 +576,10 @@ function VersesRoute() {
           duration: String(duration),
         });
 
-        // Load YouTube video details and lyrics in parallel
-        const [ytRes, lyricsData] = await Promise.all([
+        // Load YouTube video details, community votes from song_video_votes, and lyrics in parallel
+        const [ytRes, voteRes, lyricsData] = await Promise.all([
           fetch(`/api/youtube-search?${youtubeParams.toString()}`),
+          fetch(`/api/video-votes?songId=${encodeURIComponent(selectedTrack.trackId)}`).catch(() => null),
           fetchSyncedLyrics(artistName, trackName, duration),
         ]);
 
@@ -561,13 +587,41 @@ function VersesRoute() {
           throw new Error("Failed to load YouTube video for this track.");
         }
 
-        const ytData = (await ytRes.json()) as { videoId: string; candidates?: YoutubeCandidate[] };
+        const ytData = (await ytRes.json()) as {
+          videoId: string;
+          authorName?: string;
+          candidates?: YoutubeCandidate[];
+        };
         if (!ytData.videoId) {
           throw new Error("No playable YouTube video found for this song.");
         }
 
-        setVideoId(ytData.videoId);
-        setYtCandidates(ytData.candidates || []);
+        // Load community votes from song_video_votes table
+        let voteScores: Record<string, number> = {};
+        if (voteRes && voteRes.ok) {
+          try {
+            const vData = await voteRes.json();
+            if (vData && vData.scores) {
+              voteScores = vData.scores;
+            }
+          } catch (e) {
+            console.error("Failed to parse vote scores:", e);
+          }
+        }
+
+        const candidates: YoutubeCandidate[] = ytData.candidates || [
+          { videoId: ytData.videoId, authorName: ytData.authorName || "YouTube" },
+        ];
+
+        // Pick top voted video candidate if votes exist in song_video_votes, else fallback to algorithm default
+        const topVotedCandidate = [...candidates]
+          .filter((c) => (voteScores[c.videoId] ?? 0) > 0)
+          .sort((a, b) => (voteScores[b.videoId] ?? 0) - (voteScores[a.videoId] ?? 0))[0];
+
+        const chosenVideoId = topVotedCandidate ? topVotedCandidate.videoId : ytData.videoId;
+
+        setVideoId(chosenVideoId);
+        setYtCandidates(candidates);
 
         if (!lyricsData || !lyricsData.lines || lyricsData.lines.length === 0) {
           throw new Error("No synced lyrics found for this song.");
@@ -587,13 +641,13 @@ function VersesRoute() {
 
         setLyrics(simplifiedLines);
 
-        // Broadcast assets to guest so they use the exact same video + lyrics
+        // Broadcast assets to guest so both players use the exact same most-voted video + lyrics
         if (channelRef.current) {
           channelRef.current.send({
             type: "broadcast",
             event: "game_assets",
             payload: {
-              videoId: ytData.videoId,
+              videoId: chosenVideoId,
               lyrics: simplifiedLines,
             },
           });
@@ -701,11 +755,12 @@ function VersesRoute() {
           accuracy: currentAcc,
           score: score,
           wpm: currentWpm,
+          maxCombo: maxCombo,
           finished: finishedVal,
         },
       });
     },
-    [stats.correct, stats.total, score, myUsername, myUserId],
+    [stats.correct, stats.total, score, maxCombo, myUsername, myUserId],
   );
 
   const handleLineComplete = useCallback(
@@ -747,6 +802,7 @@ function VersesRoute() {
             score: score,
             accuracy: finalAcc,
             wpm: finalWpm,
+            maxCombo: maxCombo,
             finished: true,
           },
         }));
@@ -861,6 +917,7 @@ function VersesRoute() {
           score: score,
           accuracy: finalAcc,
           wpm: finalWpm,
+          maxCombo: maxCombo,
           finished: true,
         },
       }));
@@ -1049,34 +1106,30 @@ function VersesRoute() {
       <div className="w-full max-w-5xl mx-auto px-6 py-10 flex flex-col justify-start flex-1 relative z-20">
         {/* State A: Name Setup Modal / View */}
         {!isNameSet ? (
-          <div className="w-full max-w-md mx-auto my-12 flex flex-col gap-6">
-            <div className="liquid-glass-card p-8 flex flex-col gap-6 text-center border border-border/20">
-              <div className="mx-auto h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                <User className="h-6 w-6 animate-pulse" />
-              </div>
+          <div className="w-full max-w-sm mx-auto my-16 flex flex-col gap-6">
+            <div className="p-6 rounded-xl border border-border/30 bg-card/45 backdrop-blur-sm flex flex-col gap-5 text-center">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Enter Your Stage Name</h1>
+                <h1 className="text-xl font-bold tracking-tight">Stage Name</h1>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Type in a screen name that your friend will see in the lobby and live score
-                  screen.
+                  Choose a name for live scoreboards.
                 </p>
               </div>
 
-              <form onSubmit={handleSaveScreenName} className="flex flex-col gap-4">
+              <form onSubmit={handleSaveScreenName} className="flex flex-col gap-3">
                 <input
                   type="text"
                   placeholder="e.g. RhythmTypist"
                   value={screenName}
                   onChange={(e) => setScreenName(e.target.value)}
-                  className="w-full border border-border/40 rounded-xl px-4 py-3 bg-card/45 focus:outline-none focus:border-primary text-sm transition-colors text-center font-semibold tracking-wider font-mono text-primary"
+                  className="w-full border border-border/30 rounded-lg px-3 py-2.5 bg-background/50 focus:outline-none focus:border-primary text-xs text-center font-medium transition-colors"
                   autoFocus
                   maxLength={18}
                 />
                 <button
                   type="submit"
-                  className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl text-sm shadow-sm transition-all hover:bg-primary/95 flex items-center justify-center gap-2 cursor-pointer font-mono"
+                  className="w-full h-9 bg-primary text-primary-foreground font-medium rounded-lg text-xs transition-all hover:bg-primary/90 flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  Confirm Screen Name <ArrowRight className="h-4 w-4" />
+                  Continue <ArrowRight className="h-3.5 w-3.5" />
                 </button>
               </form>
             </div>
@@ -1088,61 +1141,60 @@ function VersesRoute() {
             {gameState === "idle" && (
               <motion.div
                 key="idle"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="w-full max-w-3xl mx-auto my-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch"
+                exit={{ opacity: 0, y: -10 }}
+                className="w-full max-w-2xl mx-auto my-12 flex flex-col gap-8"
               >
-                {/* Left Card: Create */}
-                <div className="liquid-glass-card p-8 flex flex-col justify-between gap-6 border border-border/20 group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 h-40 w-40 bg-primary/5 rounded-full blur-3xl -z-10 group-hover:bg-primary/10 transition-all" />
-                  <div className="flex flex-col gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center text-primary border border-primary/20 shrink-0">
-                      <Swords className="h-5 w-5" />
-                    </div>
-                    <h2 className="text-xl font-bold tracking-tight">Host a live lobby</h2>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Create a private match lobby. You will be able to search and pick any song,
-                      copy the invite link, and play in real-time alongside your friend.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleCreateLobby}
-                    className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-sm rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer mt-4"
-                  >
-                    Create Match Room &rarr;
-                  </button>
+                <div className="text-center flex flex-col items-center gap-2">
+                  <h1 className="text-3xl font-bold tracking-tight">Verses</h1>
+                  <p className="text-xs text-muted-foreground">
+                    Live rhythm typing multiplayer
+                  </p>
                 </div>
 
-                {/* Right Card: Join */}
-                <div className="liquid-glass-card p-8 flex flex-col justify-between gap-6 border border-border/20 group relative overflow-hidden">
-                  <div className="absolute top-0 right-0 h-40 w-40 bg-secondary/5 rounded-full blur-3xl -z-10 group-hover:bg-secondary/10 transition-all" />
-                  <div className="flex flex-col gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-secondary/15 flex items-center justify-center text-secondary border border-secondary/20 shrink-0">
-                      <Gamepad2 className="h-5 w-5" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                  {/* Host Card */}
+                  <button
+                    onClick={handleCreateLobby}
+                    className="flex flex-col justify-between gap-6 p-6 rounded-xl border border-border/30 bg-card/45 backdrop-blur-sm hover:bg-card/70 transition-all text-left group cursor-pointer"
+                  >
+                    <div>
+                      <h2 className="text-base font-semibold tracking-tight">Host a match</h2>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        Create a private lobby, select any song, and share the invite code.
+                      </p>
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight">Join a lobby</h2>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      Enter the lobby link or the 36-character lobby code shared by your friend to
-                      join their private lobby and start typing against them.
-                    </p>
-                  </div>
+                    <span className="text-xs font-mono font-medium text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      Create Room &rarr;
+                    </span>
+                  </button>
 
-                  <form onSubmit={handleJoinLobby} className="flex flex-col gap-2 mt-4">
-                    <input
-                      type="text"
-                      placeholder="Paste lobby link or code..."
-                      value={joinCodeInput}
-                      onChange={(e) => setJoinCodeInput(e.target.value)}
-                      className="border border-border/40 rounded-xl px-4 h-11 bg-card/45 focus:outline-none focus:border-secondary text-xs transition-colors font-mono"
-                    />
-                    <button
-                      type="submit"
-                      className="w-full h-11 border border-border/40 hover:bg-muted/70 hover:border-secondary transition-all shadow-sm rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      Connect to Lobby
-                    </button>
-                  </form>
+                  {/* Join Card */}
+                  <div className="flex flex-col justify-between gap-6 p-6 rounded-xl border border-border/30 bg-card/45 backdrop-blur-sm text-left">
+                    <div>
+                      <h2 className="text-base font-semibold tracking-tight">Join a match</h2>
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        Enter an invite link or lobby code to connect to a friend.
+                      </p>
+                    </div>
+
+                    <form onSubmit={handleJoinLobby} className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Lobby link or code..."
+                        value={joinCodeInput}
+                        onChange={(e) => setJoinCodeInput(e.target.value)}
+                        className="flex-1 border border-border/30 rounded-lg px-3 h-9 bg-background/50 focus:outline-none focus:border-primary text-xs transition-colors font-mono"
+                      />
+                      <button
+                        type="submit"
+                        className="h-9 px-3 border border-border/30 hover:bg-muted text-xs font-semibold rounded-lg transition-all cursor-pointer shrink-0"
+                      >
+                        Join
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -1151,112 +1203,101 @@ function VersesRoute() {
             {gameState === "lobby" && (
               <motion.div
                 key="lobby"
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                className="w-full max-w-4xl mx-auto flex flex-col gap-8"
+                exit={{ opacity: 0, y: -10 }}
+                className="w-full max-w-3xl mx-auto flex flex-col gap-6"
               >
                 {/* Lobby Header bar */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/25 pb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
-                      <Users className="h-5 w-5 animate-pulse" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                        Verses Lobby
-                        <span className="text-[10px] font-mono font-bold bg-muted px-2 py-0.5 rounded-full text-muted-foreground uppercase border border-border/40">
-                          Active
-                        </span>
-                      </h1>
-                      <p className="text-xs text-muted-foreground mt-0.5 font-mono">
-                        Lobby Code: <span className="text-primary font-bold">{lobbyId}</span>
-                      </p>
-                    </div>
+                <div className="flex items-center justify-between border-b border-border/20 pb-4">
+                  <div>
+                    <h1 className="text-xl font-bold tracking-tight">Lobby</h1>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                      Code: <span className="text-foreground font-semibold">{lobbyId}</span>
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={copyInviteLink}
-                      className="h-10 px-4 border border-border/40 hover:bg-muted/75 transition-all text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer font-mono"
+                      className="h-8 px-3 border border-border/30 hover:bg-muted transition-all text-xs font-medium rounded-lg flex items-center gap-1.5 cursor-pointer font-mono"
                     >
                       {copied ? (
-                        <Check className="h-4 w-4 text-correct" />
+                        <Check className="h-3.5 w-3.5 text-correct" />
                       ) : (
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3.5 w-3.5" />
                       )}
-                      {copied ? "Copied Invite" : "Copy Invite Link"}
+                      {copied ? "Copied" : "Copy Invite"}
                     </button>
                     <button
                       onClick={() => navigate({ to: "/verses", search: {} })}
-                      className="h-10 px-4 border border-border/40 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-all text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer font-mono"
+                      className="h-8 px-3 border border-border/30 hover:bg-destructive/10 hover:text-destructive transition-all text-xs font-medium rounded-lg flex items-center gap-1 cursor-pointer"
                     >
-                      Leave Lobby
+                      Leave
                     </button>
                   </div>
                 </div>
 
                 {/* Main Lobby Panels */}
-                <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr] gap-6 items-start">
                   {/* Left Column: Track Search & Selection */}
-                  <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
                     {isHost ? (
-                      <div className="liquid-glass-card p-6 border border-border/20 flex flex-col gap-4">
-                        <h2 className="text-sm font-bold font-mono tracking-wider text-muted-foreground uppercase flex items-center gap-2">
-                          🎵 Search Track (Host Controls)
+                      <div className="p-5 rounded-xl border border-border/30 bg-card/45 flex flex-col gap-3">
+                        <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-muted-foreground">
+                          Song Selection
                         </h2>
 
                         <form onSubmit={handleSearchSongs} className="flex gap-2">
                           <input
                             type="text"
-                            placeholder="Search by artist name or track title..."
+                            placeholder="Search by track or artist..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="flex-1 border border-border/40 rounded-xl px-4 h-11 bg-card/45 focus:outline-none focus:border-primary text-xs transition-colors font-mono"
+                            className="flex-1 border border-border/30 rounded-lg px-3 h-9 bg-background/50 focus:outline-none focus:border-primary text-xs transition-colors"
                           />
                           <button
                             type="submit"
-                            className="h-11 px-4 bg-primary text-primary-foreground hover:bg-primary/95 transition-all rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                            className="h-9 px-3 bg-primary text-primary-foreground transition-all rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer shrink-0"
                           >
-                            <Search className="h-4 w-4" /> Search
+                            <Search className="h-3.5 w-3.5" /> Search
                           </button>
                         </form>
 
                         {/* Search Results */}
-                        <div className="max-h-72 overflow-y-auto divide-y divide-border/20 mt-2">
+                        <div className="max-h-60 overflow-y-auto divide-y divide-border/10 mt-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                           {searchLoading ? (
-                            <div className="py-8 flex justify-center items-center text-xs text-muted-foreground gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-primary" /> Searching
-                              iTunes database...
+                            <div className="py-6 flex justify-center items-center text-xs text-muted-foreground gap-2">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> Searching...
                             </div>
                           ) : (
                             searchResults.map((track) => (
                               <button
                                 key={track.id}
                                 onClick={() => handleSelectTrack(track)}
-                                className="w-full flex items-center gap-3 rounded-lg p-2.5 hover:bg-muted/70 transition-all text-left group"
+                                className="w-full flex items-center gap-3 rounded-lg p-2 hover:bg-muted/60 transition-all text-left group cursor-pointer"
                               >
                                 {track.artworkUrl100 ? (
                                   <img
                                     src={track.artworkUrl100}
                                     alt={track.trackName}
-                                    className="h-9 w-9 rounded-md object-cover border border-border/10 shrink-0"
+                                    className="h-8 w-8 rounded object-cover border border-border/10 shrink-0"
                                   />
                                 ) : (
-                                  <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                                    ♪
+                                  <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center text-primary text-xs shrink-0">
+                                    <Music className="h-3.5 w-3.5" />
                                   </div>
                                 )}
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-xs font-semibold group-hover:text-primary transition-colors">
                                     {track.trackName}
                                   </p>
-                                  <p className="truncate text-[10px] text-muted-foreground mt-0.5">
+                                  <p className="truncate text-[10px] text-muted-foreground">
                                     {track.artistName}
                                   </p>
                                 </div>
-                                <span className="text-[10px] font-mono text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                                  SELECT &rarr;
+                                <span className="text-[10px] font-mono font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                  SELECT
                                 </span>
                               </button>
                             ))
@@ -1264,130 +1305,94 @@ function VersesRoute() {
                         </div>
                       </div>
                     ) : (
-                      <div className="liquid-glass-card p-8 border border-border/20 flex flex-col justify-center items-center text-center gap-4 py-16">
-                        <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground border border-border/40 shrink-0">
-                          🎵
-                        </div>
-                        <div>
-                          <h2 className="text-sm font-semibold tracking-tight">Song Selection</h2>
-                          <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                            Only the host can search and choose the track. Wait for your friend to
-                            select a song!
-                          </p>
-                        </div>
+                      <div className="p-6 rounded-xl border border-border/30 bg-card/45 text-center text-xs text-muted-foreground">
+                        Waiting for host to pick a track...
                       </div>
                     )}
 
                     {/* Selected Track card display */}
                     {selectedTrack ? (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="liquid-glass-card p-6 border border-border/20 flex items-center gap-4 bg-primary/5 border-primary/20 relative overflow-hidden"
-                      >
+                      <div className="p-4 rounded-xl border border-border/30 bg-card/45 flex items-center gap-3">
                         {selectedTrack.artworkUrl ? (
                           <img
                             src={selectedTrack.artworkUrl}
                             alt={selectedTrack.trackName}
-                            className="h-16 w-16 rounded-xl object-cover border border-border/10 shrink-0 shadow"
+                            className="h-12 w-12 rounded-lg object-cover border border-border/10 shrink-0"
                           />
                         ) : (
-                          <div className="h-16 w-16 rounded-xl bg-primary/15 flex items-center justify-center text-primary font-bold text-lg shrink-0">
-                            ♪
+                          <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground shrink-0">
+                            <Music className="h-5 w-5" />
                           </div>
                         )}
                         <div className="min-w-0 flex-1">
-                          <span className="text-[9px] font-mono bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                            Selected Song
-                          </span>
-                          <h3 className="truncate text-base font-bold group-hover:text-primary mt-1.5 leading-tight">
+                          <p className="text-[10px] font-mono text-primary font-semibold uppercase">
+                            Selected
+                          </p>
+                          <h3 className="truncate text-xs font-semibold leading-tight mt-0.5">
                             {selectedTrack.trackName}
                           </h3>
-                          <p className="truncate text-xs text-muted-foreground mt-0.5">
+                          <p className="truncate text-[10px] text-muted-foreground">
                             {selectedTrack.artistName}
                           </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xs font-mono font-bold text-primary">
-                            {formatTime(selectedTrack.duration)}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">
-                            duration
-                          </p>
+                        <div className="text-right shrink-0 font-mono text-xs text-muted-foreground">
+                          {formatTime(selectedTrack.duration)}
                         </div>
-                      </motion.div>
+                      </div>
                     ) : (
-                      <div className="liquid-glass-card p-6 border border-border/20 text-center py-8 text-xs text-muted-foreground font-mono">
-                        No song chosen yet.
+                      <div className="p-4 rounded-xl border border-border/30 text-center text-xs text-muted-foreground/60 font-mono">
+                        No song selected.
                       </div>
                     )}
                   </div>
 
                   {/* Right Column: Participant details */}
-                  <div className="flex flex-col gap-6">
-                    <div className="liquid-glass-card p-6 border border-border/20 flex flex-col gap-4">
-                      <h2 className="text-sm font-bold font-mono tracking-wider text-muted-foreground uppercase flex items-center gap-2">
-                        👥 Match Lobby Players ({players.length})
+                  <div className="flex flex-col gap-4">
+                    <div className="p-5 rounded-xl border border-border/30 bg-card/45 flex flex-col gap-3">
+                      <h2 className="text-xs font-mono uppercase tracking-wider font-semibold text-muted-foreground">
+                        Players ({players.length})
                       </h2>
 
                       {/* Players list */}
-                      <ul className="flex flex-col gap-3">
+                      <ul className="flex flex-col gap-2">
                         {players.map((p) => (
                           <li
                             key={p.userId + "-" + p.socketId}
-                            className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                            className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-all ${
                               p.userId === myUserId
-                                ? "bg-primary/5 border-primary/20"
-                                : "bg-card/45 border-border/20"
+                                ? "bg-card/45 border-border/30"
+                                : "bg-card/30 border-border/20"
                             }`}
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-xs font-mono font-bold text-primary shrink-0 uppercase border border-border/30">
-                                {p.username.substring(0, 2)}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold truncate flex items-center gap-1.5">
-                                  {p.username}
-                                  {p.userId === myUserId && (
-                                    <span className="text-[9px] font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/20">
-                                      you
-                                    </span>
-                                  )}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                                  {p.isHost ? "Lobby Host" : "Challenger"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Ready Status indicators */}
-                            <div className="shrink-0 flex items-center gap-2">
-                              {p.isReady ? (
-                                <span className="text-[10px] font-mono bg-correct/10 border border-correct/20 text-correct px-2 py-0.5 rounded-full font-bold uppercase flex items-center gap-1">
-                                  <CheckCircle className="h-3 w-3" /> Ready
-                                </span>
-                              ) : (
-                                <span className="text-[10px] font-mono bg-muted text-muted-foreground px-2 py-0.5 rounded-full font-bold uppercase">
-                                  Pending
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-semibold truncate">{p.username}</span>
+                              {p.userId === myUserId && (
+                                <span className="text-[9px] font-mono text-primary border border-primary/30 px-1 rounded">
+                                  you
                                 </span>
                               )}
                             </div>
+                            <span
+                              className={`text-[10px] font-mono px-2 py-0.5 rounded font-semibold ${
+                                p.isReady
+                                  ? "bg-correct/10 text-correct border border-correct/20"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {p.isReady ? "Ready" : "Waiting"}
+                            </span>
                           </li>
                         ))}
 
                         {players.length < 2 && (
-                          <li className="p-4 text-center border border-dashed border-border/40 rounded-xl bg-card/10 text-xs text-muted-foreground leading-relaxed flex flex-col items-center gap-2 py-8">
-                            <span className="animate-bounce">👋</span>
-                            Waiting for your friend to join...
-                            <span className="text-[10px] font-mono text-muted-foreground/60 max-w-xs mt-1">
-                              Copy and send them the invite link above to play together!
-                            </span>
+                          <li className="p-3 text-center border border-dashed border-border/30 rounded-lg text-xs text-muted-foreground/70">
+                            Waiting for opponent...
                           </li>
                         )}
                       </ul>
 
                       {/* Ready / Start Actions */}
-                      <div className="mt-4 pt-4 border-t border-border/25">
+                      <div className="mt-2 pt-3 border-t border-border/20">
                         {isHost ? (
                           <button
                             onClick={handleStartMatch}
@@ -1396,29 +1401,24 @@ function VersesRoute() {
                               !players.filter((p) => !p.isHost).every((p) => p.isReady) ||
                               !selectedTrack
                             }
-                            className="w-full h-11 bg-primary text-primary-foreground disabled:opacity-40 disabled:hover:bg-primary transition-all shadow-sm rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:cursor-not-allowed"
+                            className="w-full h-9 bg-primary text-primary-foreground disabled:opacity-40 transition-all rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
                           >
-                            <Play className="h-4 w-4 shrink-0 fill-current" /> Start Match
+                            <Play className="h-3.5 w-3.5 fill-current" /> Start Match
                           </button>
                         ) : (
                           <button
                             onClick={toggleReady}
-                            className={`w-full h-11 font-mono text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+                            className={`w-full h-9 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                               players.find((p) => p.userId === myUserId)?.isReady
                                 ? "border border-correct text-correct hover:bg-correct/5 bg-correct/5"
-                                : "bg-primary text-primary-foreground hover:bg-primary/95"
+                                : "bg-primary text-primary-foreground hover:bg-primary/90"
                             }`}
                           >
-                            <CheckCircle className="h-4 w-4 shrink-0" />
+                            <CheckCircle className="h-3.5 w-3.5" />
                             {players.find((p) => p.userId === myUserId)?.isReady
-                              ? "Ready!"
+                              ? "Ready"
                               : "Ready Up"}
                           </button>
-                        )}
-                        {!selectedTrack && (
-                          <p className="text-[10px] text-muted-foreground text-center font-mono mt-2">
-                            Select a song first to play.
-                          </p>
                         )}
                       </div>
                     </div>
@@ -1476,42 +1476,42 @@ function VersesRoute() {
               </motion.div>
             )}
 
-            {/* 4. State: PLAYING - Gameplay active split screen layout */}
-            {gameState === "playing" && lyrics && selectedTrack && videoId && (
+                {/* 4. State: PLAYING - Active Match */}
+            {gameState === "playing" && lyrics && selectedTrack && (
               <motion.div
                 key="playing"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="w-full flex flex-col gap-6"
+                className="w-full flex flex-col gap-5"
               >
-                {/* Match top bar with abandon control */}
+                {/* Match top bar */}
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-mono font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                    <Swords className="h-4 w-4 text-primary" /> Live Match
+                  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Live Match
                   </h2>
                   <button
                     onClick={handleAbandonMatch}
-                    className="h-8 px-3 border border-border/40 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-all text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer font-mono"
+                    className="h-8 px-3 border border-border/30 hover:bg-destructive/10 hover:text-destructive transition-all text-xs font-medium rounded-lg flex items-center gap-1.5 cursor-pointer"
                   >
-                    <RotateCcw className="h-3.5 w-3.5" /> Abandon Match
+                    Abandon
                   </button>
                 </div>
 
-                {/* Live Headbar comparisons */}
+                {/* Live player HUD comparisons */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  {/* Local player stats progress */}
-                  <div className="liquid-glass-card p-4 border border-primary/20 bg-primary/5 flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-xs font-mono font-bold">
-                      <span className="flex items-center gap-1 text-primary">
-                        <User className="h-3.5 w-3.5" /> {myUsername} (You)
+                  {/* Local player stats */}
+                  <div className="p-3.5 rounded-xl border border-border/30 bg-card/45 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs font-medium">
+                      <span className="text-primary font-semibold">
+                        {myUsername} (You)
                       </span>
-                      <span>
+                      <span className="text-muted-foreground font-mono text-[11px]">
                         Line {currentLineIdx + 1}/{lyrics.length}
                       </span>
                     </div>
 
-                    <div className="w-full bg-border/20 h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-border/20 h-1.5 rounded-full overflow-hidden">
                       <div
                         className="bg-primary h-full rounded-full transition-all duration-300"
                         style={{ width: `${(currentLineIdx / lyrics.length) * 100}%` }}
@@ -1522,45 +1522,43 @@ function VersesRoute() {
                       <span>
                         WPM:{" "}
                         <b className="text-foreground">
-                          {/* E5: Guard against Infinity when activeTypingMs is 0 */}
                           {activeTypingMs > 0 && stats.total > 0
                             ? Math.round(stats.correct / 5 / (activeTypingMs / 1000 / 60)) || 0
                             : 0}
                         </b>
                       </span>
                       <span>
-                        Accuracy:{" "}
+                        Acc:{" "}
                         <b className="text-foreground">
                           {stats.total ? Math.round((stats.correct / stats.total) * 100) : 0}%
                         </b>
                       </span>
                       <span>
-                        Score: <b className="text-primary">{score}</b>
+                        Combo: <b className="text-primary">{combo}</b>
                       </span>
                       <span>
-                        Combo: <b className="text-primary">{combo}</b> (max {maxCombo})
+                        Score: <b className="text-primary">{score}</b>
                       </span>
                     </div>
                   </div>
 
-                  {/* Opponent player stats progress */}
+                  {/* Opponent player stats */}
                   {players.length > 1 ? (
-                    <div className="liquid-glass-card p-4 border border-border/20 bg-card/40 flex flex-col gap-2">
-                      <div className="flex items-center justify-between text-xs font-mono font-bold">
-                        <span className="flex items-center gap-1 text-muted-foreground">
-                          <User className="h-3.5 w-3.5" />{" "}
+                    <div className="p-3.5 rounded-xl border border-border/30 bg-card/30 flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-xs font-medium">
+                        <span className="text-muted-foreground font-semibold">
                           {players.find((p) => p.userId !== myUserId)?.username || "Opponent"}
                         </span>
-                        <span>
+                        <span className="text-muted-foreground font-mono text-[11px]">
                           {opponentProgress
                             ? `Line ${Math.min(opponentProgress.currentLineIdx + 1, lyrics.length)}/${lyrics.length}`
-                            : "Waiting for update..."}
+                            : "Connecting..."}
                         </span>
                       </div>
 
-                      <div className="w-full bg-border/20 h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-border/20 h-1.5 rounded-full overflow-hidden">
                         <div
-                          className="bg-secondary h-full rounded-full transition-all duration-300"
+                          className="bg-muted-foreground/60 h-full rounded-full transition-all duration-300"
                           style={{
                             width: `${
                               opponentProgress
@@ -1576,336 +1574,348 @@ function VersesRoute() {
                           WPM: <b className="text-foreground">{opponentProgress?.wpm || 0}</b>
                         </span>
                         <span>
-                          Accuracy:{" "}
+                          Acc:{" "}
                           <b className="text-foreground">{opponentProgress?.accuracy || 0}%</b>
                         </span>
                         <span>
-                          Score: <b className="text-secondary">{opponentProgress?.score || 0}</b>
+                          Combo: <b className="text-foreground">{opponentProgress?.maxCombo || 0}</b>
                         </span>
                         <span>
-                          Status:{" "}
-                          <b
-                            className={
-                              opponentProgress?.finished
-                                ? "text-correct uppercase"
-                                : "text-foreground"
-                            }
-                          >
-                            {opponentProgress?.finished ? "Finished" : "Typing"}
-                          </b>
+                          Score: <b className="text-foreground">{opponentProgress?.score || 0}</b>
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <div className="liquid-glass-card p-4 border border-border/20 bg-card/10 text-center flex items-center justify-center font-mono text-xs text-muted-foreground">
-                      Solo Round: No challenger connected.
+                    <div className="p-3.5 rounded-xl border border-border/30 bg-card/10 text-center font-mono text-xs text-muted-foreground">
+                      Solo Round
                     </div>
                   )}
                 </div>
 
                 {/* Lyrics typing arena */}
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-stretch">
-                  {/* Left panel: Lyric displays */}
-                  <div className="flex flex-col gap-4">
-                    <div className="liquid-glass-card p-6 border border-border/20 flex-1 flex flex-col justify-between min-h-[300px] relative overflow-hidden select-none">
-                      {/* Sub-Header bar */}
-                      <div className="flex justify-between items-center border-b border-border/10 pb-3 mb-4">
-                        <p className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest">
-                          Type Lyrics
-                        </p>
-                        {waitingForNext && (
-                          <span className="text-[10px] font-mono font-bold bg-primary/10 border border-primary/20 text-primary px-2 py-0.5 rounded-full uppercase animate-pulse">
-                            Next line in {waitingForNext}s
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Display lines */}
-                      <div className="flex-1 flex flex-col justify-center items-center py-6 text-center font-mono relative min-h-48">
-                        <div className="w-full max-w-xl flex flex-col gap-6 justify-center">
-                          {/* Previous Line */}
-                          {currentLineIdx > 0 && lyrics[currentLineIdx - 1] && (
-                            <p className="text-xs text-muted-foreground/35 select-none transition-all line-through">
-                              {lyrics[currentLineIdx - 1].text}
-                            </p>
-                          )}
-
-                          {/* Active typing line */}
-                          {lyrics[currentLineIdx] && (
-                            <div className="text-lg md:text-xl font-bold tracking-wide leading-relaxed text-foreground select-none relative flex flex-wrap justify-center gap-x-1.5 gap-y-1">
-                              {lyrics[currentLineIdx].text
-                                .split(" ")
-                                .reduce((acc: React.ReactNode[], word, wordIdx, array) => {
-                                  // Keep track of global character offset
-                                  const precedingWordLength = array
-                                    .slice(0, wordIdx)
-                                    .reduce((sum, w) => sum + w.length + 1, 0);
-
-                                  const wordSpan = (
-                                    <span key={wordIdx} className="inline-block whitespace-nowrap">
-                                      {word.split("").map((ch, idx) => {
-                                        const globalIdx = precedingWordLength + idx;
-                                        const result = charResults[globalIdx];
-                                        let colorClass = "text-muted-foreground/45";
-                                        let spanClass = "";
-
-                                        if (globalIdx === charIdx) {
-                                          colorClass = "text-foreground font-black";
-                                          spanClass = "border-b-2 border-primary animate-pulse";
-                                        } else if (result?.status === "hit") {
-                                          colorClass = "text-primary font-black";
-                                        } else if (result?.status === "miss") {
-                                          colorClass = "text-incorrect font-black";
-                                        }
-
-                                        return (
-                                          <span
-                                            key={idx}
-                                            className={`inline-block ${colorClass} ${spanClass}`}
-                                          >
-                                            {ch}
-                                          </span>
-                                        );
-                                      })}
-                                      {/* space placeholder if not last word */}
-                                      {wordIdx < array.length - 1 && (
-                                        <span
-                                          className={`inline-block ${
-                                            precedingWordLength + word.length === charIdx
-                                              ? "border-b-2 border-primary animate-pulse"
-                                              : charResults[precedingWordLength + word.length]
-                                                    ?.status === "hit"
-                                                ? "text-primary font-black"
-                                                : "text-muted-foreground/45"
-                                          }`}
-                                        >
-                                          &nbsp;
-                                        </span>
-                                      )}
-                                    </span>
-                                  );
-                                  return [...acc, wordSpan];
-                                }, [])}
-                            </div>
-                          )}
-
-                          {/* Upcoming Line */}
-                          {currentLineIdx + 1 < lyrics.length && lyrics[currentLineIdx + 1] && (
-                            <p className="text-xs text-muted-foreground/50 select-none transition-all">
-                              {lyrics[currentLineIdx + 1].text}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Action status notification */}
-                      <div className="border-t border-border/10 pt-3 mt-4 flex items-center justify-between text-[10px] font-mono text-muted-foreground relative z-20">
-                        <span className="flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3 text-primary" /> Auto-focuses keyboard.
-                          Just type!
-                        </span>
-                      </div>
-
-                      {/* Hidden text capture element */}
-                      <input
-                        ref={inputRef}
-                        type="text"
-                        value=""
-                        onChange={() => {}}
-                        onKeyDown={handleKeyDown}
-                        onFocus={() => setInputFocused(true)}
-                        onBlur={() => setInputFocused(false)}
-                        autoFocus
-                        spellCheck={false}
-                        autoComplete="off"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-default outline-none z-10"
-                      />
-
-                      {/* Input focus warning popup overlay */}
-                      {!inputFocused && !lyricsFinished && (
-                        <div
-                          onClick={() => inputRef.current?.focus()}
-                          className="absolute inset-0 bg-background/85 flex items-center justify-center cursor-pointer z-25 text-center flex-col gap-2"
-                        >
-                          <Gamepad2 className="h-8 w-8 text-primary animate-bounce" />
-                          <p className="text-xs font-mono font-bold text-foreground">
-                            Click here to resume typing!
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            Focus lost. Playback continues, so keep active.
-                          </p>
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5 items-stretch">
+                  {/* Left panel: Lyric display */}
+                  <div className="p-6 rounded-xl border border-border/30 bg-card/45 backdrop-blur-sm flex flex-col justify-center items-center min-h-[260px] relative overflow-hidden select-none">
+                    {/* Display lines */}
+                    <div className="w-full max-w-xl flex flex-col gap-3 justify-center items-center py-4 text-center font-mono relative">
+                      {/* Live Combo Counter Indicator */}
+                      {combo > 1 && (
+                        <div className="text-xs font-mono font-bold text-primary animate-pulse tracking-wider">
+                          {combo}x combo
                         </div>
                       )}
+
+                      {/* Active typing line */}
+                      {lyrics[currentLineIdx] && (
+                        <div className="text-lg md:text-xl font-semibold tracking-wide leading-relaxed text-foreground select-none relative flex flex-wrap justify-center gap-x-1.5 gap-y-1">
+                          {lyrics[currentLineIdx].text
+                            .split(" ")
+                            .reduce((acc: React.ReactNode[], word, wordIdx, array) => {
+                              const precedingWordLength = array
+                                .slice(0, wordIdx)
+                                .reduce((sum, w) => sum + w.length + 1, 0);
+
+                              const wordSpan = (
+                                <span key={wordIdx} className="inline-block whitespace-nowrap">
+                                  {word.split("").map((ch, idx) => {
+                                    const globalIdx = precedingWordLength + idx;
+                                    const result = charResults[globalIdx];
+                                    const isCaret = globalIdx === charIdx;
+                                    let colorClass = "text-muted-foreground/40";
+
+                                    if (isCaret) {
+                                      colorClass = "text-foreground font-bold";
+                                    } else if (result?.status === "hit") {
+                                      colorClass = "text-primary font-bold";
+                                    } else if (result?.status === "miss") {
+                                      colorClass = "text-incorrect font-bold";
+                                    }
+
+                                    return (
+                                      <span
+                                        key={idx}
+                                        className={`relative inline-block ${colorClass}`}
+                                      >
+                                        {isCaret && (
+                                          <motion.span
+                                            layoutId="verses-typing-caret"
+                                            transition={{
+                                              type: "spring",
+                                              stiffness: 600,
+                                              damping: 35,
+                                              mass: 0.2,
+                                            }}
+                                            className="absolute -left-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgb(249,115,22,0.6)]"
+                                          />
+                                        )}
+                                        {ch}
+                                      </span>
+                                    );
+                                  })}
+                                  {wordIdx < array.length - 1 && (
+                                    <span className="relative inline-block">
+                                      {precedingWordLength + word.length === charIdx && (
+                                        <motion.span
+                                          layoutId="verses-typing-caret"
+                                          transition={{
+                                            type: "spring",
+                                            stiffness: 600,
+                                            damping: 35,
+                                            mass: 0.2,
+                                          }}
+                                          className="absolute -left-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgb(249,115,22,0.6)]"
+                                        />
+                                      )}
+                                      &nbsp;
+                                    </span>
+                                  )}
+                                </span>
+                              );
+                              return [...acc, wordSpan];
+                            }, [])}
+                        </div>
+                      )}
+
+                      {/* Upcoming Line */}
+                      {currentLineIdx + 1 < lyrics.length && lyrics[currentLineIdx + 1] && (
+                        <p className="text-xs text-muted-foreground/40 select-none transition-all">
+                          {lyrics[currentLineIdx + 1].text}
+                        </p>
+                      )}
                     </div>
+
+                    {/* Hidden text input */}
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value=""
+                      onChange={() => {}}
+                      onKeyDown={handleKeyDown}
+                      onFocus={() => setInputFocused(true)}
+                      onBlur={() => setInputFocused(false)}
+                      autoFocus
+                      spellCheck={false}
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-default outline-none z-10"
+                    />
+
+                    {/* Input focus overlay */}
+                    {!inputFocused && !lyricsFinished && (
+                      <div
+                        onClick={() => inputRef.current?.focus()}
+                        className="absolute inset-0 bg-background/80 backdrop-blur-xs flex items-center justify-center cursor-pointer z-25 text-center flex-col gap-1.5"
+                      >
+                        <p className="text-xs font-semibold text-foreground">
+                          Click to resume typing
+                        </p>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Right panel: Youtube iframe element */}
-                  <div className="w-full flex flex-col gap-4">
-                    <div className="liquid-glass-card p-4 border border-border/20 flex flex-col gap-4 items-center justify-between">
-                      <h2 className="w-full text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest border-b border-border/10 pb-2">
-                        Music Track
-                      </h2>
+                  {/* Right panel: Youtube video */}
+                  <div className="p-4 rounded-xl border border-border/30 bg-card/45 flex flex-col justify-between gap-3">
+                    <div className="w-full aspect-video rounded-lg bg-black overflow-hidden relative border border-border/10">
+                      <YouTube
+                        videoId={videoId}
+                        opts={{
+                          height: "100%",
+                          width: "100%",
+                          playerVars: {
+                            autoplay: 1,
+                            controls: 0,
+                            disablekb: 1,
+                            fs: 0,
+                            modestbranding: 1,
+                            rel: 0,
+                            showinfo: 0,
+                            iv_load_policy: 3,
+                          },
+                        }}
+                        onPlay={() => setPlaying(true)}
+                        onPause={() => setPlaying(false)}
+                        onEnd={handlePlaybackEnded}
+                        onReady={(e) => {
+                          ytPlayerRef.current = e.target;
+                          e.target.playVideo();
+                          if (muted) {
+                            e.target.mute();
+                          } else {
+                            e.target.unMute();
+                          }
+                        }}
+                        className="w-full h-full"
+                      />
+                      <div className="absolute inset-0 bg-transparent select-none z-10" />
+                    </div>
 
-                      {/* YouTube Player Container */}
-                      <div className="w-full aspect-video rounded-xl bg-black overflow-hidden relative border border-border/10">
-                        <YouTube
-                          videoId={videoId}
-                          opts={{
-                            height: "100%",
-                            width: "100%",
-                            playerVars: {
-                              autoplay: 1,
-                              controls: 0,
-                              disablekb: 1,
-                              fs: 0,
-                              modestbranding: 1,
-                              rel: 0,
-                              showinfo: 0,
-                              iv_load_policy: 3,
-                            },
-                          }}
-                          onPlay={() => setPlaying(true)}
-                          onPause={() => setPlaying(false)}
-                          onEnd={handlePlaybackEnded}
-                          onReady={(e) => {
-                            ytPlayerRef.current = e.target;
-                            e.target.playVideo();
-                            if (muted) {
-                              e.target.mute();
-                            } else {
-                              e.target.unMute();
-                            }
-                          }}
-                          className="w-full h-full"
-                        />
-                        {/* overlay masking details */}
-                        <div className="absolute inset-0 bg-transparent select-none z-10" />
+                    <div className="flex items-center justify-between text-left gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold truncate leading-tight">
+                          {selectedTrack.trackName}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {selectedTrack.artistName}
+                        </p>
                       </div>
-
-                      {/* Track info card */}
-                      <div className="w-full flex items-center justify-between text-left gap-4">
-                        <div className="flex-1 min-w-0 flex flex-col">
-                          <span className="text-[9px] font-mono text-primary font-bold uppercase">
-                            {selectedTrack.artistName}
-                          </span>
-                          <h4 className="text-xs font-bold leading-tight mt-1 truncate">
-                            {selectedTrack.trackName}
-                          </h4>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setMuted((m) => !m);
-                            setTimeout(() => inputRef.current?.focus(), 50);
-                          }}
-                          className="hover:text-foreground text-muted-foreground flex items-center gap-1.5 cursor-pointer text-[10px] font-mono font-bold bg-muted/40 hover:bg-muted/70 px-3 py-1.5 rounded-lg border border-border/30 transition-all select-none shrink-0"
-                        >
-                          {muted ? (
-                            <VolumeX className="h-3.5 w-3.5" />
-                          ) : (
-                            <Volume2 className="h-3.5 w-3.5" />
-                          )}
-                          {muted ? "UNMUTE" : "MUTE"}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => {
+                          setMuted((m) => !m);
+                          setTimeout(() => inputRef.current?.focus(), 50);
+                        }}
+                        className="text-muted-foreground hover:text-foreground text-[10px] font-mono font-medium bg-muted/40 hover:bg-muted/70 px-2.5 py-1 rounded border border-border/30 transition-all cursor-pointer shrink-0"
+                      >
+                        {muted ? "UNMUTE" : "MUTE"}
+                      </button>
                     </div>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* 5. State: RESULTS - Winner Screen */}
+            {/* 5. State: RESULTS - Match Results */}
             {gameState === "results" && (
               <motion.div
                 key="results"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="w-full max-w-4xl mx-auto my-6 flex flex-col gap-8 items-center text-center justify-start"
+                className="w-full max-w-3xl mx-auto my-8 flex flex-col gap-8 items-center text-center"
               >
-                {/* Trophy Head */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="h-16 w-16 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
-                    <Award className="h-9 w-9 animate-pulse" />
-                  </div>
-                  <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Match Results</h1>
-                    <p className="text-xs text-muted-foreground mt-1 font-mono">
-                      Lyrics round finished for {selectedTrack?.trackName}
-                    </p>
-                  </div>
+                {/* Header with track details */}
+                <div className="flex flex-col items-center gap-1.5 text-center">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold">
+                    Match Complete
+                  </span>
+                  <h1 className="text-3xl font-bold tracking-tight">
+                    {selectedTrack?.trackName}
+                  </h1>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {selectedTrack?.artistName}
+                  </p>
                 </div>
 
-                {/* Scorecards list comparison */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl justify-center items-stretch">
+                {/* Podium Stage Scorecards */}
+                <div className="flex flex-col md:flex-row gap-6 w-full justify-center items-end relative">
+                  {/* Sprinkle Blows Particle Burst */}
+                  <div className="absolute -top-16 inset-x-0 h-40 pointer-events-none overflow-visible flex justify-center items-end z-20">
+                    {SPRINKLE_PARTICLES.map((p) => (
+                      <motion.span
+                        key={p.id}
+                        initial={{ x: 0, y: 0, opacity: 0, scale: 0, rotate: 0 }}
+                        animate={{
+                          x: [0, p.x, p.x * 1.15],
+                          y: [0, p.y, p.y + 60],
+                          opacity: [0, 1, 0.9, 0],
+                          scale: [0, 1.3, 1, 0],
+                          rotate: p.rotate,
+                        }}
+                        transition={{
+                          duration: p.duration,
+                          delay: p.delay,
+                          ease: "easeOut",
+                        }}
+                        style={{
+                          backgroundColor: p.color,
+                          width: p.size,
+                          height: p.isCircle ? p.size : p.size * 2.2,
+                          borderRadius: p.isCircle ? "50%" : "2px",
+                          position: "absolute",
+                        }}
+                      />
+                    ))}
+                  </div>
+
                   {Object.keys(matchResults).map((uid) => {
                     const result = matchResults[uid];
+                    const maxScore = Math.max(...Object.values(matchResults).map((r) => r.score));
                     const isUserWinner =
-                      Object.keys(matchResults).length === 2 &&
-                      result.score === Math.max(...Object.values(matchResults).map((r) => r.score));
+                      Object.keys(matchResults).length >= 1 &&
+                      result.score === maxScore &&
+                      result.score > 0;
 
                     return (
                       <motion.div
                         key={uid}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className={`liquid-glass-card p-6 border flex flex-col justify-between gap-6 relative overflow-hidden ${
+                        initial={{ opacity: 0, scaleY: 0.1, y: 40 }}
+                        animate={{ opacity: 1, scaleY: 1, y: 0 }}
+                        transition={{
+                          duration: 0.65,
+                          delay: isUserWinner ? 0.35 : 0.1,
+                          type: "spring",
+                          stiffness: 110,
+                          damping: 14,
+                        }}
+                        style={{ transformOrigin: "bottom center" }}
+                        className={`flex-1 w-full rounded-2xl border border-border/30 bg-card/45 flex flex-col items-center justify-between gap-5 text-center relative overflow-hidden backdrop-blur-sm transition-all ${
                           isUserWinner
-                            ? "border-amber-400/35 bg-amber-400/[0.03]"
-                            : "border-border/20 bg-card/45"
+                            ? "p-8 min-h-[280px]"
+                            : "p-5 min-h-[220px]"
                         }`}
                       >
+                        {/* Crown Icon on Top Left Corner of Winner's Div */}
                         {isUserWinner && (
-                          <div className="absolute top-3 right-3 text-xs bg-amber-400/15 border border-amber-400/30 text-amber-500 font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-                            Winner 👑
+                          <div className="absolute top-4 left-4 text-primary">
+                            <Crown className="h-4 w-4" />
                           </div>
                         )}
+                        {/* Top info header */}
+                        <div className="flex flex-col items-center justify-center gap-1 text-center w-full">
+                          <p className={`font-bold flex items-center justify-center gap-1.5 ${isUserWinner ? "text-base" : "text-sm"}`}>
+                            {result.username}
+                            {uid === myUserId && (
+                              <span className="text-[9px] font-mono text-primary border border-primary/30 px-1 rounded">
+                                you
+                              </span>
+                            )}
+                          </p>
 
-                        <div className="flex flex-col items-start gap-4">
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center text-xs font-mono font-bold text-primary shrink-0 uppercase border border-border/30">
-                              {result.username.substring(0, 2)}
-                            </div>
-                            <div className="text-left">
-                              <h3 className="text-sm font-bold truncate max-w-40">
-                                {result.username}
-                              </h3>
-                              <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                                {uid === myUserId ? "you" : "challenger"}
-                              </p>
-                            </div>
+                          {isUserWinner && (
+                            <span className="text-[10px] font-mono text-primary font-bold uppercase tracking-widest mt-0.5">
+                              Winner
+                            </span>
+                          )}
+                        </div>
+
+                        {/* 4-Stat Metrics Grid */}
+                        <div className="grid grid-cols-2 gap-4 border-t border-border/20 pt-4 mt-1 w-full text-center">
+                          <div className="flex flex-col items-center text-center">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                              Score
+                            </span>
+                            <span className={`font-bold font-mono text-primary mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                              {result.score.toLocaleString()}
+                            </span>
                           </div>
 
-                          {/* Grid scores */}
-                          <div className="grid grid-cols-3 gap-4 w-full border-t border-border/10 pt-4 mt-2">
-                            <div className="text-left">
-                              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                                Score
-                              </p>
-                              <p className="text-lg font-black font-mono text-primary mt-1">
-                                {result.score}
-                              </p>
-                            </div>
-                            <div className="text-left">
-                              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                                Accuracy
-                              </p>
-                              <p className="text-lg font-black font-mono text-foreground mt-1">
-                                {result.accuracy}%
-                              </p>
-                            </div>
-                            <div className="text-left">
-                              <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                                Speed
-                              </p>
-                              <p className="text-lg font-black font-mono text-foreground mt-1">
-                                {result.wpm}{" "}
-                                <span className="text-[10px] font-normal text-muted-foreground">
-                                  WPM
-                                </span>
-                              </p>
-                            </div>
+                          <div className="flex flex-col items-center text-center">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                              Accuracy
+                            </span>
+                            <span className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                              {result.accuracy}%
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col items-center text-center">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                              Speed
+                            </span>
+                            <span className={`font-bold font-mono text-foreground mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                              {result.wpm}{" "}
+                              <span className="text-xs font-normal text-muted-foreground">WPM</span>
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col items-center text-center">
+                            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                              Max Combo
+                            </span>
+                            <span className={`font-bold font-mono text-primary/90 mt-0.5 ${isUserWinner ? "text-2xl" : "text-lg"}`}>
+                              {result.maxCombo || 0}
+                              <span className="text-xs font-normal text-muted-foreground">x</span>
+                            </span>
                           </div>
                         </div>
                       </motion.div>
@@ -1913,18 +1923,18 @@ function VersesRoute() {
                   })}
                 </div>
 
-                {/* Host Control Actions */}
-                <div className="mt-4 pt-4 flex flex-col items-center gap-3">
+                {/* Bottom Action controls */}
+                <div className="mt-2">
                   {isHost ? (
                     <button
                       onClick={handleResetLobby}
-                      className="h-11 px-6 bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-sm rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+                      className="h-10 px-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all rounded-xl text-xs font-semibold shadow-sm cursor-pointer"
                     >
-                      <RotateCcw className="h-4 w-4" /> Reset and Play Again
+                      Play Again
                     </button>
                   ) : (
                     <p className="text-xs text-muted-foreground font-mono animate-pulse">
-                      Waiting for the host to reset the lobby...
+                      Waiting for host to restart...
                     </p>
                   )}
                 </div>

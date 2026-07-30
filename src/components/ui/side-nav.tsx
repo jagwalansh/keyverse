@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, Moon, Newspaper, Sun, Search, LifeBuoy, Swords } from "lucide-react";
+import { Moon, Sun, Search, Swords } from "lucide-react";
 import { lazy, Suspense, useState, useEffect, type ReactNode } from "react";
 
 const SearchModal = lazy(() =>
@@ -93,32 +93,14 @@ export function SideNav() {
       >
         {/* Pill container — matches the site's liquid-glass card style */}
         <div className="side-nav-pill flex flex-col items-center gap-0.5 px-2 py-3">
-          {/* ── Section 1: Home ── */}
+          {/* ── Section 1: Home + Verses ── */}
           <NavLink to="/" label="Home" icon={<HomeIcon />} exact isActive={isActive} />
           <NavLink to="/verses" label="Verses" icon={<Swords size={15} />} isActive={isActive} />
 
           {/* Divider */}
           <div className="w-5 h-px bg-border/60 my-1.5 rounded-full" />
 
-          {/* ── Section 2: Guide + Support ── */}
-          <NavLink to="/guide" label="Guide" icon={<BookOpen size={15} />} isActive={isActive} />
-          <NavLink
-            to="/articles"
-            label="Articles"
-            icon={<Newspaper size={15} />}
-            isActive={isActive}
-          />
-          <NavLink
-            to="/support"
-            label="Support"
-            icon={<LifeBuoy size={15} />}
-            isActive={isActive}
-          />
-
-          {/* Divider */}
-          <div className="w-5 h-px bg-border/60 my-1.5 rounded-full" />
-
-          {/* ── Section 3: Ranks + Search + Theme ── */}
+          {/* ── Section 2: Ranks + Search + Theme ── */}
           <NavLink to="/leaderboard" label="Ranks" icon={<LeaderboardIcon />} isActive={isActive} />
 
           {/* Search — button, not a link */}

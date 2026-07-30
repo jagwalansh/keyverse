@@ -232,7 +232,7 @@ function SongGrid({ songs }: { songs: Song[] }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
       {songs.map((song) => (
         <DeflectCard key={song.id} className="w-full rounded-2xl">
-          <div className="group relative flex flex-col justify-between p-5 rounded-2xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 transition-colors w-full h-full overflow-hidden text-left">
+          <div className="group relative flex flex-col justify-between p-5 rounded-2xl border border-border/40 bg-card/45 backdrop-blur-sm transition-colors w-full h-full overflow-hidden text-left">
             {/* Backlighting effect on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-350 pointer-events-none" />
 

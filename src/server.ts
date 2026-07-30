@@ -527,14 +527,18 @@ function scoreYoutubeVideo(
   if (compactMusicText(author).endsWith("vevo") && authorMatchesArtist) score += 18;
   if (normalizedAuthor.includes("official") && authorMatchesArtist) score += 12;
 
-  if (normalizedTitle.includes("official audio")) score += 22;
-  else if (normalizedTitle.includes("audio")) score += 10;
-  if (normalizedTitle.includes("visualizer")) score += 7;
   if (
     normalizedTitle.includes("official music video") ||
-    normalizedTitle.includes("official video")
-  )
-    score += 4;
+    normalizedTitle.includes("official video") ||
+    normalizedTitle.includes("music video")
+  ) {
+    score += 35;
+  } else if (normalizedTitle.includes("official audio")) {
+    score += 22;
+  } else if (normalizedTitle.includes("audio")) {
+    score += 10;
+  }
+  if (normalizedTitle.includes("visualizer")) score += 7;
 
   const hasUnexpectedFeature =
     /\b(feat|ft|featuring)\b/.test(normalizedTitle) &&
@@ -989,7 +993,7 @@ Sitemap: https://keyverse.me/sitemap.xml`;
         }
 
         const cacheKey =
-          `v9:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
+          `v10:${rankingArtist}:${rankingTrack}:${baseQuery}:${expectedDuration}`.toLowerCase();
         const cached = youtubeCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < YOUTUBE_CACHE_TTL_SECONDS * 1000) {
           return new Response(JSON.stringify(cached.data), {
@@ -1018,11 +1022,19 @@ Sitemap: https://keyverse.me/sitemap.xml`;
           const searchTerms =
             artistParam && trackParam
               ? [
+                  `${cleanedArtist} ${cleanedTrack} official music video`,
+                  `${cleanedArtist} ${cleanedTrack} official video`,
                   `${cleanedArtist} ${cleanedTrack} official audio`,
                   `${cleanedArtist} ${cleanedTrack} topic`,
                   `${cleanedArtist} ${cleanedTrack}`,
                 ]
-              : [`${baseQuery} official audio`, `${baseQuery} topic`, baseQuery];
+              : [
+                  `${baseQuery} official music video`,
+                  `${baseQuery} official video`,
+                  `${baseQuery} official audio`,
+                  `${baseQuery} topic`,
+                  baseQuery,
+                ];
 
           const searchResultGroups = await Promise.all(
             uniqueStrings(searchTerms).map(async (searchTerm) => {

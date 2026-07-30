@@ -401,7 +401,7 @@ function Index() {
                       q: routeQuery || undefined,
                       from: "/",
                     }}
-                    className="group relative flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/30 w-full h-full text-left"
+                    className="group relative flex items-center justify-between p-4 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm w-full h-full text-left"
                   >
                     {/* Subtle backlighting on card hover */}
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl" />
@@ -434,7 +434,7 @@ function Index() {
 
             {/* Play with Friends */}
             <DeflectCard className="w-full rounded-xl mt-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between p-5 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm hover:border-primary/20 gap-4 text-left w-full relative z-10">
+              <div className="flex flex-col sm:flex-row items-center justify-between p-5 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm gap-4 text-left w-full relative z-10">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0">
                     <Swords className="h-5 w-5" />
