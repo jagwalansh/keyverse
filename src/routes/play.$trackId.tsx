@@ -24,6 +24,7 @@ import {
   ChevronUp,
   ChevronDown,
   ThumbsUp,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
@@ -497,7 +498,6 @@ function PlayPage() {
   const [scoreSaveSkippedReason, setScoreSaveSkippedReason] = useState<string | null>(null);
 
   const [lines, setLines] = useState<LyricLine[] | null>(null);
-  const [easyLyrics, setEasyLyrics] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   const [charIdx, setCharIdx] = useState(0);
@@ -661,7 +661,6 @@ function PlayPage() {
     setScoreSaveSkippedReason(null);
     setLoadErr(null);
     setLines(null);
-    setEasyLyrics(false);
     originalLinesRef.current = null;
     setLyricsFinished(false);
     setVideoId(null);
@@ -732,8 +731,9 @@ function PlayPage() {
         }
 
         if (lyricsRes && lyricsRes.lines.length > 0) {
-          originalLinesRef.current = lyricsRes.lines;
-          setLines(lyricsRes.lines);
+          const simplifiedLines = simplifyLyrics(lyricsRes.lines);
+          originalLinesRef.current = simplifiedLines;
+          setLines(simplifiedLines);
           return;
         }
 
@@ -1251,13 +1251,6 @@ function PlayPage() {
   // Save score when song ends
   useEffect(() => {
     if (songEnded && user && !scoreSaved && !savingScore && !saveAttempted) {
-      if (easyLyrics) {
-        setSaveAttempted(true);
-        setScoreSaveSkippedReason(
-          "Easy Lyrics rounds are for practice and are not eligible for the leaderboard.",
-        );
-        return;
-      }
 
       if (score <= 0 || stats.total <= 0) {
         setSaveAttempted(true);
@@ -1326,7 +1319,6 @@ function PlayPage() {
     scoreSaved,
     savingScore,
     saveAttempted,
-    easyLyrics,
     trackId,
     artist,
     track,
@@ -1453,15 +1445,7 @@ function PlayPage() {
     inputRef.current?.focus();
   }
 
-  function toggleEasyLyrics() {
-    const originalLines = originalLinesRef.current;
-    if (!originalLines) return;
 
-    const nextEasyMode = !easyLyrics;
-    setEasyLyrics(nextEasyMode);
-    setLines(nextEasyMode ? simplifyLyrics(originalLines) : originalLines);
-    restart();
-  }
 
   const showSpotifyPlayer = !!(videoId && playing && !songEnded && !showBlurOverlay);
   const selectedVideoIndex = ytCandidates.findIndex((candidate) => candidate.videoId === videoId);
@@ -1625,7 +1609,7 @@ function PlayPage() {
 
             {/* Game Skeleton */}
             <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2 flex-col gap-4">
-              <div className="relative h-[min(34vh,300px)] rounded-xl bg-card/90 border border-border/35 shadow-[0_24px_70px_rgba(0,0,0,0.16)] px-8 py-6 overflow-hidden dark:bg-card/80 dark:shadow-[0_24px_70px_rgba(0,0,0,0.32)]">
+              <div className="relative h-[min(34vh,300px)] px-8 py-6 overflow-hidden">
                 <div className="flex justify-center gap-8">
                   {Array.from({ length: 4 }).map((_, idx) => (
                     <div key={idx} className="flex flex-col items-center gap-2">
@@ -1958,10 +1942,10 @@ function PlayPage() {
               {/* Game Area */}
               <div
                 ref={gameAreaRef}
-                className={`relative overflow-hidden rounded-xl border shadow-[0_24px_70px_rgba(0,0,0,0.22)] ${
+                className={`relative overflow-hidden ${
                   songEnded
-                    ? "h-[min(34vh,300px)] border-border/40 bg-card/40"
-                    : "h-[min(34vh,300px)] border-border/35 bg-card/90 text-card-foreground dark:bg-card/80"
+                    ? "h-[min(34vh,300px)]"
+                    : "h-[min(34vh,300px)] text-foreground"
                 }`}
                 onClick={() => inputRef.current?.focus()}
               >
@@ -2134,11 +2118,10 @@ function PlayPage() {
                       </div>
 
                       {lyricsFinished ? (
-                        <div className="absolute inset-x-0 bottom-20 top-16 flex items-center justify-center px-5 text-center">
-                          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-card/80 px-4 py-2 font-mono text-xs tracking-widest text-primary shadow-sm backdrop-blur-sm">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Finishing song
-                          </div>
+                        <div className="absolute inset-x-0 top-16 bottom-20 flex flex-col items-center justify-center px-5 text-center">
+                          <span className="font-mono text-xs font-bold tracking-widest text-muted-foreground/80 uppercase">
+                            All lyrics completed
+                          </span>
                         </div>
                       ) : (
                         <div
@@ -2238,10 +2221,15 @@ function PlayPage() {
                                             {token.split("").map((ch, tokenCharIdx) => {
                                               const i = tokenStart + tokenCharIdx;
                                               const result = charResults[i];
+                                              const isCaret = isCurrentLine && i === charIdx;
+                                              const isCaretEnd =
+                                                isCurrentLine &&
+                                                i === lineText.length - 1 &&
+                                                charIdx === lineText.length;
                                               let className = "text-muted-foreground/55";
 
-                                              if (i === charIdx) {
-                                                className = "text-foreground animate-cursor-blink";
+                                              if (isCaret || isCaretEnd) {
+                                                className = "text-foreground font-bold";
                                               } else if (result?.status === "hit") {
                                                 className = "text-foreground font-black";
                                               } else if (result?.status === "miss") {
@@ -2255,6 +2243,30 @@ function PlayPage() {
                                                   data-char-idx={i}
                                                   className={`inline-block relative ${className} transition-colors duration-100`}
                                                 >
+                                                  {isCaret && (
+                                                    <motion.span
+                                                      layoutId="play-typing-caret"
+                                                      transition={{
+                                                        type: "spring",
+                                                        stiffness: 600,
+                                                        damping: 35,
+                                                        mass: 0.2,
+                                                      }}
+                                                      className="absolute -left-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+                                                    />
+                                                  )}
+                                                  {isCaretEnd && (
+                                                    <motion.span
+                                                      layoutId="play-typing-caret"
+                                                      transition={{
+                                                        type: "spring",
+                                                        stiffness: 600,
+                                                        damping: 35,
+                                                        mass: 0.2,
+                                                      }}
+                                                      className="absolute -right-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgba(249,115,22,0.6)]"
+                                                    />
+                                                  )}
                                                   {ch === " " ? "\u00A0" : ch}
                                                 </span>
                                               );
@@ -2272,13 +2284,13 @@ function PlayPage() {
                         </div>
                       )}
 
-                      <div className="absolute inset-x-8 bottom-5 z-30 flex items-center gap-3">
+                      <div className="absolute inset-x-8 bottom-5 z-30 flex items-center justify-center gap-3">
                         <button
-                          onClick={togglePlay}
+                          onClick={lyricsFinished ? endSong : togglePlay}
                           disabled={!videoId || !audioReady}
-                          className="flex-1 rounded-lg bg-primary py-2.5 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2 animate-pulse-subtle"
+                          className="flex-1 max-w-xs rounded-xl bg-primary py-2.5 px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2"
                         >
-                          {playbackEnded ? (
+                          {lyricsFinished ? null : playbackEnded ? (
                             <Music className="w-3.5 h-3.5" />
                           ) : playing ? (
                             <Pause className="w-3.5 h-3.5" />
@@ -2286,7 +2298,7 @@ function PlayPage() {
                             <Play className="w-3.5 h-3.5" />
                           )}
                           <span>
-                            {playbackEnded ? "Finish last line" : playing ? "Pause" : "Play"}
+                            {lyricsFinished ? "View Results" : playbackEnded ? "Finish last line" : playing ? "Pause" : "Play"}
                           </span>
                           <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
                             Esc
@@ -2294,25 +2306,13 @@ function PlayPage() {
                         </button>
                         <button
                           onClick={restart}
-                          className="rounded-lg border border-border/40 bg-background/55 backdrop-blur-sm py-2.5 px-5 text-xs font-semibold text-foreground hover:bg-muted/70 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-md py-2.5 px-4 text-xs font-semibold text-foreground hover:bg-muted/70 transition-colors cursor-pointer flex items-center justify-center gap-2"
                         >
-                          <RotateCcw className="w-3.5 h-3.5" />
+                          <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
                           <span>Restart</span>
-                          <kbd className="rounded border border-border/50 bg-background/70 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
+                          <kbd className="rounded border border-border/40 bg-muted/60 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
                             Tab
                           </kbd>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={toggleEasyLyrics}
-                          aria-pressed={easyLyrics}
-                          className={`rounded-lg border px-3 py-2.5 text-xs font-semibold transition-colors cursor-pointer ${
-                            easyLyrics
-                              ? "border-primary bg-primary/15 text-primary"
-                              : "border-border/40 bg-background/55 text-foreground hover:bg-muted/70"
-                          }`}
-                        >
-                          Easy {easyLyrics ? "on" : "off"}
                         </button>
                       </div>
                     </div>
@@ -2342,7 +2342,7 @@ function PlayPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.18 }}
-                        className="pointer-events-none absolute inset-0 z-40 flex cursor-text items-center justify-center bg-card/80 px-6 text-center backdrop-blur-sm"
+                        className="pointer-events-none absolute inset-0 z-40 flex cursor-text items-center justify-center bg-background/80 rounded-xl px-6 text-center backdrop-blur-sm"
                       >
                         <span className="font-mono text-sm font-semibold tracking-wide text-foreground sm:text-base">
                           Click here or press any key to focus
