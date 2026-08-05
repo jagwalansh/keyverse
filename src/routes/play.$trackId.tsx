@@ -1251,7 +1251,6 @@ function PlayPage() {
   // Save score when song ends
   useEffect(() => {
     if (songEnded && user && !scoreSaved && !savingScore && !saveAttempted) {
-
       if (score <= 0 || stats.total <= 0) {
         setSaveAttempted(true);
         setScoreSaveSkippedReason("No score was saved because no lyrics were typed.");
@@ -1444,8 +1443,6 @@ function PlayPage() {
 
     inputRef.current?.focus();
   }
-
-
 
   const showSpotifyPlayer = !!(videoId && playing && !songEnded && !showBlurOverlay);
   const selectedVideoIndex = ytCandidates.findIndex((candidate) => candidate.videoId === videoId);
@@ -1943,9 +1940,7 @@ function PlayPage() {
               <div
                 ref={gameAreaRef}
                 className={`relative overflow-hidden ${
-                  songEnded
-                    ? "h-[min(34vh,300px)]"
-                    : "h-[min(34vh,300px)] text-foreground"
+                  songEnded ? "h-[min(34vh,300px)]" : "h-[min(34vh,300px)] text-foreground"
                 }`}
                 onClick={() => inputRef.current?.focus()}
               >
@@ -2298,7 +2293,13 @@ function PlayPage() {
                             <Play className="w-3.5 h-3.5" />
                           )}
                           <span>
-                            {lyricsFinished ? "View Results" : playbackEnded ? "Finish last line" : playing ? "Pause" : "Play"}
+                            {lyricsFinished
+                              ? "View Results"
+                              : playbackEnded
+                                ? "Finish last line"
+                                : playing
+                                  ? "Pause"
+                                  : "Play"}
                           </span>
                           <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
                             Esc

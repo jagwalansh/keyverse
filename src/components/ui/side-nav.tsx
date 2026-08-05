@@ -96,7 +96,12 @@ export function SideNav() {
         <div className="side-nav-pill flex flex-col items-center gap-0.5 px-2 py-3">
           {/* ── Section 1: Home + Verses ── */}
           <NavLink to="/" label="Home" icon={<HomeIcon />} exact isActive={isActive} />
-          <NavLink to="/verses" label="Verses" icon={<VersesRankIcon className="h-3.5 w-3.5" />} isActive={isActive} />
+          <NavLink
+            to="/verses"
+            label="Verses"
+            icon={<VersesRankIcon className="h-3.5 w-3.5" />}
+            isActive={isActive}
+          />
 
           {/* Divider */}
           <div className="w-5 h-px bg-border/60 my-1.5 rounded-full" />

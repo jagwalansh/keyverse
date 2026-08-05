@@ -141,8 +141,6 @@ const RECOMMENDED_SONGS_HOMEPAGE = [
   },
 ];
 
-
-
 function Index() {
   const { q: routeQuery } = Route.useSearch();
   const [results, setResults] = useState<TrackSearchResult[]>([]);
@@ -422,8 +420,6 @@ function Index() {
             </DeflectCard>
           </motion.div>
         )}
-
-
       </div>
 
       <Footer />

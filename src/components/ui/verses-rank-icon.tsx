@@ -2,12 +2,7 @@ import type { SVGProps } from "react";
 
 export function VersesRankIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
       {/* Top Star */}
       <path
         d="M12 1.5L13.12 3.96L15.8 4.28L13.82 6.08L14.34 8.71L12 7.39L9.66 8.71L10.18 6.08L8.2 4.28L10.88 3.96L12 1.5Z"

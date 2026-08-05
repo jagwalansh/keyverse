@@ -62,9 +62,9 @@ The core gameplay loop lives in `src/routes/play.$trackId.tsx`:
 
 ## Environment Variables
 
-| Variable | Description |
-|---|---|
-| `VITE_SUPABASE_URL` | Your Supabase project URL |
+| Variable                 | Description                                           |
+| ------------------------ | ----------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | Your Supabase project URL                             |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key (safe to expose client-side) |
 
 Copy `.env.example` to `.env` and fill in the values. For the full database setup, see [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
@@ -75,11 +75,11 @@ Copy `.env.example` to `.env` and fill in the values. For the full database setu
 
 Migrations live in `supabase/migrations/` and must be run manually in the Supabase SQL editor in order:
 
-| File | What it does |
-|---|---|
+| File                    | What it does                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
 | `00_initial_schema.sql` | Creates `profiles`, `songs`, `scores` tables, leaderboard views, RLS policies, and the auto-profile-on-signup trigger |
-| `01_profile_email.sql` | Adds email field to profiles |
-| `02_video_votes.sql` | Adds the `video_votes` table for community video quality ratings |
+| `01_profile_email.sql`  | Adds email field to profiles                                                                                          |
+| `02_video_votes.sql`    | Adds the `video_votes` table for community video quality ratings                                                      |
 
 ---
 
