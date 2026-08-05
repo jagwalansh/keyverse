@@ -5,8 +5,9 @@ import { searchTracks, type TrackSearchResult } from "@/lib/lrc";
 import { motion } from "motion/react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Footer } from "@/components/ui/footer";
-import { Play, Swords } from "lucide-react";
+import { Play } from "lucide-react";
 import { DeflectCard } from "@/components/ui/deflect-card";
+import { VersesRankIcon } from "@/components/ui/verses-rank-icon";
 import { trackEvent } from "@/lib/analytics";
 
 type SearchParams = {
@@ -140,40 +141,7 @@ const RECOMMENDED_SONGS_HOMEPAGE = [
   },
 ];
 
-const gameHighlights = [
-  {
-    title: "Timed lyric input",
-    description:
-      "Lines advance with the track, so the challenge is reading ahead, staying calm, and typing the words that are actually being sung.",
-  },
-  {
-    title: "Measured accuracy",
-    description:
-      "The score favors clean entries over frantic corrections. A steady round usually beats a fast round with repeated misses.",
-  },
-  {
-    title: "Optional ranking",
-    description:
-      "Accounts are only needed for saved scores and leaderboard placement. The core game remains playable without signing in.",
-  },
-];
 
-const faqs = [
-  {
-    question: "Can I play without signing in?",
-    answer: "Yes. Sign-in is only required for saved scores, profiles, and leaderboard entries.",
-  },
-  {
-    question: "Why does a song sometimes feel out of sync?",
-    answer:
-      "The game combines lyric timing with public video playback. If a video is a live cut, remix, or regional version, timing can drift.",
-  },
-  {
-    question: "What makes a track difficult?",
-    answer:
-      "Dense verses, short pauses, punctuation, and fast vocal phrasing all raise the typing pressure.",
-  },
-];
 
 function Index() {
   const { q: routeQuery } = Route.useSearch();
@@ -436,9 +404,7 @@ function Index() {
             <DeflectCard className="w-full rounded-xl mt-6">
               <div className="flex flex-col sm:flex-row items-center justify-between p-5 rounded-xl border border-border/40 bg-card/45 backdrop-blur-sm gap-4 text-left w-full relative z-10">
                 <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center text-primary shrink-0">
-                    <Swords className="h-5 w-5" />
-                  </div>
+                  <VersesRankIcon className="h-7 w-7 text-primary shrink-0" />
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Play with Friends</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -457,76 +423,7 @@ function Index() {
           </motion.div>
         )}
 
-        {!routeQuery && (
-          <section className="w-full max-w-4xl z-20 text-left">
-            <div className="border-y border-border/20 py-7">
-              <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold tracking-tight">How the game works</h2>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                    A short overview for new players before they start a round.
-                  </p>
-                </div>
-                <Link
-                  to="/guide"
-                  className="text-xs font-mono font-semibold text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary"
-                >
-                  Read the full guide
-                </Link>
-              </div>
 
-              <div className="grid gap-0 border border-border/30 bg-card/30 md:grid-cols-3">
-                {gameHighlights.map(({ title, description }) => (
-                  <div
-                    key={title}
-                    className="border-b border-border/30 p-5 md:border-b-0 md:border-r md:last:border-r-0"
-                  >
-                    <h3 className="mb-3 font-mono text-xs font-bold uppercase tracking-wider">
-                      {title}
-                    </h3>
-                    <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-8 grid gap-8 md:grid-cols-[1.15fr_0.85fr]">
-              <div>
-                <h2 className="text-lg font-semibold tracking-tight">Practice with real pacing</h2>
-                <div className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
-                  <p>
-                    KeyVerse is built around the rhythm of a finished song, not a random word list.
-                    Verses create longer typing runs, hooks give you repetition, and pauses force
-                    you to wait instead of rushing ahead.
-                  </p>
-                  <p>
-                    That pacing makes each round a useful typing drill and a small listening test.
-                    The best scores tend to come from relaxed accuracy rather than raw speed.
-                  </p>
-                </div>
-              </div>
-
-              <div className="border-l border-border/30 pl-0 md:pl-6">
-                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Notes
-                </h2>
-                <div className="mt-4 space-y-4">
-                  {faqs.map((item) => (
-                    <div
-                      key={item.question}
-                      className="border-b border-border/20 pb-4 last:border-0"
-                    >
-                      <h3 className="text-sm font-semibold">{item.question}</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                        {item.answer}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
       </div>
 
       <Footer />

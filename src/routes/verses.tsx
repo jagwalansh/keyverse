@@ -8,8 +8,8 @@ import YouTube, { type YouTubePlayer } from "react-youtube";
 import { motion, AnimatePresence } from "motion/react";
 import { Navbar } from "@/components/ui/navbar";
 import { Footer } from "@/components/ui/footer";
+import { VersesRankIcon } from "@/components/ui/verses-rank-icon";
 import {
-  Swords,
   Users,
   Play,
   Copy,
@@ -1149,6 +1149,7 @@ function VersesRoute() {
                 className="w-full max-w-2xl mx-auto my-12 flex flex-col gap-8"
               >
                 <div className="text-center flex flex-col items-center gap-2">
+                  <VersesRankIcon className="h-8 w-8 text-primary mb-1" />
                   <h1 className="text-3xl font-bold tracking-tight">Verses</h1>
                   <p className="text-xs text-muted-foreground">Live rhythm typing multiplayer</p>
                 </div>

@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Moon, Sun, Search, Swords } from "lucide-react";
+import { Moon, Sun, Search } from "lucide-react";
+import { VersesRankIcon } from "@/components/ui/verses-rank-icon";
 import { lazy, Suspense, useState, useEffect, type ReactNode } from "react";
 
 const SearchModal = lazy(() =>
@@ -95,7 +96,7 @@ export function SideNav() {
         <div className="side-nav-pill flex flex-col items-center gap-0.5 px-2 py-3">
           {/* ── Section 1: Home + Verses ── */}
           <NavLink to="/" label="Home" icon={<HomeIcon />} exact isActive={isActive} />
-          <NavLink to="/verses" label="Verses" icon={<Swords size={15} />} isActive={isActive} />
+          <NavLink to="/verses" label="Verses" icon={<VersesRankIcon className="h-3.5 w-3.5" />} isActive={isActive} />
 
           {/* Divider */}
           <div className="w-5 h-px bg-border/60 my-1.5 rounded-full" />

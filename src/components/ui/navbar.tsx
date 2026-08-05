@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { VersesRankIcon } from "@/components/ui/verses-rank-icon";
 import {
   BookOpen,
   Home,
@@ -10,7 +11,6 @@ import {
   Newspaper,
   Search,
   Sun,
-  Swords,
   UserRound,
 } from "lucide-react";
 import { lazy, Suspense, useState, useEffect } from "react";
@@ -116,7 +116,7 @@ export function Navbar({ staticLayout = false }: NavbarProps) {
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/verses">
-                      <Swords /> Verses
+                      <VersesRankIcon className="h-4 w-4" /> Verses
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
