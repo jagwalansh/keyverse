@@ -25,6 +25,7 @@ import {
   ChevronDown,
   ThumbsUp,
   AlertCircle,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
@@ -241,6 +242,16 @@ function SyncReportModal({
                 <p className="mt-2 text-[11px] font-mono text-muted-foreground">
                   Current position: {formatTime(playbackTime)}
                 </p>
+              </div>
+
+              <div className="flex items-start gap-2.5 rounded-lg border border-border/30 bg-card/50 p-3">
+                <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <div className="space-y-0.5">
+                  <p className="text-xs font-medium text-foreground">Quick tip</p>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    Sometimes the fix is just to scroll up or down on the video player to find and switch to a better-synced music video!
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-2">
