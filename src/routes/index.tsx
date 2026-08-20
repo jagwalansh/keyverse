@@ -284,6 +284,7 @@ function Index() {
                               src={t.artworkUrl100}
                               alt=""
                               className="h-11 w-11 rounded-lg shrink-0 object-cover border border-border/40"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="h-11 w-11 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>'; }}
                             />
                           ) : (
                             <div className="h-11 w-11 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">
@@ -418,6 +419,7 @@ function Index() {
                             alt=""
                             className="h-12 w-12 rounded-lg object-cover border border-border/30"
                             loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML('afterbegin', '<div class="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>'); }}
                           />
                           {isTopThree && (
                             <div className="absolute -top-1.5 -left-1.5 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shadow-xs">

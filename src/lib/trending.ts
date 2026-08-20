@@ -13,41 +13,41 @@ const STORAGE_KEY_PREFIX = "keyverse_trending_songs_v2";
 
 export const FALLBACK_TRENDING_SONGS: TrendingSong[] = [
   {
-    id: 1780123001,
+    id: 1844932150,
     trackName: "Choosin' Texas",
     artistName: "Ella Langley",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/01/abcd0100-0000-0000-0000-000000000001/200x200bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e2/91/4d/e2914d0a-7f1d-f04c-fbf4-c50b38548838/196873638690.jpg/200x200bb.jpg",
     duration: 198,
     genre: "country",
     rank: 1,
   },
   {
-    id: 1780123002,
+    id: 1884403093,
     trackName: "Boston",
     artistName: "STELLA LEFTY",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/02/abcd0200-0000-0000-0000-000000000002/200x200bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/7c/de/5e/7cde5e7a-612d-9714-d34c-1eb234c85ebb/810129961546.jpg/200x200bb.jpg",
     duration: 210,
     genre: "pop",
     rank: 2,
   },
   {
-    id: 1780123003,
+    id: 6792676860,
     trackName: "Been By Now",
     artistName: "Morgan Wallen",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/03/abcd0300-0000-0000-0000-000000000003/200x200bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/9f/8d/52/9f8d52a0-b6d9-d038-327b-4fe58bedce67/26UMGIM94572.rgb.jpg/200x200bb.jpg",
     duration: 225,
     genre: "country",
     rank: 3,
   },
   {
-    id: 1780123004,
+    id: 1838737598,
     trackName: "WHERE IS MY HUSBAND!",
     artistName: "RAYE",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/04/abcd0400-0000-0000-0000-000000000004/200x200bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/69/10/8a/69108a18-55ec-d774-a653-90b2242733db/199538765458.jpg/200x200bb.jpg",
     duration: 195,
     genre: "pop",
     rank: 4,
