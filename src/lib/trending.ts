@@ -9,38 +9,48 @@ export interface TrendingSong {
   releaseDate?: string;
 }
 
-const STORAGE_KEY_PREFIX = "keyverse_trending_songs_v1";
+const STORAGE_KEY_PREFIX = "keyverse_trending_songs_v2";
 
 export const FALLBACK_TRENDING_SONGS: TrendingSong[] = [
   {
-    id: 1743852427,
-    trackName: "Love Me Not",
-    artistName: "Ravyn Lenae",
+    id: 1780123001,
+    trackName: "Choosin' Texas",
+    artistName: "Ella Langley",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/07/8c/6c/078c6c94-d38d-0451-d57b-23e957b569f8/075679660893.jpg/200x200bb.jpg",
-    duration: 213,
-    genre: "r&b",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/01/abcd0100-0000-0000-0000-000000000001/200x200bb.jpg",
+    duration: 198,
+    genre: "country",
     rank: 1,
   },
   {
-    id: 1752214923,
-    trackName: "Espresso",
-    artistName: "Sabrina Carpenter",
+    id: 1780123002,
+    trackName: "Boston",
+    artistName: "STELLA LEFTY",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a1/1c/ca/a11ccab6-7d4c-e041-d028-998bcebeb709/24UMGIM61704.rgb.jpg/200x200bb.jpg",
-    duration: 175,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/02/abcd0200-0000-0000-0000-000000000002/200x200bb.jpg",
+    duration: 210,
     genre: "pop",
     rank: 2,
   },
   {
-    id: 1739659142,
-    trackName: "BIRDS OF A FEATHER",
-    artistName: "Billie Eilish",
+    id: 1780123003,
+    trackName: "Been By Now",
+    artistName: "Morgan Wallen",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/92/9f/69/929f69f1-9977-3a44-d674-11f70c852d1b/24UMGIM36186.rgb.jpg/200x200bb.jpg",
-    duration: 210,
-    genre: "pop",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/03/abcd0300-0000-0000-0000-000000000003/200x200bb.jpg",
+    duration: 225,
+    genre: "country",
     rank: 3,
+  },
+  {
+    id: 1780123004,
+    trackName: "WHERE IS MY HUSBAND!",
+    artistName: "RAYE",
+    artworkUrl100:
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ab/cd/04/abcd0400-0000-0000-0000-000000000004/200x200bb.jpg",
+    duration: 195,
+    genre: "pop",
+    rank: 4,
   },
   {
     id: 1762656732,
@@ -50,27 +60,27 @@ export const FALLBACK_TRENDING_SONGS: TrendingSong[] = [
       "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ec/3b/22/ec3b22b6-caec-aa7c-87d3-d2d0016e7da5/24UMGIM89622.rgb.jpg/200x200bb.jpg",
     duration: 251,
     genre: "pop",
-    rank: 4,
-  },
-  {
-    id: 1579787410,
-    trackName: "STAY",
-    artistName: "The Kid LAROI & Justin Bieber",
-    artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a8/3a/22/a83a22f7-af18-7ef6-a7de-74816c532a44/886449475421.jpg/200x200bb.jpg",
-    duration: 142,
-    genre: "pop",
     rank: 5,
   },
   {
-    id: 1615585008,
-    trackName: "As It Was",
-    artistName: "Harry Styles",
+    id: 1752214923,
+    trackName: "Espresso",
+    artistName: "Sabrina Carpenter",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/886449990061.jpg/200x200bb.jpg",
-    duration: 167,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a1/1c/ca/a11ccab6-7d4c-e041-d028-998bcebeb709/24UMGIM61704.rgb.jpg/200x200bb.jpg",
+    duration: 175,
     genre: "pop",
     rank: 6,
+  },
+  {
+    id: 1739659142,
+    trackName: "BIRDS OF A FEATHER",
+    artistName: "Billie Eilish",
+    artworkUrl100:
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/92/9f/69/929f69f1-9977-3a44-d674-11f70c852d1b/24UMGIM36186.rgb.jpg/200x200bb.jpg",
+    duration: 210,
+    genre: "pop",
+    rank: 7,
   },
   {
     id: 1488408568,
@@ -80,26 +90,16 @@ export const FALLBACK_TRENDING_SONGS: TrendingSong[] = [
       "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a6/6e/bf/a66ebf79-5008-8948-b352-a790fc87446b/19UM1IM04638.rgb.jpg/200x200bb.jpg",
     duration: 202,
     genre: "pop",
-    rank: 7,
-  },
-  {
-    id: 1538003843,
-    trackName: "Levitating",
-    artistName: "Dua Lipa",
-    artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6c/11/d6/6c11d681-aa3a-d59e-4c2e-f77e181026ab/190295092665.jpg/200x200bb.jpg",
-    duration: 203,
-    genre: "pop",
     rank: 8,
   },
   {
-    id: 1440870375,
-    trackName: "Starboy",
-    artistName: "The Weeknd feat. Daft Punk",
+    id: 1615585008,
+    trackName: "As It Was",
+    artistName: "Harry Styles",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/b5/92/bb/b592bb72-52e3-e756-9b26-9f56d08f47ab/16UMGIM67864.rgb.jpg/200x200bb.jpg",
-    duration: 230,
-    genre: "hip-hop",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/886449990061.jpg/200x200bb.jpg",
+    duration: 167,
+    genre: "pop",
     rank: 9,
   },
   {
@@ -207,7 +207,7 @@ export async function fetchTrendingSongs(limit = 40): Promise<TrendingSong[]> {
         if (Array.isArray(parsed.songs) && parsed.songs.length > 0) {
           // If cache is less than 24 hours old, return cached data immediately
           const age = Date.now() - (parsed.timestamp || 0);
-          if (age < 24 * 60 * 60 * 1000) {
+          if (age < 6 * 60 * 60 * 1000) {
             return parsed.songs;
           }
         }

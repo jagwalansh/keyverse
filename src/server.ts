@@ -694,7 +694,7 @@ export default {
               status: 200,
               headers: {
                 "content-type": "application/json",
-                "cache-control": "public, max-age=86400, stale-while-revalidate=604800",
+                "cache-control": "public, max-age=21600, stale-while-revalidate=86400",
               },
             },
           );
