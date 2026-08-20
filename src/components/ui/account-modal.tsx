@@ -1,10 +1,11 @@
 import * as Dialog from "@radix-ui/react-dialog";
-import { LogOut, Save, X, Trophy } from "lucide-react";
+import { LogOut, Save, X, Trophy, Clock } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/lib/supabase";
+import { getUsernameCooldownInfo } from "@/lib/username";
 
 type PersonalBest = {
   score: number;
@@ -28,6 +29,8 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pb, setPb] = useState<PersonalBest | null | undefined>(undefined);
+
+  const cooldown = getUsernameCooldownInfo(profile);
 
   useEffect(() => {
     if (!open || !user) return;
@@ -63,18 +66,32 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
 
   useEffect(() => {
     if (!open) return;
-    setUsername(profile?.username ?? user?.email ?? "");
+    setUsername(profile?.username ?? user?.email?.split("@")[0] ?? "");
   }, [open, profile?.username, user?.email]);
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     setError(null);
     setMessage(null);
+
+    // If username is unchanged, just close or notify
+    if (profile?.username && profile.username.toLowerCase() === username.trim().toLowerCase()) {
+      setMessage("No changes made.");
+      return;
+    }
+
+    if (!cooldown.canChange) {
+      setError(
+        `Username can only be changed once every 14 days. You can change it again in ${cooldown.remainingDays} day${cooldown.remainingDays === 1 ? "" : "s"}.`,
+      );
+      return;
+    }
+
     setSaving(true);
 
     try {
       await updateProfile(username);
-      setMessage("Account updated.");
+      setMessage("Username updated successfully.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not update your account.");
     } finally {
@@ -128,21 +145,38 @@ export function AccountModal({ open, onOpenChange }: AccountModalProps) {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="account-username" className="text-sm font-medium">
-                Username
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="account-username" className="text-sm font-medium">
+                  Username
+                </label>
+                {!cooldown.canChange && (
+                  <span className="text-[10px] font-mono text-amber-500 flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{cooldown.remainingDays}d cooldown</span>
+                  </span>
+                )}
+              </div>
               <Input
                 id="account-username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 minLength={3}
                 maxLength={24}
-                disabled={profileLoading}
+                disabled={profileLoading || !cooldown.canChange}
                 required
               />
-              <p className="text-xs text-muted-foreground">
-                Public on leaderboards. Use 3-24 letters, numbers, underscores, or hyphens.
-              </p>
+              {!cooldown.canChange ? (
+                <p className="text-xs text-amber-500/90 flex items-start gap-1 mt-1">
+                  <span>
+                    Username can be changed once every 14 days. Next change available in{" "}
+                    <strong>{cooldown.remainingDays} day{cooldown.remainingDays === 1 ? "" : "s"}</strong>.
+                  </span>
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Public on leaderboards. Use 3-24 characters. Can be changed once every 14 days.
+                </p>
+              )}
             </div>
 
             {error && (

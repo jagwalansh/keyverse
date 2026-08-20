@@ -2,7 +2,7 @@ type AnalyticsEventParams = Record<string, string | number | boolean | undefined
 
 declare global {
   interface Window {
-    gtag?: (command: "event", eventName: string, params?: AnalyticsEventParams) => void;
+    gtag?: (...args: any[]) => void;
   }
 }
 

@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VersesRouteImport } from './routes/verses'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
-import { Route as RecommendedRouteImport } from './routes/recommended'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -46,11 +45,6 @@ const TermsRoute = TermsRouteImport.update({
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecommendedRoute = RecommendedRouteImport.update({
-  id: '/recommended',
-  path: '/recommended',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -168,7 +162,6 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
-  '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verses': typeof VersesRoute
@@ -193,7 +186,6 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
-  '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verses': typeof VersesRoute
@@ -219,7 +211,6 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/profile': typeof ProfileRoute
-  '/recommended': typeof RecommendedRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/verses': typeof VersesRoute
@@ -246,7 +237,6 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/profile'
-    | '/recommended'
     | '/support'
     | '/terms'
     | '/verses'
@@ -271,7 +261,6 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/profile'
-    | '/recommended'
     | '/support'
     | '/terms'
     | '/verses'
@@ -296,7 +285,6 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/profile'
-    | '/recommended'
     | '/support'
     | '/terms'
     | '/verses'
@@ -322,7 +310,6 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   ProfileRoute: typeof ProfileRoute
-  RecommendedRoute: typeof RecommendedRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   VersesRoute: typeof VersesRoute
@@ -350,13 +337,6 @@ declare module '@tanstack/react-router' {
       path: '/support'
       fullPath: '/support'
       preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recommended': {
-      id: '/recommended'
-      path: '/recommended'
-      fullPath: '/recommended'
-      preLoaderRoute: typeof RecommendedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -536,7 +516,6 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   ProfileRoute: ProfileRoute,
-  RecommendedRoute: RecommendedRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   VersesRoute: VersesRoute,

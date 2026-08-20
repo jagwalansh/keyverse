@@ -20,8 +20,8 @@ import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ModalProvider } from "@/lib/modal-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import { Toaster } from "@/components/ui/sonner";
-import { SideNav } from "@/components/ui/side-nav";
 import { Button } from "@/components/ui/button";
 
 const CONSENT_STORAGE_KEY = "keyverse_cookie_consent";
@@ -32,7 +32,7 @@ type ConsentChoice = "accepted" | "rejected";
 declare global {
   interface Window {
     dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
+    gtag?: (...args: any[]) => void;
   }
 }
 
@@ -211,17 +211,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AdSenseLoader />
-      <AuthProvider>
-        <ModalProvider>
-          <SideNav />
-          <div className="running-dot-rails">
+      <ThemeProvider>
+        <AdSenseLoader />
+        <AuthProvider>
+          <ModalProvider>
             <Outlet />
-          </div>
-          <ConsentBanner />
-          <Toaster />
-        </ModalProvider>
-      </AuthProvider>
+            <ConsentBanner />
+            <Toaster />
+          </ModalProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
@@ -246,7 +245,6 @@ function AdSenseLoader() {
     "/articles/why-lyrics-beat-random-text",
     "/guide",
     "/how-to-play",
-    "/recommended",
   ]);
   const canLoadAds = adEligibleRoutes.has(pathname);
 

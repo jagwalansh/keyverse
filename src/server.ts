@@ -3,6 +3,11 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { CUSTOM_LYRICS, CUSTOM_LYRIC_TIMINGS } from "./lib/custom-lyrics";
+import {
+  parseItunesFeed,
+  getCurrentMonthName,
+  FALLBACK_TRENDING_SONGS,
+} from "./lib/trending";
 import { POST as saveScoreHandler } from "./server/api/save-score";
 import { GET as leaderboardHandler } from "./server/api/leaderboard";
 import { GET as profileHandler } from "./server/api/profile";
@@ -670,6 +675,44 @@ export default {
         });
       }
 
+      if (url.pathname === "/api/trending") {
+        const limitParam = url.searchParams.get("limit");
+        const limit = Math.min(Math.max(parseInt(limitParam || "40", 10) || 40, 10), 100);
+        try {
+          const res = await fetch(`https://itunes.apple.com/us/rss/topsongs/limit=${limit}/json`, {
+            headers: { Accept: "application/json" },
+          });
+          if (!res.ok) throw new Error("Failed to fetch iTunes feed");
+          const data = await res.json();
+          const songs = parseItunesFeed(data as { feed?: { entry?: any[] } });
+          return new Response(
+            JSON.stringify({
+              songs: songs.length > 0 ? songs : FALLBACK_TRENDING_SONGS,
+              month: getCurrentMonthName(),
+            }),
+            {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+                "cache-control": "public, max-age=86400, stale-while-revalidate=604800",
+              },
+            },
+          );
+        } catch (error) {
+          console.error("Trending fetch error:", error);
+          return new Response(
+            JSON.stringify({
+              songs: FALLBACK_TRENDING_SONGS,
+              month: getCurrentMonthName(),
+            }),
+            {
+              status: 200,
+              headers: { "content-type": "application/json" },
+            },
+          );
+        }
+      }
+
       if (url.pathname === "/sitemap.xml") {
         const lastmod = "2026-06-16";
         const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -681,7 +724,6 @@ export default {
   <url><loc>https://keyverse.me/articles/best-songs-for-typing-speed</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/articles/how-rhythm-typing-works</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/articles/choosing-songs-for-better-practice</loc><lastmod>${lastmod}</lastmod></url>
-  <url><loc>https://keyverse.me/recommended</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/leaderboard</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/about</loc><lastmod>${lastmod}</lastmod></url>
   <url><loc>https://keyverse.me/support</loc><lastmod>${lastmod}</lastmod></url>

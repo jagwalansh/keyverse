@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { ArrowLeft, CalendarDays, LogIn, Music2, Settings2, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarDays, LogIn, Music2, Settings2, Sparkles, Pencil } from "lucide-react";
 import { AccountModal } from "@/components/ui/account-modal";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/ui/footer";
@@ -189,7 +189,7 @@ function ProfilePage() {
           </Button>
         </header>
 
-        <section className="relative overflow-hidden rounded-2xl border border-border/40 bg-card/45 p-6 shadow-lg backdrop-blur-sm sm:p-8">
+        <section className="relative overflow-hidden rounded-2xl border border-border/30 bg-transparent p-6 shadow-sm sm:p-8">
           <div className="pointer-events-none absolute -right-24 -top-28 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center">
@@ -197,9 +197,20 @@ function ProfilePage() {
                 <p className="mb-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">
                   Username
                 </p>
-                <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
-                  {displayName}
-                </h1>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="truncate text-2xl font-bold tracking-tight sm:text-3xl">
+                    {displayName}
+                  </h1>
+                  <button
+                    type="button"
+                    onClick={() => setAccountOpen(true)}
+                    className="p-1.5 rounded-lg border border-border/40 bg-card/60 hover:bg-secondary hover:text-primary transition-all text-muted-foreground cursor-pointer shrink-0 shadow-xs"
+                    aria-label="Change username"
+                    title="Change username"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                </div>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5" />{" "}
                   {formatJoinedDate(profile?.created_at ?? user.created_at)}
@@ -276,7 +287,7 @@ function HeroStat({ label, value }: { label: string; value: string }) {
 
 function MetricCard({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <article className="rounded-xl border border-border/35 bg-card/35 p-5 text-center shadow-sm transition-colors hover:border-primary/30">
+    <article className="rounded-xl border border-border/30 bg-transparent p-5 text-center shadow-xs transition-colors hover:border-primary/30">
       <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
@@ -310,7 +321,7 @@ function ActivityGrid({ performances }: { performances: Performance[] }) {
   const activeDays = days.filter((day) => day.count > 0).length;
 
   return (
-    <article className="flex flex-col h-full justify-between overflow-hidden rounded-xl border border-border/35 bg-card/35 p-5 sm:p-6">
+    <article className="flex flex-col h-full justify-between overflow-hidden rounded-xl border border-border/30 bg-transparent p-5 sm:p-6">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-wider">Activity</p>
@@ -407,7 +418,7 @@ function activityColor(count: number) {
 
 function TopPerformances({ performances }: { performances: Performance[] }) {
   return (
-    <article className="rounded-xl border border-border/35 bg-card/35 p-5 sm:p-6">
+    <article className="rounded-xl border border-border/30 bg-transparent p-5 sm:p-6">
       <div className="mb-5">
         <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wider">
           Personal bests
@@ -448,7 +459,7 @@ function TopPerformances({ performances }: { performances: Performance[] }) {
 
 function EmptyProfile() {
   return (
-    <section className="mt-6 rounded-2xl border border-dashed border-border/50 bg-card/20 px-6 py-14 text-center">
+    <section className="mt-6 rounded-2xl border border-dashed border-border/50 bg-transparent px-6 py-14 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
         <Music2 className="h-6 w-6" />
       </div>

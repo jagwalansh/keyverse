@@ -1041,6 +1041,7 @@ function VersesRoute() {
             score: score + pts,
             accuracy: finalAcc,
             wpm: finalWpm,
+            maxCombo: maxCombo || combo,
             finished: true,
           },
         }));
@@ -1718,7 +1719,7 @@ function VersesRoute() {
                   <div className="p-4 rounded-xl border border-border/30 bg-card/45 flex flex-col justify-between gap-3">
                     <div className="w-full aspect-video rounded-lg bg-black overflow-hidden relative border border-border/10">
                       <YouTube
-                        videoId={videoId}
+                        videoId={videoId ?? undefined}
                         opts={{
                           height: "100%",
                           width: "100%",

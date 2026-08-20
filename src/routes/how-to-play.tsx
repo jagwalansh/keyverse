@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/ui/footer";
 import { Navbar } from "@/components/ui/navbar";
 
 export const Route = createFileRoute("/how-to-play")({
   head: () => ({
     meta: [
-      { title: "How to Play KeyVerse | Rhythm Typing Guide" },
+      { title: "How to Play | KeyVerse" },
       {
         name: "description",
         content:
@@ -18,144 +17,136 @@ export const Route = createFileRoute("/how-to-play")({
   component: HowToPlay,
 });
 
-const steps = [
+const gameSteps = [
   {
-    title: "Find a song",
-    description:
-      "Search by artist or track title, or start from the recommended list if you want a known-good round.",
+    num: "01",
+    title: "Select a Song",
+    description: "Search by artist or track title, or pick from this month's trending charts.",
   },
   {
-    title: "Start the round",
-    description:
-      "KeyVerse pairs synced lyrics with a matching video and moves the active line as playback advances.",
+    num: "02",
+    title: "Sync & Play",
+    description: "KeyVerse pairs synchronized lyrics with real-time audio playback.",
   },
   {
-    title: "Type in rhythm",
-    description:
-      "Type the current lyric line cleanly. Reading ahead helps, but the input should stay with the vocal.",
+    num: "03",
+    title: "Type on Beat",
+    description: "Strike keys in time with the vocal cadence while reading upcoming lines ahead.",
   },
   {
-    title: "Review the score",
-    description:
-      "Use the score, accuracy, and leaderboard placement to see where a run improved or fell apart.",
+    num: "04",
+    title: "Review & Rank",
+    description: "Analyze accuracy %, streak milestones, and submit to the global leaderboard.",
   },
 ];
 
-const tips = [
-  "Let the first line establish the tempo before pushing for speed.",
-  "Type clean words first; corrections usually cost more than a slightly slower pace.",
-  "Replay one track until accuracy is stable, then move to a denser song.",
-  "Report a sync issue when a video version clearly does not match the lyric timing.",
+const gameplayTips = [
+  "Listen to the vocal cadence first before accelerating your keystrokes.",
+  "Clean inputs beat fast corrections—backspaces cost significant scoring momentum.",
+  "Repeat single tracks to turn dense verses and pauses into muscle memory.",
+  "Report desynced audio so timestamps can be calibrated for the community.",
 ];
 
-function HowToPlay() {
+export function HowToPlay() {
   return (
     <main className="relative flex min-h-screen flex-col items-center bg-background font-sans text-foreground">
       <Navbar />
 
-      <div className="relative z-20 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-28">
-        <div className="flex flex-col gap-4 border-b border-border/20 pb-6 text-left md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="mb-1 text-xs font-mono font-semibold uppercase tracking-wider text-primary">
-              Player guide
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">How to Play KeyVerse</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              A complete guide to the rhythm typing flow, score behavior, song sync, and better
-              practice habits.
+      <div className="relative z-20 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        {/* Header */}
+        <header className="flex flex-col gap-4 border-b border-border/30 pb-8 text-left md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-primary">
+              // player guide
+            </span>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              How to Play KeyVerse
+            </h1>
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Everything you need to know about the gameplay loop, scoring algorithms, and timing tips.
             </p>
           </div>
           <Link
             to="/"
-            className="flex shrink-0 items-center gap-2 self-start rounded-lg border border-border/40 bg-card/45 px-4 py-2 text-xs font-mono font-semibold text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
+            className="flex shrink-0 items-center gap-1.5 self-start rounded-md border border-border/40 bg-transparent px-3 py-1.5 text-xs font-mono text-muted-foreground transition-colors hover:text-foreground md:self-auto"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            <span>&larr; back to home</span>
           </Link>
-        </div>
+        </header>
 
-        <section className="grid border border-border/30 bg-card/30 md:grid-cols-4">
-          {steps.map(({ title, description }) => (
-            <article
-              key={title}
-              className="border-b border-border/30 p-5 md:border-b-0 md:border-r md:last:border-r-0"
-            >
-              <h2 className="mb-3 font-mono text-xs font-bold uppercase tracking-wider">{title}</h2>
-              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{description}</p>
-            </article>
-          ))}
+        {/* Section 1: 4-Step Core Loop */}
+        <section className="flex flex-col gap-5 text-left">
+          <div>
+            <span className="font-mono text-xs font-semibold text-primary uppercase tracking-wider">
+              # gameplay loop
+            </span>
+            <h2 className="mt-1 text-lg font-bold text-foreground">The Four Step Flow</h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {gameSteps.map((step) => (
+              <div
+                key={step.num}
+                className="flex flex-col justify-between rounded-lg border border-border/30 bg-transparent p-5"
+              >
+                <div>
+                  <span className="font-mono text-xs font-bold text-primary">{step.num}</span>
+                  <h3 className="mt-2 font-mono text-xs font-bold text-foreground uppercase tracking-wide">
+                    {step.title}
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        <section className="grid gap-8 border-t border-border/20 pt-8 md:grid-cols-[0.9fr_1.1fr]">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight">What the score rewards</h2>
-            <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
+        {/* Section 2: Scoring & Timing Tips */}
+        <section className="grid gap-5 border-t border-border/20 pt-10 md:grid-cols-2 text-left">
+          <div className="rounded-lg border border-border/30 bg-transparent p-5 sm:p-6">
+            <span className="font-mono text-xs font-semibold text-primary uppercase tracking-wider">
+              # scoring criteria
+            </span>
+            <h3 className="mt-1 text-base font-bold text-foreground">What the Score Rewards</h3>
+            <div className="mt-3 space-y-3 text-xs leading-relaxed text-muted-foreground">
               <p>
-                Score is not just words per minute. A strong run combines accurate input, consistent
-                timing, and completed lyric lines with few corrections. Fast verses, clipped words,
-                and unusual phrasing naturally raise the difficulty.
+                Scores represent a composite calculation of accuracy %, line completion consistency, and streak retention. Typing at a steady, error-free pace outscores frantic bursts with typos.
               </p>
               <p>
-                Treat each line like a small checkpoint. If a word goes wrong, recover cleanly
-                instead of forcing the rest of the line at full speed. The best runs usually come
-                from steady typing, quick recognition, and fewer repeated corrections.
+                Each lyric line acts as an independent timing gate. When mistakes occur, recover smoothly on the next word rather than rushing ahead out of rhythm.
               </p>
             </div>
           </div>
 
-          <div className="border-l border-border/30 pl-0 md:pl-6">
-            <h2 className="text-xl font-semibold tracking-tight">Practice notes</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
-              {tips.map((tip) => (
-                <li key={tip} className="border-b border-border/20 pb-3 last:border-0 last:pb-0">
-                  {tip}
+          <div className="rounded-lg border border-border/30 bg-transparent p-5 sm:p-6">
+            <span className="font-mono text-xs font-semibold text-primary uppercase tracking-wider">
+              # pro tips
+            </span>
+            <h3 className="mt-1 text-base font-bold text-foreground">Practice Strategies</h3>
+            <ul className="mt-3 space-y-2.5">
+              {gameplayTips.map((tip, i) => (
+                <li key={i} className="font-mono text-xs text-muted-foreground flex items-start gap-2 leading-relaxed">
+                  <span className="text-primary font-bold select-none">-</span>
+                  <span>{tip}</span>
                 </li>
               ))}
             </ul>
           </div>
         </section>
 
-        <section className="border-t border-border/20 pt-8">
-          <h2 className="text-xl font-semibold tracking-tight">Song sync and sources</h2>
-          <div className="mt-4 space-y-4 text-sm leading-7 text-muted-foreground">
-            <p>
-              KeyVerse uses third-party services for lyrics, videos, artwork, and metadata. Public
-              videos can vary by region or version, so a track may occasionally feel slightly out of
-              sync. The in-game report option includes the song and video details so mismatches can
-              be reviewed.
-            </p>
-            <p>
-              If a round feels wrong from the first line, try another search result or report the
-              sync issue. Studio versions, live performances, remixes, lyric videos, and shortened
-              uploads can all share similar titles while having different timing.
-            </p>
-          </div>
-        </section>
-
-        <section className="grid gap-8 border-t border-border/20 pt-8 md:grid-cols-3">
-          <article>
-            <h2 className="text-lg font-semibold tracking-tight">Before you start</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              Pick a song with clear vocals for your first few rounds. Slower pop tracks are easier
-              than dense rap verses because they give you time to read the next line before the
-              active line changes.
-            </p>
-          </article>
-          <article>
-            <h2 className="text-lg font-semibold tracking-tight">During a round</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              Keep your eyes slightly ahead of the cursor. The current line matters most, but
-              noticing the next phrase early prevents panic when the song moves into a quick
-              transition.
-            </p>
-          </article>
-          <article>
-            <h2 className="text-lg font-semibold tracking-tight">After the score</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              Replay the same track when you miss the same section twice. Improvement comes from
-              recognizing the rhythm of a song, not just from typing harder on the next attempt.
-            </p>
-          </article>
+        {/* Footer Play CTA */}
+        <section className="rounded-lg border border-border/30 bg-transparent p-6 text-center flex flex-col items-center justify-center gap-2.5">
+          <p className="font-mono text-xs text-muted-foreground">
+            ready to play?
+          </p>
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline"
+          >
+            <span>[ start typing &rarr; ]</span>
+          </Link>
         </section>
       </div>
 

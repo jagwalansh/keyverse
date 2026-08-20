@@ -1,5 +1,4 @@
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/ui/footer";
 import { Navbar } from "@/components/ui/navbar";
 import { articles } from "@/lib/articles";
@@ -7,11 +6,11 @@ import { articles } from "@/lib/articles";
 export const Route = createFileRoute("/articles")({
   head: () => ({
     meta: [
-      { title: "KeyVerse Articles | Rhythm Typing Tips" },
+      { title: "Articles & Guides | KeyVerse" },
       {
         name: "description",
         content:
-          "Read original KeyVerse articles about rhythm typing, song choice, typing accuracy, and practice habits for music-based typing games.",
+          "Original articles and guides about rhythm typing, song choice, typing accuracy, and practice habits for music-based typing.",
       },
     ],
     links: [{ rel: "canonical", href: "https://keyverse.me/articles" }],
@@ -19,7 +18,7 @@ export const Route = createFileRoute("/articles")({
   component: Articles,
 });
 
-function Articles() {
+export function Articles() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const isArticlesIndex = pathname === "/articles" || pathname === "/articles/";
 
@@ -31,75 +30,76 @@ function Articles() {
     <main className="relative flex min-h-screen flex-col items-center bg-background font-sans text-foreground">
       <Navbar />
 
-      <div className="relative z-20 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-28">
-        <div className="flex flex-col gap-4 border-b border-border/20 pb-6 text-left md:flex-row md:items-start md:justify-between">
-          <div>
-            <div className="mb-1 text-xs font-mono font-semibold uppercase tracking-wider text-primary">
-              Articles
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+      <div className="relative z-20 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        {/* Header */}
+        <header className="flex flex-col gap-4 border-b border-border/30 pb-8 text-left md:flex-row md:items-end md:justify-between">
+          <div className="max-w-2xl">
+            <span className="font-mono text-xs font-semibold uppercase tracking-wider text-primary">
+              // knowledge base
+            </span>
+            <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Rhythm Typing Articles
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Original guides on typing practice, rhythm, song choice, and getting more from each
-              KeyVerse round.
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              In-depth essays, touch typing guides, and rhythm mechanics analysis to elevate your speed and accuracy.
             </p>
           </div>
           <Link
             to="/"
-            className="flex shrink-0 items-center gap-2 self-start rounded-lg border border-border/40 bg-card/45 px-4 py-2 text-xs font-mono font-semibold text-muted-foreground shadow-sm transition-all hover:border-primary/50 hover:bg-muted/60 hover:text-foreground"
+            className="flex shrink-0 items-center gap-1.5 self-start rounded-md border border-border/40 bg-transparent px-3 py-1.5 text-xs font-mono text-muted-foreground transition-colors hover:text-foreground md:self-auto"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            <span>&larr; back to home</span>
           </Link>
-        </div>
+        </header>
 
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {/* Articles Grid */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 text-left">
           {articles.map((article) => (
             <article key={article.slug}>
               <Link
                 to={article.path}
                 preload="intent"
-                className="group flex h-full flex-col border border-border/30 bg-card/35 p-5 transition-colors hover:border-primary/35 hover:bg-card/55 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="group flex h-full flex-col justify-between rounded-lg border border-border/30 bg-transparent p-5 transition-colors hover:bg-secondary/20"
               >
-                <h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary">
-                  {article.title}
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                  {article.description}
-                </p>
-                <div className="mt-4 flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
-                  <time dateTime={article.publishDate}>
-                    {new Date(article.publishDate + "T00:00:00").toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </time>
-                  <span>·</span>
-                  <span>{article.readingTime} min read</span>
+                <div>
+                  <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground mb-2">
+                    <time dateTime={article.publishDate}>
+                      {new Date(article.publishDate + "T00:00:00").toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </time>
+                    <span>•</span>
+                    <span>{article.readingTime} min read</span>
+                  </div>
+                  <h2 className="font-mono text-xs font-bold uppercase tracking-wide text-foreground group-hover:text-primary transition-colors">
+                    {article.title}
+                  </h2>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                    {article.description}
+                  </p>
                 </div>
-                <span className="mt-5 inline-flex w-fit rounded-md bg-primary px-4 py-2 text-xs font-mono font-semibold text-primary-foreground transition-opacity group-hover:opacity-90">
-                  Read article
-                </span>
+                <div className="mt-4 pt-3 border-t border-border/20">
+                  <span className="font-mono text-xs font-bold text-primary group-hover:underline">
+                    [ read article &rarr; ]
+                  </span>
+                </div>
               </Link>
             </article>
           ))}
         </div>
 
-        <section className="flex flex-col items-start justify-between gap-5 border-t border-border/20 pt-8 sm:flex-row sm:items-center">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight">Ready to practice?</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-              Start with a familiar song, focus on clean lines, and use the score as feedback for
-              the next attempt.
-            </p>
-          </div>
+        {/* Footer Play CTA */}
+        <section className="rounded-lg border border-border/30 bg-transparent p-6 text-center flex flex-col items-center justify-center gap-2.5">
+          <p className="font-mono text-xs text-muted-foreground">
+            ready to practice your timing?
+          </p>
           <Link
-            to="/recommended"
-            className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-xs font-mono font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            to="/"
+            className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline"
           >
-            Browse songs
+            <span>[ start typing &rarr; ]</span>
           </Link>
         </section>
       </div>

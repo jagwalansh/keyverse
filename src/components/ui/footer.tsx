@@ -1,170 +1,81 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Github, Instagram } from "lucide-react";
+import { Github, Instagram, Command, Keyboard, Shield, FileText, HelpCircle } from "lucide-react";
 
 export function Footer() {
   return (
-    <div className="w-full max-w-4xl mx-auto mt-auto px-6 pt-12 pb-10">
-      {/* Glassmorphic Footer Wrapper */}
-      <footer className="w-full border border-border/40 bg-card/65 dark:bg-card/45 py-10 px-8 rounded-2xl backdrop-blur-md shadow-sm dark:shadow-[0_8px_32px_oklch(0_0_0_/_20%)]">
-        <div className="flex flex-col gap-8">
-          {/* Top Row: Responsive Column Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {/* Col 1: Brand details */}
-            <div className="flex flex-col gap-3 md:justify-self-start">
-              <h3 className="font-mono text-sm font-semibold tracking-wider text-foreground">
-                key<span className="text-primary border-b border-primary">Verse</span>
-              </h3>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                A clean, minimal rhythm typing game built for music lovers. Test your speed and
-                accuracy in sync with the beat.
-              </p>
-              <div className="flex flex-col gap-2 pt-1 text-xs text-muted-foreground font-mono">
-                <Link
-                  to="/about"
-                  className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
-                >
-                  About Us
-                </Link>
-                <Link
-                  to="/how-to-play"
-                  className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
-                >
-                  How to Play
-                </Link>
-                <Link
-                  to="/support"
-                  className="underline decoration-border underline-offset-2 transition-colors hover:text-primary hover:decoration-primary"
-                >
-                  Contact & Support
-                </Link>
-              </div>
-            </div>
+    <footer className="w-full mt-auto relative z-20 border-t border-border/40 bg-background/80 py-8 text-xs font-mono text-muted-foreground">
+      <div className="w-full max-w-5xl mx-auto px-6 flex flex-col gap-6">
+        {/* Monkeytype Keyboard Shortcuts Bar */}
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-3 px-4 rounded-lg bg-card/40 border border-border/40 text-[11px]">
+          <div className="flex items-center gap-1.5">
+            <kbd className="mt-key-badge">tab</kbd>
+            <span>restart test</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="mt-key-badge">esc</kbd>
+            <span>pause / controls</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <kbd className="mt-key-badge">⌘ + K</kbd>
+            <span>search tracks</span>
+          </div>
+        </div>
 
-            {/* Col 2: Navigation links */}
-            <div className="flex flex-col gap-3 md:justify-self-center">
-              <h4 className="font-mono text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Links
-              </h4>
-              <ul className="flex flex-col gap-2 text-xs text-muted-foreground font-mono">
-                <li>
-                  <Link to="/" className="hover:text-primary transition-colors">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/verses" className="hover:text-primary transition-colors">
-                    Verses
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/recommended" className="hover:text-primary transition-colors">
-                    Recommended
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/guide" className="hover:text-primary transition-colors">
-                    Guide
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/articles" className="hover:text-primary transition-colors">
-                    Articles
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/leaderboard" className="hover:text-primary transition-colors">
-                    Leaderboard
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/terms" className="hover:text-primary transition-colors">
-                    Terms of Service
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className="hover:text-primary transition-colors">
-                    Privacy Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Col 3: Dedicated APIs column */}
-            <div className="flex flex-col gap-3 md:justify-self-end">
-              <h4 className="font-mono text-xs font-bold tracking-wider text-muted-foreground uppercase">
-                Integrations
-              </h4>
-              <ul className="flex flex-col gap-2 text-xs text-muted-foreground font-mono">
-                <li>
-                  Lyrics:{" "}
-                  <a
-                    href="https://lrclib.net"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-foreground hover:text-primary transition-colors underline decoration-border hover:decoration-primary underline-offset-2"
-                  >
-                    LRCLIB API
-                  </a>
-                </li>
-                <li>
-                  Video:{" "}
-                  <a
-                    href="https://developers.google.com/youtube/iframe_api_reference"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-foreground hover:text-primary transition-colors underline decoration-border hover:decoration-primary underline-offset-2"
-                  >
-                    YouTube Player
-                  </a>
-                </li>
-              </ul>
-            </div>
+        {/* Links and Copyright */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px]">
+            <Link to="/about" className="hover:text-foreground transition-colors">
+              about
+            </Link>
+            <Link to="/guide" className="hover:text-foreground transition-colors">
+              guide
+            </Link>
+            <Link to="/leaderboard" className="hover:text-foreground transition-colors">
+              leaderboard
+            </Link>
+            <Link to="/support" className="hover:text-foreground transition-colors">
+              contact
+            </Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">
+              privacy
+            </Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">
+              terms
+            </Link>
           </div>
 
-          {/* Bottom copyright row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border pt-6 text-[10px] text-muted-foreground font-mono">
-            <div>&copy; {new Date().getFullYear()} keyVerse. All rights reserved.</div>
-            <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 text-muted-foreground">
+            <span>&copy; {new Date().getFullYear()} keyverse</span>
+            <div className="flex items-center gap-3">
               <motion.a
-                whileHover={{ scale: 1.15, y: -2 }}
+                whileHover={{ scale: 1.15, y: -1 }}
                 whileTap={{ scale: 0.95 }}
                 href="https://github.com/jagwalansh/updated-lyrictype"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-primary transition-colors text-muted-foreground"
+                className="hover:text-foreground transition-colors"
                 title="GitHub"
               >
-                <Github className="h-[18px] w-[18px]" />
+                <Github className="h-4 w-4" />
               </motion.a>
               <motion.a
-                whileHover={{ scale: 1.15, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                href="https://www.instagram.com/keyverse__/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-primary transition-colors text-muted-foreground"
-                title="Instagram"
-              >
-                <Instagram className="h-[18px] w-[18px]" />
-              </motion.a>
-              <motion.a
-                whileHover={{ scale: 1.15, y: -2 }}
+                whileHover={{ scale: 1.15, y: -1 }}
                 whileTap={{ scale: 0.95 }}
                 href="https://x.com/jagwalansh"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-primary transition-colors text-muted-foreground"
+                className="hover:text-foreground transition-colors"
                 title="X"
               >
-                <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </motion.a>
             </div>
           </div>
         </div>
-      </footer>
-    </div>
+      </div>
+    </footer>
   );
 }

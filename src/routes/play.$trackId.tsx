@@ -7,6 +7,7 @@ import YouTube, { type YouTubePlayer } from "react-youtube";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import { useModal } from "@/lib/modal-context";
+import { useTheme } from "@/lib/theme-context";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import {
   Music,
@@ -500,6 +501,7 @@ function PlayPage() {
   const { artist, track, art, duration, q, from } = Route.useSearch();
   const { user, profile } = useAuth();
   const { setModalOpen } = useModal();
+  const { caretStyle } = useTheme();
   const { trackId } = Route.useParams();
 
   const [savingScore, setSavingScore] = useState(false);
@@ -806,7 +808,7 @@ function PlayPage() {
     return lines.map((l) => l.text).join("\n");
   }, [lines]);
 
-  // Keep the active lyric line centered as the next lyrics rise from below.
+  // Keep the active lyric line centered
   useEffect(() => {
     if (!lyricsRef.current) return;
     const linesNodes = lyricsRef.current.querySelectorAll("[data-line-idx]");
@@ -1600,8 +1602,8 @@ function PlayPage() {
             {/* Video Skeleton */}
             <div className="fixed left-1/2 top-[6.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2">
               <Link
-                to={from === "/recommended" ? "/recommended" : "/"}
-                search={from !== "/recommended" && q ? { q } : undefined}
+                to="/"
+                search={q ? { q } : undefined}
                 className="absolute right-full top-2 mr-4 whitespace-nowrap font-mono text-xs text-muted-foreground hover:text-foreground"
               >
                 ← back
@@ -1643,12 +1645,19 @@ function PlayPage() {
             {/* YouTube Video / Song Information Card */}
             <div className="fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2">
               <Link
-                to={from === "/recommended" ? "/recommended" : "/"}
-                search={from !== "/recommended" && q ? { q } : undefined}
+                to="/"
+                search={q ? { q } : undefined}
                 className="absolute right-full top-2 mr-4 whitespace-nowrap font-mono text-xs text-muted-foreground hover:text-foreground"
               >
                 ← back
               </Link>
+              {ytCandidates.length > 1 && (
+                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 hidden md:flex items-center pointer-events-none select-none">
+                  <span className="font-mono text-xs text-muted-foreground whitespace-nowrap [writing-mode:vertical-rl] rotate-180">
+                    scroll up/down to discover more videos
+                  </span>
+                </div>
+              )}
               <div
                 className="relative h-[min(42vh,380px)] w-full"
                 onWheel={handleVideoCarouselWheel}
@@ -1951,180 +1960,169 @@ function PlayPage() {
               <div
                 ref={gameAreaRef}
                 className={`relative overflow-hidden ${
-                  songEnded ? "h-[min(34vh,300px)]" : "h-[min(34vh,300px)] text-foreground"
+                  songEnded ? "min-h-[300px]" : "w-full text-foreground"
                 }`}
                 onClick={() => inputRef.current?.focus()}
               >
-                <div className="h-full cursor-pointer overflow-hidden px-8 py-6">
+                <div className="h-full cursor-pointer overflow-hidden px-4 sm:px-8 py-2 sm:py-4">
                   {songEnded ? (
-                    /* ── Result Card (replaces lyrics when song ends) ── */
+                    /* ── Monkeytype Scorecard Result View ── */
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, ease: "easeOut" }}
-                      className="flex flex-col items-center justify-center h-full gap-6 text-center"
+                      initial={{ opacity: 0, scale: 0.98 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="flex flex-col items-center justify-center h-full gap-5 text-left w-full max-w-2xl mx-auto font-mono"
                     >
-                      {/* Stats Grid — Score, Accuracy, Speed, Max Combo */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-md">
-                        <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-sm p-3 flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-bold tracking-widest text-muted-foreground/60 uppercase mb-0.5">
-                            Score
-                          </span>
-                          <span className="text-lg font-black text-primary font-mono">
-                            {score.toLocaleString()}
-                          </span>
+                      {/* Top Row: Huge WPM & ACC + Detailed Metrics */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full items-center">
+                        {/* Huge Primary WPM & Accuracy */}
+                        <div className="flex sm:flex-col justify-around sm:justify-center gap-4 sm:gap-2 text-left">
+                          <div>
+                            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
+                              wpm
+                            </span>
+                            <span className="text-4xl sm:text-5xl font-black text-primary leading-none">
+                              {wpm}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
+                              acc
+                            </span>
+                            <span className="text-4xl sm:text-5xl font-black text-foreground leading-none">
+                              {accuracy}%
+                            </span>
+                          </div>
                         </div>
-                        <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-sm p-3 flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-bold tracking-widest text-muted-foreground/60 uppercase mb-0.5">
-                            Accuracy
-                          </span>
-                          <span className="text-lg font-black text-foreground font-mono">
-                            {accuracy}%
-                          </span>
-                        </div>
-                        <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-sm p-3 flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-bold tracking-widest text-muted-foreground/60 uppercase mb-0.5">
-                            Speed
-                          </span>
-                          <span className="text-lg font-black text-foreground font-mono">
-                            {wpm}{" "}
-                            <span className="text-xs font-medium text-muted-foreground">WPM</span>
-                          </span>
-                        </div>
-                        <div className="rounded-xl border border-border/30 bg-card/50 backdrop-blur-sm p-3 flex flex-col items-center justify-center">
-                          <span className="text-[9px] font-bold tracking-widest text-muted-foreground/60 uppercase mb-0.5">
-                            Max Combo
-                          </span>
-                          <span className="text-lg font-black text-foreground font-mono">
-                            {maxCombo}x
-                          </span>
+
+                        {/* Secondary Metric Grid */}
+                        <div className="sm:col-span-2 grid grid-cols-2 gap-x-4 gap-y-2 p-3 rounded-xl border border-border/50 bg-card/60 text-xs">
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              test type
+                            </span>
+                            <span className="font-bold text-foreground">song sync</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              score
+                            </span>
+                            <span className="font-bold text-primary">{score.toLocaleString()}</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              characters (hit/miss/total)
+                            </span>
+                            <span className="font-bold text-foreground">
+                              {stats.correct}/{stats.total - stats.correct}/{stats.total}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              max streak
+                            </span>
+                            <span className="font-bold text-foreground">{maxCombo}x</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              consistency
+                            </span>
+                            <span className="font-bold text-foreground">{accuracy}%</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              time
+                            </span>
+                            <span className="font-bold text-foreground">
+                              {formatTime(Math.round(activeTypingMinutes * 60))}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Save status / Guest CTA */}
-                      <div className="w-full max-w-md">
+                      <div className="w-full">
                         {user ? (
-                          <div className="flex items-center justify-center gap-2 p-3 rounded-xl border border-border/20 bg-card/30 text-sm">
+                          <div className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-border/40 bg-card/40 text-xs">
                             {savingScore ? (
                               <>
-                                <Loader2 className="w-4 h-4 text-primary animate-spin" />
-                                <span className="text-muted-foreground text-xs">
-                                  Submitting score…
-                                </span>
+                                <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+                                <span className="text-muted-foreground">Submitting score…</span>
                               </>
                             ) : scoreSaved ? (
                               <>
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                <span className="text-emerald-500 text-xs font-medium">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                                <span className="text-primary font-medium">
                                   Score saved to leaderboard!
                                 </span>
                               </>
                             ) : saveError ? (
                               <>
-                                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                                <span className="text-rose-500 text-xs font-medium">
+                                <AlertCircle className="w-3.5 h-3.5 text-incorrect shrink-0" />
+                                <span className="text-incorrect font-medium">
                                   Failed to save: {saveError}
                                 </span>
                               </>
                             ) : scoreSaveSkippedReason ? (
                               <>
-                                <AlertCircle className="w-4 h-4 text-muted-foreground shrink-0" />
-                                <span className="text-muted-foreground text-xs font-medium">
+                                <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                <span className="text-muted-foreground font-medium">
                                   {scoreSaveSkippedReason}
                                 </span>
                               </>
                             ) : (
-                              <span className="text-muted-foreground text-xs">
-                                Preparing to save…
-                              </span>
+                              <span className="text-muted-foreground">Preparing to save…</span>
                             )}
                           </div>
                         ) : (
-                          <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-3 text-center">
-                            <p className="text-xs text-muted-foreground mb-2.5">
-                              You are playing as a{" "}
-                              <strong className="text-foreground">Guest</strong>. Sign in to save
-                              your score!
+                          <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-center flex flex-col sm:flex-row items-center justify-between gap-2">
+                            <p className="text-[11px] text-muted-foreground">
+                              Playing as <strong className="text-foreground">Guest</strong>. Sign in to save score!
                             </p>
                             <button
                               onClick={() => setModalOpen(true)}
-                              className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity cursor-pointer shadow-sm"
+                              className="px-3 py-1 text-[11px] font-bold bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity cursor-pointer shrink-0"
                             >
-                              Sign In to Save
+                              Sign In
                             </button>
                           </div>
                         )}
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-2.5 w-full max-w-md">
+                      <div className="flex items-center justify-center gap-3 w-full">
                         <button
                           onClick={restart}
-                          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl hover:opacity-95 shadow-sm transition-all cursor-pointer text-sm"
+                          className="flex-1 max-w-xs inline-flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-bold rounded-lg hover:opacity-90 transition-all cursor-pointer text-xs shadow-xs"
                         >
-                          <RotateCcw className="w-4 h-4" />
-                          <span>Play Again</span>
-                          <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-primary-foreground/85">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Restart</span>
+                          <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/20 px-1 py-0.5 font-mono text-[9px] font-bold leading-none">
                             Tab
                           </kbd>
                         </button>
                         <Link
                           to="/leaderboard"
-                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-border/40 bg-card/50 hover:bg-muted/60 text-foreground font-semibold rounded-xl transition-all text-sm"
+                          className="inline-flex items-center justify-center gap-1 px-3 py-2 border border-border/60 bg-secondary/40 hover:bg-secondary text-foreground font-semibold rounded-lg transition-all text-xs"
+                          title="Leaderboard"
                         >
-                          <Trophy className="w-4 h-4 text-primary" />
+                          <Trophy className="w-3.5 h-3.5 text-primary" />
                         </Link>
                         <Link
-                          to={from === "/recommended" ? "/recommended" : "/"}
-                          search={from !== "/recommended" && q ? { q } : undefined}
-                          className="inline-flex items-center justify-center px-4 py-2.5 border border-border/40 bg-card/50 hover:bg-muted/60 text-muted-foreground hover:text-foreground font-semibold rounded-xl transition-all text-sm"
+                          to="/"
+                          search={q ? { q } : undefined}
+                          className="inline-flex items-center justify-center px-3 py-2 border border-border/60 bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground font-semibold rounded-lg transition-all text-xs"
+                          title="Home"
                         >
-                          <Home className="w-4 h-4" />
+                          <Home className="w-3.5 h-3.5" />
                         </Link>
                       </div>
                     </motion.div>
                   ) : (
                     /* ── Normal Lyrics Display ── */
-                    <div className="relative z-10 h-full transition-opacity duration-300 opacity-100">
-                      <div className="pt-0 text-center">
-                        <div className="mx-auto grid w-fit grid-cols-4 gap-5 sm:gap-10">
-                          <div className="flex min-w-14 flex-col items-center">
-                            <span className="font-mono text-xl font-black leading-none text-foreground">
-                              {wpm}
-                            </span>
-                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
-                              wpm
-                            </span>
-                          </div>
-                          <div className="flex min-w-14 flex-col items-center">
-                            <span className="font-mono text-xl font-black leading-none text-primary">
-                              {combo}x
-                            </span>
-                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
-                              combo
-                            </span>
-                          </div>
-                          <div className="flex min-w-14 flex-col items-center">
-                            <span className="font-mono text-xl font-black leading-none text-foreground">
-                              {accuracy}%
-                            </span>
-                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
-                              acc
-                            </span>
-                          </div>
-                          <div className="flex min-w-14 flex-col items-center">
-                            <span className="font-mono text-xl font-black leading-none text-foreground">
-                              {score.toLocaleString()}
-                            </span>
-                            <span className="mt-1 font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
-                              score
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
+                    <div className="relative z-10 flex flex-col items-center justify-center gap-5 sm:gap-6 py-2">
                       {lyricsFinished ? (
-                        <div className="absolute inset-x-0 top-16 bottom-20 flex flex-col items-center justify-center px-5 text-center">
+                        <div className="py-6 flex flex-col items-center justify-center text-center">
                           <span className="font-mono text-xs font-bold tracking-widest text-muted-foreground/80 uppercase">
                             All lyrics completed
                           </span>
@@ -2132,34 +2130,23 @@ function PlayPage() {
                       ) : (
                         <div
                           ref={lyricsRef}
-                          className="absolute inset-x-0 bottom-20 top-16 overflow-hidden px-5"
+                          className="w-full flex items-center justify-center overflow-hidden px-4 sm:px-6 min-h-[72px]"
                         >
-                          <div className="min-h-[96px]" />
-
-                          {lines.map((line, idx) => {
-                            const isCurrentLine = idx === currentLineIdx;
-                            const isPassed = idx < currentLineIdx;
-                            const isWaitingLine =
-                              Boolean(waitingForNext) && idx === currentLineIdx + 1;
-                            const showTimingCircle =
-                              isWaitingLine || (isCurrentLine && !waitingForNext);
-                            const distanceFromCurrent = Math.abs(idx - currentLineIdx);
-                            const lyricLineStateClass = isCurrentLine
-                              ? "scale-105 opacity-100 blur-0"
-                              : isWaitingLine
-                                ? "scale-100 opacity-75 blur-0"
-                                : distanceFromCurrent === 1
-                                  ? "scale-95 opacity-45 blur-[1.5px]"
-                                  : "scale-95 opacity-20 blur-[3px]";
+                          {(() => {
+                            const activeIdx = waitingForNext ? currentLineIdx + 1 : currentLineIdx;
+                            const line = lines[activeIdx];
+                            if (!line) return null;
+                            const isCurrentLine = !waitingForNext;
+                            const isWaitingLine = Boolean(waitingForNext);
                             const lineText = line.text;
                             const lineTokens = lineText.match(/\S+\s*|\s+/g) || [];
                             let tokenOffset = 0;
 
                             return (
                               <div
-                                key={idx}
-                                data-line-idx={idx}
-                                className={`mb-8 flex items-center gap-6 rounded-xl p-2 transition-all duration-300 hover:bg-muted/10 ${lyricLineStateClass}`}
+                                key={activeIdx}
+                                data-line-idx={activeIdx}
+                                className="flex items-center justify-center gap-6 rounded-xl p-2 transition-all duration-300"
                               >
                                 <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
                                   <div
@@ -2171,46 +2158,40 @@ function PlayPage() {
                                   />
                                   <div
                                     className={`absolute h-4 w-4 rounded-full transition-colors duration-300 ${
-                                      isPassed
-                                        ? "bg-primary/50"
-                                        : isCurrentLine || isWaitingLine
-                                          ? "bg-primary"
-                                          : "bg-muted-foreground/30"
+                                      isCurrentLine || isWaitingLine
+                                        ? "bg-primary"
+                                        : "bg-muted-foreground/30"
                                     }`}
                                   />
 
-                                  {showTimingCircle && (
-                                    <>
-                                      <div
-                                        id="approach-circle"
-                                        className="absolute left-1/2 top-1/2 rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                        style={{ display: "none" }}
-                                      />
-                                      <svg
-                                        id="progress-circle"
-                                        className="absolute inset-0 h-full w-full -rotate-90 pointer-events-none"
-                                        viewBox="0 0 48 48"
-                                        style={{ display: "none" }}
-                                      >
-                                        <circle
-                                          cx="24"
-                                          cy="24"
-                                          r="22"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="4"
-                                          className="text-primary"
-                                          strokeDasharray="138.2"
-                                        />
-                                      </svg>
-                                    </>
-                                  )}
+                                  <div
+                                    id="approach-circle"
+                                    className="absolute left-1/2 top-1/2 rounded-full border-2 border-primary -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                                    style={{ display: "none" }}
+                                  />
+                                  <svg
+                                    id="progress-circle"
+                                    className="absolute inset-0 h-full w-full -rotate-90 pointer-events-none"
+                                    viewBox="0 0 48 48"
+                                    style={{ display: "none" }}
+                                  >
+                                    <circle
+                                      cx="24"
+                                      cy="24"
+                                      r="22"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                      className="text-primary"
+                                      strokeDasharray="138.2"
+                                    />
+                                  </svg>
                                 </div>
 
                                 <div
                                   className={`relative text-left text-2xl sm:text-3xl font-black leading-tight tracking-normal drop-shadow-sm ${
                                     isCurrentLine
-                                      ? "text-muted-foreground/55"
+                                      ? "text-muted-foreground/50"
                                       : "text-muted-foreground"
                                   }`}
                                 >
@@ -2232,11 +2213,9 @@ function PlayPage() {
                                                 isCurrentLine &&
                                                 i === lineText.length - 1 &&
                                                 charIdx === lineText.length;
-                                              let className = "text-muted-foreground/55";
+                                              let className = "text-muted-foreground/50";
 
-                                              if (isCaret || isCaretEnd) {
-                                                className = "text-foreground font-bold";
-                                              } else if (result?.status === "hit") {
+                                              if (result?.status === "hit") {
                                                 className = "text-foreground font-black";
                                               } else if (result?.status === "miss") {
                                                 className =
@@ -2249,29 +2228,77 @@ function PlayPage() {
                                                   data-char-idx={i}
                                                   className={`inline-block relative ${className} transition-colors duration-100`}
                                                 >
-                                                  {isCaret && (
-                                                    <motion.span
-                                                      layoutId="play-typing-caret"
-                                                      transition={{
-                                                        type: "spring",
-                                                        stiffness: 600,
-                                                        damping: 35,
-                                                        mass: 0.2,
-                                                      }}
-                                                      className="absolute -left-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgba(249,115,22,0.6)]"
-                                                    />
+                                                  {isCaret && caretStyle !== "off" && (
+                                                    caretStyle === "block" ? (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute inset-0 bg-primary/45 rounded-[2px] z-0 pointer-events-none"
+                                                      />
+                                                    ) : caretStyle === "underline" ? (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute left-0 right-0 -bottom-0.5 h-[2.5px] bg-primary rounded-full z-10 pointer-events-none mt-caret-glow"
+                                                      />
+                                                    ) : (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute -left-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none mt-caret-glow"
+                                                      />
+                                                    )
                                                   )}
-                                                  {isCaretEnd && (
-                                                    <motion.span
-                                                      layoutId="play-typing-caret"
-                                                      transition={{
-                                                        type: "spring",
-                                                        stiffness: 600,
-                                                        damping: 35,
-                                                        mass: 0.2,
-                                                      }}
-                                                      className="absolute -right-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none shadow-[0_0_8px_rgba(249,115,22,0.6)]"
-                                                    />
+                                                  {isCaretEnd && caretStyle !== "off" && (
+                                                    caretStyle === "block" ? (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute inset-0 bg-primary/45 rounded-[2px] z-0 pointer-events-none"
+                                                      />
+                                                    ) : caretStyle === "underline" ? (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute left-0 right-0 -bottom-0.5 h-[2.5px] bg-primary rounded-full z-10 pointer-events-none mt-caret-glow"
+                                                      />
+                                                    ) : (
+                                                      <motion.span
+                                                        layoutId="play-typing-caret"
+                                                        transition={{
+                                                          type: "spring",
+                                                          stiffness: 600,
+                                                          damping: 35,
+                                                          mass: 0.2,
+                                                        }}
+                                                        className="absolute -right-[1.5px] top-[10%] bottom-[10%] w-[2.5px] bg-primary rounded-full z-10 pointer-events-none mt-caret-glow"
+                                                      />
+                                                    )
                                                   )}
                                                   {ch === " " ? "\u00A0" : ch}
                                                 </span>
@@ -2284,48 +2311,86 @@ function PlayPage() {
                                 </div>
                               </div>
                             );
-                          })}
-
-                          <div className="min-h-[96px]" />
+                          })()}
                         </div>
                       )}
 
-                      <div className="absolute inset-x-8 bottom-5 z-30 flex items-center justify-center gap-3">
-                        <button
-                          onClick={lyricsFinished ? endSong : togglePlay}
-                          disabled={!videoId || !audioReady}
-                          className="flex-1 max-w-xs rounded-xl bg-primary py-2.5 px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          {lyricsFinished ? null : playbackEnded ? (
-                            <Music className="w-3.5 h-3.5" />
-                          ) : playing ? (
-                            <Pause className="w-3.5 h-3.5" />
-                          ) : (
-                            <Play className="w-3.5 h-3.5" />
-                          )}
-                          <span>
-                            {lyricsFinished
-                              ? "View Results"
-                              : playbackEnded
-                                ? "Finish last line"
-                                : playing
-                                  ? "Pause"
-                                  : "Play"}
-                          </span>
-                          <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
-                            Esc
-                          </kbd>
-                        </button>
-                        <button
-                          onClick={restart}
-                          className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-md py-2.5 px-4 text-xs font-semibold text-foreground hover:bg-muted/70 transition-colors cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
-                          <span>Restart</span>
-                          <kbd className="rounded border border-border/40 bg-muted/60 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
-                            Tab
-                          </kbd>
-                        </button>
+                      {/* Bottom Controls with Stats Row at the start */}
+                      <div className="flex flex-col items-center justify-center gap-3 w-full">
+                        {/* Stats Row */}
+                        <div className="mx-auto grid w-fit grid-cols-4 gap-6 sm:gap-10">
+                          <div className="flex min-w-12 flex-col items-center">
+                            <span className="font-mono text-base sm:text-lg font-black leading-none text-foreground">
+                              {wpm}
+                            </span>
+                            <span className="mt-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              wpm
+                            </span>
+                          </div>
+                          <div className="flex min-w-12 flex-col items-center">
+                            <span className="font-mono text-base sm:text-lg font-black leading-none text-primary">
+                              {combo}x
+                            </span>
+                            <span className="mt-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              combo
+                            </span>
+                          </div>
+                          <div className="flex min-w-12 flex-col items-center">
+                            <span className="font-mono text-base sm:text-lg font-black leading-none text-foreground">
+                              {accuracy}%
+                            </span>
+                            <span className="mt-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              acc
+                            </span>
+                          </div>
+                          <div className="flex min-w-12 flex-col items-center">
+                            <span className="font-mono text-base sm:text-lg font-black leading-none text-foreground">
+                              {score.toLocaleString()}
+                            </span>
+                            <span className="mt-1 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.18em] text-muted-foreground/75">
+                              score
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Play & Restart Buttons */}
+                        <div className="flex items-center justify-center gap-3 w-full max-w-sm">
+                          <button
+                            onClick={lyricsFinished ? endSong : togglePlay}
+                            disabled={!videoId || !audioReady}
+                            className="flex-1 rounded-xl bg-primary py-2 px-4 text-xs font-semibold text-primary-foreground shadow-sm hover:opacity-90 disabled:opacity-40 cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            {lyricsFinished ? null : playbackEnded ? (
+                              <Music className="w-3.5 h-3.5" />
+                            ) : playing ? (
+                              <Pause className="w-3.5 h-3.5" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5" />
+                            )}
+                            <span>
+                              {lyricsFinished
+                                ? "View Results"
+                                : playbackEnded
+                                  ? "Finish last line"
+                                  : playing
+                                    ? "Pause"
+                                    : "Play"}
+                            </span>
+                            <kbd className="ml-1 rounded border border-primary-foreground/30 bg-primary-foreground/10 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-primary-foreground/85">
+                              Esc
+                            </kbd>
+                          </button>
+                          <button
+                            onClick={restart}
+                            className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-md py-2 px-4 text-xs font-semibold text-foreground hover:bg-muted/70 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
+                            <span>Restart</span>
+                            <kbd className="rounded border border-border/40 bg-muted/60 px-1.5 py-0.5 font-mono text-[9px] font-bold leading-none text-muted-foreground">
+                              Tab
+                            </kbd>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}

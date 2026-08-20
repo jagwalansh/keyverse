@@ -3,7 +3,7 @@ import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase";
 import { trackEvent } from "@/lib/analytics";
-import { validatePublicUsername } from "@/lib/username";
+import { validatePublicUsername, getUsernameCooldownInfo } from "@/lib/username";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -231,6 +231,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const publicUsername = validatePublicUsername(username);
 
+      // If the username is unchanged, return current profile
+      if (profile?.username && profile.username.toLowerCase() === publicUsername.toLowerCase()) {
+        return profile;
+      }
+
+      // Check 14-day limit
+      const cooldown = getUsernameCooldownInfo(profile);
+      if (!cooldown.canChange) {
+        throw new Error(
+          `Username can only be changed once every 14 days. You can change it again in ${cooldown.remainingDays} day${cooldown.remainingDays === 1 ? "" : "s"}.`,
+        );
+      }
+
       const { data, error } = await supabase
         .from("profiles")
         .upsert(
@@ -258,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(data);
       return data;
     },
-    [profile?.email, user],
+    [profile, user],
   );
 
   return (

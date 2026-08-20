@@ -41,10 +41,9 @@ export function DeflectCard({ children, className = "", cardClassName = "" }: De
     rotateY.set(rY);
     scale.set(1.015);
 
-    // Create a dark overlay shadow centered on the cursor
-    // Mix-blend-multiply on light mode / overlay on dark mode will naturally darken the area
+    // Create a subtle cursor spotlight overlay
     if (shadowRef.current) {
-      shadowRef.current.style.background = `radial-gradient(circle 100px at ${x}px ${y}px, rgba(0, 0, 0, 0.16) 0%, transparent 80%)`;
+      shadowRef.current.style.background = `radial-gradient(circle 140px at ${x}px ${y}px, color-mix(in oklch, var(--color-foreground) 8%, transparent) 0%, transparent 80%)`;
     }
   };
 
@@ -66,7 +65,7 @@ export function DeflectCard({ children, className = "", cardClassName = "" }: De
           scale,
           transformStyle: "preserve-3d",
         }}
-        className={`group relative h-full w-full cursor-pointer shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-foreground/10 ${cardClassName ? cardClassName : "rounded-xl bg-card"}`}
+        className={`group relative h-full w-full cursor-pointer shadow-xs transition-all duration-300 ${cardClassName ? cardClassName : "rounded-xl bg-card border border-border/60 hover:border-border"}`}
       >
         {children}
         <div

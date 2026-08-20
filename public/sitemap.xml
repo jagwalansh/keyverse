@@ -71,11 +71,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://keyverse.me/recommended</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://keyverse.me/verses</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
