@@ -31,6 +31,7 @@ import {
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import * as Dialog from "@radix-ui/react-dialog";
+import { CelebrationBanner, type CelebrationData } from "@/components/ui/celebration";
 
 const DISCORD_USERNAME = "nxxei";
 const DISCORD_USER_ID = "1215184320424050698";
@@ -509,6 +510,7 @@ function PlayPage() {
   const [scoreSaved, setScoreSaved] = useState(false);
   const [saveAttempted, setSaveAttempted] = useState(false);
   const [scoreSaveSkippedReason, setScoreSaveSkippedReason] = useState<string | null>(null);
+  const [celebrationData, setCelebrationData] = useState<CelebrationData | null>(null);
 
   const [lines, setLines] = useState<LyricLine[] | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -670,6 +672,7 @@ function PlayPage() {
     setSavingScore(false);
     setSaveError(null);
     setScoreSaved(false);
+    setCelebrationData(null);
     setSaveAttempted(false);
     setScoreSaveSkippedReason(null);
     setLoadErr(null);
@@ -1315,7 +1318,19 @@ function PlayPage() {
             const data = await res.json();
             throw new Error(data.error || "Failed to save score");
           }
+          const responseData = await res.json();
           setScoreSaved(true);
+
+          // Parse enriched response for celebration data
+          if (responseData) {
+            setCelebrationData({
+              isNewPb: responseData.isNewPb ?? false,
+              previousScore: responseData.previousScore ?? null,
+              currentScore: score,
+              rank: responseData.rank ?? null,
+              totalPlayers: responseData.totalPlayers ?? null,
+            });
+          }
         } catch (err) {
           console.error(err);
           setSaveError(err instanceof Error ? err.message : "Failed to save score");
@@ -1426,6 +1441,7 @@ function PlayPage() {
     setSavingScore(false);
     setSaveError(null);
     setScoreSaved(false);
+    setCelebrationData(null);
     setSaveAttempted(false);
     setScoreSaveSkippedReason(null);
 
@@ -1643,7 +1659,13 @@ function PlayPage() {
         ) : (
           <div className="mt-3 flex min-h-[calc(100vh-4.5rem)] flex-col gap-8">
             {/* YouTube Video / Song Information Card */}
-            <div className="fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2">
+            <div
+              className={`fixed left-1/2 top-[5.25rem] z-10 w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2 transition-all duration-500 ${
+                songEnded
+                  ? "opacity-0 pointer-events-none -translate-y-8 scale-95"
+                  : "opacity-100 translate-y-0 scale-100"
+              }`}
+            >
               <Link
                 to="/"
                 search={q ? { q } : undefined}
@@ -1939,7 +1961,13 @@ function PlayPage() {
             </div>
 
             {/* Game/Lyrics or Sync Editor */}
-            <div className="fixed bottom-4 left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-4xl -translate-x-1/2 flex-col gap-4">
+            <div
+              className={`fixed left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-2xl -translate-x-1/2 flex-col gap-4 transition-all duration-500 ${
+                songEnded
+                  ? "top-1/2 -translate-y-1/2 bottom-auto"
+                  : "bottom-4 translate-y-0"
+              }`}
+            >
               {/* Hit Feedback Overlay */}
               {hitFeedback && (
                 <div
@@ -1973,24 +2001,60 @@ function PlayPage() {
                       transition={{ duration: 0.4, ease: "easeOut" }}
                       className="flex flex-col items-center justify-center h-full gap-5 text-left w-full max-w-2xl mx-auto font-mono"
                     >
-                      {/* Top Row: Huge WPM & ACC + Detailed Metrics */}
+                      {/* Track Info Header */}
+                      <div className="flex items-center justify-between w-full border-b border-border/40 pb-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {art ? (
+                            <img
+                              src={art}
+                              alt=""
+                              className="w-8 h-8 rounded-md object-cover border border-border/50 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-md bg-muted/40 border border-border/50 flex items-center justify-center shrink-0">
+                              <Music className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-foreground truncate">
+                              {track || "Song"}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              {artist || "Unknown Artist"}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest bg-muted/40 px-2 py-0.5 rounded border border-border/40 shrink-0">
+                          round complete
+                        </span>
+                      </div>
+
+                      {/* Celebration Banner (PB / Leaderboard Rank) */}
+                      {celebrationData && (
+                        <CelebrationBanner data={celebrationData} />
+                      )}
+
+                      {/* Top Row: Huge Score & Max Combo + Detailed Metrics */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full items-center">
-                        {/* Huge Primary WPM & Accuracy */}
+                        {/* Huge Primary Score & Max Combo */}
                         <div className="flex sm:flex-col justify-around sm:justify-center gap-4 sm:gap-2 text-left">
                           <div>
-                            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
-                              wpm
+                            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block flex items-center gap-1.5">
+                              score
+                              {celebrationData?.isNewPb && (
+                                <span className="text-primary font-black text-[10px]">★ PB</span>
+                              )}
                             </span>
                             <span className="text-4xl sm:text-5xl font-black text-primary leading-none">
-                              {wpm}
+                              {score.toLocaleString()}
                             </span>
                           </div>
                           <div>
                             <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest block">
-                              acc
+                              max combo
                             </span>
                             <span className="text-4xl sm:text-5xl font-black text-foreground leading-none">
-                              {accuracy}%
+                              {maxCombo}x
                             </span>
                           </div>
                         </div>
@@ -1999,15 +2063,15 @@ function PlayPage() {
                         <div className="sm:col-span-2 grid grid-cols-2 gap-x-4 gap-y-2 p-3 rounded-xl border border-border/50 bg-card/60 text-xs">
                           <div>
                             <span className="text-[10px] text-muted-foreground uppercase block">
-                              test type
+                              wpm
                             </span>
-                            <span className="font-bold text-foreground">song sync</span>
+                            <span className="font-bold text-foreground">{wpm}</span>
                           </div>
                           <div>
                             <span className="text-[10px] text-muted-foreground uppercase block">
-                              score
+                              acc
                             </span>
-                            <span className="font-bold text-primary">{score.toLocaleString()}</span>
+                            <span className="font-bold text-foreground">{accuracy}%</span>
                           </div>
                           <div>
                             <span className="text-[10px] text-muted-foreground uppercase block">
@@ -2016,12 +2080,6 @@ function PlayPage() {
                             <span className="font-bold text-foreground">
                               {stats.correct}/{stats.total - stats.correct}/{stats.total}
                             </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-muted-foreground uppercase block">
-                              max streak
-                            </span>
-                            <span className="font-bold text-foreground">{maxCombo}x</span>
                           </div>
                           <div>
                             <span className="text-[10px] text-muted-foreground uppercase block">
@@ -2037,43 +2095,45 @@ function PlayPage() {
                               {formatTime(Math.round(activeTypingMinutes * 60))}
                             </span>
                           </div>
+                          <div>
+                            <span className="text-[10px] text-muted-foreground uppercase block">
+                              test type
+                            </span>
+                            <span className="font-bold text-foreground">song sync</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Save status / Guest CTA */}
                       <div className="w-full">
                         {user ? (
-                          <div className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-border/40 bg-card/40 text-xs">
-                            {savingScore ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
-                                <span className="text-muted-foreground">Submitting score…</span>
-                              </>
-                            ) : scoreSaved ? (
-                              <>
-                                <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                                <span className="text-primary font-medium">
-                                  Score saved to leaderboard!
-                                </span>
-                              </>
-                            ) : saveError ? (
-                              <>
-                                <AlertCircle className="w-3.5 h-3.5 text-incorrect shrink-0" />
-                                <span className="text-incorrect font-medium">
-                                  Failed to save: {saveError}
-                                </span>
-                              </>
-                            ) : scoreSaveSkippedReason ? (
-                              <>
-                                <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                                <span className="text-muted-foreground font-medium">
-                                  {scoreSaveSkippedReason}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-muted-foreground">Preparing to save…</span>
-                            )}
-                          </div>
+                          savingScore ? (
+                            <div className="flex items-center justify-center gap-2 p-2 rounded-xl border border-border/40 bg-card/40 text-xs">
+                              <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+                              <span className="text-muted-foreground">Submitting score…</span>
+                            </div>
+                          ) : saveError ? (
+                            <div className="flex items-center justify-center gap-2 p-2 rounded-xl border border-incorrect/30 bg-incorrect/10 text-xs">
+                              <AlertCircle className="w-3.5 h-3.5 text-incorrect shrink-0" />
+                              <span className="text-incorrect font-medium">
+                                Failed to save: {saveError}
+                              </span>
+                            </div>
+                          ) : scoreSaveSkippedReason ? (
+                            <div className="flex items-center justify-center gap-2 p-2 rounded-xl border border-border/40 bg-card/40 text-xs">
+                              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                              <span className="text-muted-foreground font-medium">
+                                {scoreSaveSkippedReason}
+                              </span>
+                            </div>
+                          ) : !celebrationData && scoreSaved ? (
+                            <div className="flex items-center justify-center gap-2 p-2 rounded-xl border border-border/40 bg-card/40 text-xs">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                              <span className="text-primary font-medium">
+                                Score saved to leaderboard!
+                              </span>
+                            </div>
+                          ) : null
                         ) : (
                           <div className="rounded-xl border border-primary/20 bg-primary/5 p-2.5 text-center flex flex-col sm:flex-row items-center justify-between gap-2">
                             <p className="text-[11px] text-muted-foreground">

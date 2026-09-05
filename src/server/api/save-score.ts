@@ -1,6 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase";
 
+type ScoreResult = {
+  status: string;
+  score: number;
+  previous_score?: number;
+};
+
 export async function POST(req: Request) {
   const {
     songId,
@@ -106,5 +112,48 @@ export async function POST(req: Request) {
     });
   }
 
-  return new Response(JSON.stringify({ score: data }), { status: 200 });
+  const scoreResult = data as ScoreResult;
+
+  // Determine if this was a new PB
+  const isNewPb =
+    scoreResult.status === "updated" ||
+    scoreResult.status === "inserted" ||
+    scoreResult.status === "inserted_and_pruned";
+
+  // Compute leaderboard rank for this song
+  let rank: number | null = null;
+  let totalPlayers: number | null = null;
+
+  try {
+    // Count how many distinct users have a higher score on this song
+    const { count: higherCount } = await userSupabase
+      .from("scores")
+      .select("*", { count: "exact", head: true })
+      .eq("song_id", songId)
+      .gt("score", scoreResult.score);
+
+    // Count total distinct players on this song
+    const { count: total } = await userSupabase
+      .from("scores")
+      .select("*", { count: "exact", head: true })
+      .eq("song_id", songId);
+
+    if (higherCount !== null) {
+      rank = higherCount + 1;
+    }
+    totalPlayers = total;
+  } catch {
+    // Non-critical: if rank query fails, just omit it
+  }
+
+  return new Response(
+    JSON.stringify({
+      score: scoreResult,
+      isNewPb,
+      rank,
+      totalPlayers,
+      previousScore: scoreResult.previous_score ?? null,
+    }),
+    { status: 200 },
+  );
 }
