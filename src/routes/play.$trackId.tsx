@@ -27,11 +27,14 @@ import {
   ThumbsUp,
   AlertCircle,
   Lightbulb,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trackEvent } from "@/lib/analytics";
 import * as Dialog from "@radix-ui/react-dialog";
 import { CelebrationBanner, type CelebrationData } from "@/components/ui/celebration";
+import { Keyboard, type KeyboardThemeName } from "@/components/ui/keyboard";
 
 const DISCORD_USERNAME = "nxxei";
 const DISCORD_USER_ID = "1215184320424050698";
@@ -586,6 +589,10 @@ function PlayPage() {
   const [videoCarouselDirection, setVideoCarouselDirection] = useState<1 | -1>(1);
   const [videoCarouselCue, setVideoCarouselCue] = useState<1 | -1 | null>(null);
 
+  // Mechanical keyboard state
+  const [keyboardTheme, setKeyboardTheme] = useState<KeyboardThemeName>("cream");
+  const [keySoundEnabled, setKeySoundEnabled] = useState(true);
+
   useEffect(() => {
     trackEvent("song_page_opened", {
       song_id: trackId,
@@ -593,6 +600,14 @@ function PlayPage() {
       artist,
     });
   }, [artist, track, trackId]);
+
+  // Set 80% default zoom on the play route as preferred by user
+  useEffect(() => {
+    document.body.style.zoom = "0.8";
+    return () => {
+      document.body.style.zoom = "1";
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -1592,6 +1607,110 @@ function PlayPage() {
     <main className="relative min-h-screen bg-background text-foreground font-sans flex flex-col items-center">
       <Navbar staticLayout />
 
+      {/* Corner & Lower-Edge Glow Feedback for Perfect / Good / Miss */}
+      <AnimatePresence>
+        {hitFeedback && (
+          <motion.div
+            key={hitFeedback.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed inset-0 pointer-events-none z-50 overflow-hidden"
+          >
+            {/* Bottom-Left Corner Radial Bloom */}
+            <div
+              className={`absolute bottom-0 left-0 w-60 h-48 sm:w-80 sm:h-64 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-[radial-gradient(ellipse_at_bottom_left,rgba(56,189,248,0.45)_0%,rgba(14,165,233,0.18)_40%,transparent_70%)]"
+                  : hitFeedback.type === "good"
+                    ? "bg-[radial-gradient(ellipse_at_bottom_left,rgba(52,211,153,0.45)_0%,rgba(16,185,129,0.18)_40%,transparent_70%)]"
+                    : "bg-[radial-gradient(ellipse_at_bottom_left,rgba(244,63,94,0.5)_0%,rgba(225,29,72,0.22)_40%,transparent_70%)]"
+              }`}
+            />
+            {/* Bottom-Left corner neon lines (short accent up side and bottom) */}
+            <div
+              className={`absolute bottom-0 left-0 w-[2.5px] h-28 sm:h-40 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-gradient-to-t from-sky-400 via-sky-400/70 to-transparent shadow-[0_0_10px_#38bdf8]"
+                  : hitFeedback.type === "good"
+                    ? "bg-gradient-to-t from-emerald-400 via-emerald-400/70 to-transparent shadow-[0_0_10px_#34d399]"
+                    : "bg-gradient-to-t from-rose-500 via-rose-500/70 to-transparent shadow-[0_0_10px_#f43f5e]"
+              }`}
+            />
+            <div
+              className={`absolute bottom-0 left-0 h-[2.5px] w-32 sm:w-48 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-gradient-to-r from-sky-400 via-sky-400/70 to-transparent shadow-[0_0_10px_#38bdf8]"
+                  : hitFeedback.type === "good"
+                    ? "bg-gradient-to-r from-emerald-400 via-emerald-400/70 to-transparent shadow-[0_0_10px_#34d399]"
+                    : "bg-gradient-to-r from-rose-500 via-rose-500/70 to-transparent shadow-[0_0_10px_#f43f5e]"
+              }`}
+            />
+
+            {/* Bottom-Right Corner Radial Bloom */}
+            <div
+              className={`absolute bottom-0 right-0 w-60 h-48 sm:w-80 sm:h-64 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-[radial-gradient(ellipse_at_bottom_right,rgba(56,189,248,0.45)_0%,rgba(14,165,233,0.18)_40%,transparent_70%)]"
+                  : hitFeedback.type === "good"
+                    ? "bg-[radial-gradient(ellipse_at_bottom_right,rgba(52,211,153,0.45)_0%,rgba(16,185,129,0.18)_40%,transparent_70%)]"
+                    : "bg-[radial-gradient(ellipse_at_bottom_right,rgba(244,63,94,0.5)_0%,rgba(225,29,72,0.22)_40%,transparent_70%)]"
+              }`}
+            />
+            {/* Bottom-Right corner neon lines (short accent up side and bottom) */}
+            <div
+              className={`absolute bottom-0 right-0 w-[2.5px] h-28 sm:h-40 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-gradient-to-t from-sky-400 via-sky-400/70 to-transparent shadow-[0_0_10px_#38bdf8]"
+                  : hitFeedback.type === "good"
+                    ? "bg-gradient-to-t from-emerald-400 via-emerald-400/70 to-transparent shadow-[0_0_10px_#34d399]"
+                    : "bg-gradient-to-t from-rose-500 via-rose-500/70 to-transparent shadow-[0_0_10px_#f43f5e]"
+              }`}
+            />
+            <div
+              className={`absolute bottom-0 right-0 h-[2.5px] w-32 sm:w-48 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-gradient-to-l from-sky-400 via-sky-400/70 to-transparent shadow-[0_0_10px_#38bdf8]"
+                  : hitFeedback.type === "good"
+                    ? "bg-gradient-to-l from-emerald-400 via-emerald-400/70 to-transparent shadow-[0_0_10px_#34d399]"
+                    : "bg-gradient-to-l from-rose-500 via-rose-500/70 to-transparent shadow-[0_0_10px_#f43f5e]"
+              }`}
+            />
+
+            {/* Bottom-only soft ambient glow & inset shadow */}
+            <div
+              className={`absolute inset-x-0 bottom-0 h-20 sm:h-28 pointer-events-none ${
+                hitFeedback.type === "perfect"
+                  ? "bg-gradient-to-t from-sky-400/30 via-sky-500/10 to-transparent shadow-[inset_0_-35px_70px_rgba(56,189,248,0.3)]"
+                  : hitFeedback.type === "good"
+                    ? "bg-gradient-to-t from-emerald-400/30 via-green-500/10 to-transparent shadow-[inset_0_-35px_70px_rgba(52,211,153,0.3)]"
+                    : "bg-gradient-to-t from-rose-500/35 via-red-500/12 to-transparent shadow-[inset_0_-35px_70px_rgba(244,63,94,0.35)]"
+              }`}
+            />
+
+            {/* Subtle bottom edge rating accent */}
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none">
+              <span
+                className={`font-mono text-[11px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full border shadow-xl backdrop-blur-md transition-all ${
+                  hitFeedback.type === "perfect"
+                    ? "text-sky-300 bg-sky-950/80 border-sky-400/50 shadow-sky-500/35"
+                    : hitFeedback.type === "good"
+                      ? "text-emerald-300 bg-emerald-950/80 border-emerald-400/50 shadow-emerald-500/35"
+                      : "text-rose-300 bg-rose-950/80 border-rose-500/50 shadow-rose-500/35"
+                }`}
+              >
+                {hitFeedback.type === "perfect"
+                  ? "✦ PERFECT"
+                  : hitFeedback.type === "good"
+                    ? "✓ GOOD"
+                    : "✕ MISS"}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Content Overlay */}
       <div className="relative z-20 w-full max-w-3xl px-6 pt-8 pb-6">
         {loadErr ? (
@@ -1962,27 +2081,12 @@ function PlayPage() {
 
             {/* Game/Lyrics or Sync Editor */}
             <div
-              className={`fixed left-1/2 z-20 flex w-[calc(100%-3rem)] max-w-2xl -translate-x-1/2 flex-col gap-4 transition-all duration-500 ${
+              className={`fixed left-1/2 z-20 flex w-[calc(100%-2rem)] max-w-4xl -translate-x-1/2 flex-col gap-1 sm:gap-2 transition-all duration-500 ${
                 songEnded
                   ? "top-1/2 -translate-y-1/2 bottom-auto"
-                  : "bottom-4 translate-y-0"
+                  : "bottom-2 sm:bottom-3 translate-y-0"
               }`}
             >
-              {/* Hit Feedback Overlay */}
-              {hitFeedback && (
-                <div
-                  key={hitFeedback.id}
-                  className={`absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl font-black italic tracking-widest pointer-events-none z-50 animate-bounce drop-shadow-[0_0_15px_rgba(0,0,0,0.5)] ${
-                    hitFeedback.type === "perfect"
-                      ? "text-blue-400"
-                      : hitFeedback.type === "good"
-                        ? "text-green-400"
-                        : "text-red-500"
-                  }`}
-                >
-                  {hitFeedback.text}
-                </div>
-              )}
 
               {/* Game Area */}
               <div
@@ -1992,7 +2096,7 @@ function PlayPage() {
                 }`}
                 onClick={() => inputRef.current?.focus()}
               >
-                <div className="h-full cursor-pointer overflow-hidden px-4 sm:px-8 py-2 sm:py-4">
+                <div className="h-full cursor-pointer overflow-hidden px-4 sm:px-8 py-1 sm:py-2">
                   {songEnded ? (
                     /* ── Monkeytype Scorecard Result View ── */
                     <motion.div
@@ -2412,6 +2516,60 @@ function PlayPage() {
                             </span>
                           </div>
                         </div>
+
+                        {/* Mechanical Keyboard from keyb.himan.me */}
+                        {!songEnded && !lyricsFinished && (
+                          <div className="w-full flex flex-col items-center justify-center my-0.5 sm:my-1">
+                            {/* Toolbar: Theme selector & Sound toggle */}
+                            <div className="flex items-center justify-between w-full max-w-xl px-2 mb-1 text-xs">
+                              <div className="flex items-center gap-1 overflow-x-auto py-0.5 scrollbar-none">
+                                {(["cream", "classic", "mint", "royal", "dolch", "sand", "scarlet"] as const).map((t) => (
+                                  <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => setKeyboardTheme(t)}
+                                    className={`px-2 py-0.5 rounded-full capitalize text-[10.5px] font-medium transition-all cursor-pointer ${
+                                      keyboardTheme === t
+                                        ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                    }`}
+                                  >
+                                    {t}
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setKeySoundEnabled((v) => !v)}
+                                className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium transition-colors cursor-pointer shrink-0 ${
+                                  keySoundEnabled
+                                    ? "bg-muted/70 text-foreground hover:bg-muted"
+                                    : "bg-muted/30 text-muted-foreground line-through hover:bg-muted/50"
+                                }`}
+                                title={keySoundEnabled ? "Mute switch sound" : "Unmute switch sound"}
+                              >
+                                {keySoundEnabled ? (
+                                  <Volume2 className="w-3.5 h-3.5" />
+                                ) : (
+                                  <VolumeX className="w-3.5 h-3.5" />
+                                )}
+                                <span>{keySoundEnabled ? "Sound ON" : "Muted"}</span>
+                              </button>
+                            </div>
+
+                            {/* Responsive Scaled Mechanical Keyboard - NEVER CUT OFF */}
+                            <div className="w-full flex justify-center items-start h-[215px] sm:h-[225px] md:h-[235px]">
+                              <div className="transform scale-[0.68] sm:scale-[0.70] md:scale-[0.72] lg:scale-[0.74] origin-top transition-transform duration-200">
+                                <Keyboard
+                                  theme={keyboardTheme}
+                                  enableSound={keySoundEnabled}
+                                  enableHaptics={true}
+                                  soundUrl="/sounds/sound.ogg"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Play & Restart Buttons */}
                         <div className="flex items-center justify-center gap-3 w-full max-w-sm">

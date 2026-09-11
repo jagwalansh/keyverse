@@ -343,12 +343,12 @@ function Index() {
             <div className="flex items-center justify-between border-b border-border/40 pb-3 gap-3">
               <div className="flex flex-wrap items-center gap-2 text-left">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-bold select-none">
-                  <Flame className="h-3.5 w-3.5 text-primary animate-pulse shrink-0" />
+                  {/* <Flame className="h-3.5 w-3.5 text-primary animate-pulse shrink-0" /> */}
                   <span>trending • {monthName}</span>
                 </span>
-                <span className="text-[11px] text-muted-foreground hidden sm:inline">
+                {/* <span className="text-[11px] text-muted-foreground hidden sm:inline">
                   current top english tracks • updated monthly
-                </span>
+                </span> */}
               </div>
             </div>
 

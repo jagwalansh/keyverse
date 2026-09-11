@@ -125,10 +125,10 @@ export function CelebrationBanner({ data }: { data: CelebrationData }) {
           <Sparkles className="h-2.5 w-2.5" />
           <span>
             {data.rank === 1
-              ? "Leaderboard Champion"
+              ? "Global #1 Champion"
               : showPb
                 ? "Personal Record"
-                : "Leaderboard Standing"}
+                : "Global Standing"}
           </span>
           <Sparkles className="h-2.5 w-2.5" />
         </div>
@@ -136,10 +136,10 @@ export function CelebrationBanner({ data }: { data: CelebrationData }) {
         {/* Clean Headline */}
         <h3 className="text-base sm:text-lg font-black tracking-tight text-foreground uppercase">
           {data.rank === 1
-            ? "#1 on the Leaderboard"
+            ? "#1 on Global Leaderboard"
             : showPb
               ? "New Personal Best"
-              : `Rank #${data.rank} Achieved`}
+              : `Global Rank #${data.rank}`}
         </h3>
 
         {/* Minimalist Stat Chips */}
@@ -159,7 +159,7 @@ export function CelebrationBanner({ data }: { data: CelebrationData }) {
 
           {showRank && (
             <span className="inline-flex items-center text-[11px] font-medium text-foreground bg-muted/30 border border-border/50 px-2.5 py-0.5 rounded-md">
-              Rank #{data.rank}
+              Global Rank #{data.rank}
             </span>
           )}
         </div>

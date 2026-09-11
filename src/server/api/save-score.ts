@@ -120,30 +120,36 @@ export async function POST(req: Request) {
     scoreResult.status === "inserted" ||
     scoreResult.status === "inserted_and_pruned";
 
-  // Compute leaderboard rank for this song
+  // Compute global leaderboard rank across all players
   let rank: number | null = null;
   let totalPlayers: number | null = null;
 
   try {
-    // Count how many distinct users have a higher score on this song
-    const { count: higherCount } = await userSupabase
-      .from("scores")
-      .select("*", { count: "exact", head: true })
-      .eq("song_id", songId)
-      .gt("score", scoreResult.score);
+    const publicClient = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: rows } = await publicClient
+      .from("alltime_leaderboard")
+      .select("user_id, best_score")
+      .order("best_score", { ascending: false });
 
-    // Count total distinct players on this song
-    const { count: total } = await userSupabase
-      .from("scores")
-      .select("*", { count: "exact", head: true })
-      .eq("song_id", songId);
+    if (rows && rows.length > 0) {
+      const bestByUser = new Map<string, number>();
+      rows.forEach((row) => {
+        const currentBest = bestByUser.get(row.user_id) ?? 0;
+        bestByUser.set(row.user_id, Math.max(currentBest, Number(row.best_score) || 0));
+      });
+      // Ensure the user's latest score is reflected
+      const userBest = Math.max(bestByUser.get(user.id) ?? 0, scoreResult.score);
+      bestByUser.set(user.id, userBest);
 
-    if (higherCount !== null) {
-      rank = higherCount + 1;
+      const rankedUsers = [...bestByUser.entries()].sort((a, b) => b[1] - a[1]);
+      const index = rankedUsers.findIndex(([id]) => id === user.id);
+      if (index >= 0) {
+        rank = index + 1;
+      }
+      totalPlayers = rankedUsers.length;
     }
-    totalPlayers = total;
-  } catch {
-    // Non-critical: if rank query fails, just omit it
+  } catch (err) {
+    console.error("Failed to compute global rank", err);
   }
 
   return new Response(

@@ -43,6 +43,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/supabase-js": "^2.39.2",
+    "@tabler/icons-react": "^3.46.0",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
     "@tanstack/react-router": "^1.168.25",
@@ -72,6 +73,7 @@
     "tw-animate-css": "^1.3.4",
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
+    "web-haptics": "^0.0.6",
     "yt-search": "^2.13.1",
     "ytmusic-api": "^5.3.1",
     "zod": "^3.24.2"
