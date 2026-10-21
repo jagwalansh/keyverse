@@ -7,6 +7,7 @@ import {
   parseItunesFeed,
   getCurrentMonthName,
   FALLBACK_TRENDING_SONGS,
+  type TrendingSong,
 } from "./lib/trending";
 import { POST as saveScoreHandler } from "./server/api/save-score";
 import { GET as leaderboardHandler } from "./server/api/leaderboard";
@@ -678,23 +679,52 @@ export default {
       if (url.pathname === "/api/trending") {
         const limitParam = url.searchParams.get("limit");
         const limit = Math.min(Math.max(parseInt(limitParam || "40", 10) || 40, 10), 100);
-        try {
-          const res = await fetch(`https://itunes.apple.com/us/rss/topsongs/limit=${limit}/json`, {
-            headers: { Accept: "application/json" },
-          });
-          if (!res.ok) throw new Error("Failed to fetch iTunes feed");
-          const data = await res.json();
-          const songs = parseItunesFeed(data as { feed?: { entry?: any[] } });
+        const cacheKey = `trending_songs_${limit}`;
+
+        // Check shared KV cache first
+        const cachedSongs = await getSharedCache<TrendingSong[]>(env, cacheKey);
+        if (cachedSongs && Array.isArray(cachedSongs) && cachedSongs.length > 0) {
           return new Response(
             JSON.stringify({
-              songs: songs.length > 0 ? songs : FALLBACK_TRENDING_SONGS,
+              songs: cachedSongs,
               month: getCurrentMonthName(),
             }),
             {
               status: 200,
               headers: {
                 "content-type": "application/json",
-                "cache-control": "public, max-age=21600, stale-while-revalidate=86400",
+                "cache-control": "public, max-age=7200, stale-while-revalidate=86400",
+              },
+            },
+          );
+        }
+
+        try {
+          const res = await fetch(`https://itunes.apple.com/us/rss/topsongs/limit=${limit}/json`, {
+            headers: {
+              Accept: "application/json",
+              "User-Agent":
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+            },
+          });
+          if (!res.ok) throw new Error(`iTunes feed returned HTTP ${res.status}`);
+          const data = await res.json();
+          const songs = parseItunesFeed(data as Parameters<typeof parseItunesFeed>[0]);
+          if (songs.length === 0) throw new Error("Parsed empty songs from iTunes feed");
+
+          // Save to shared KV cache (expires in 4 hours)
+          putSharedCache(env, ctx, cacheKey, songs, 4 * 60 * 60);
+
+          return new Response(
+            JSON.stringify({
+              songs,
+              month: getCurrentMonthName(),
+            }),
+            {
+              status: 200,
+              headers: {
+                "content-type": "application/json",
+                "cache-control": "public, max-age=7200, stale-while-revalidate=86400",
               },
             },
           );
@@ -702,11 +732,11 @@ export default {
           console.error("Trending fetch error:", error);
           return new Response(
             JSON.stringify({
-              songs: FALLBACK_TRENDING_SONGS,
-              month: getCurrentMonthName(),
+              error: "Failed to fetch live trending songs from iTunes",
+              songs: [],
             }),
             {
-              status: 200,
+              status: 502,
               headers: { "content-type": "application/json" },
             },
           );

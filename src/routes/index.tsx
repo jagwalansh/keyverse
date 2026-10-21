@@ -10,6 +10,7 @@ import { trackEvent } from "@/lib/analytics";
 import {
   type TrendingSong,
   fetchTrendingSongs,
+  getCachedTrendingSongs,
   getCurrentMonthName,
   FALLBACK_TRENDING_SONGS,
 } from "@/lib/trending";
@@ -40,8 +41,20 @@ function Index() {
   const [selectedGenre, setSelectedGenre] = useState<string>("all");
   const [activeMode, setActiveMode] = useState<"sync" | "featured" | "verses">("sync");
   const [disableAnimation] = useState(hasVisitedHome);
-  const [trendingSongs, setTrendingSongs] = useState<TrendingSong[]>(FALLBACK_TRENDING_SONGS);
-  const [trendingLoading, setTrendingLoading] = useState(true);
+  const [trendingSongs, setTrendingSongs] = useState<TrendingSong[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = getCachedTrendingSongs();
+      if (cached && cached.length > 0) return cached;
+    }
+    return FALLBACK_TRENDING_SONGS;
+  });
+  const [trendingLoading, setTrendingLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      const cached = getCachedTrendingSongs();
+      if (cached && cached.length > 0) return false;
+    }
+    return true;
+  });
   const [monthName, setMonthName] = useState(getCurrentMonthName());
   const navigate = useNavigate();
 
@@ -143,7 +156,6 @@ function Index() {
       <Navbar />
 
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16 flex flex-col items-center text-center justify-start flex-1 gap-8 relative z-20">
-        
         {/* Monkeytype Style Sub-Header Config Ribbon */}
         <div className="mt-pill-bar flex flex-wrap items-center justify-center gap-1 sm:gap-2 px-3 py-2 rounded-xl text-xs text-muted-foreground select-none max-w-2xl w-full">
           <div className="flex items-center gap-1">
@@ -183,10 +195,7 @@ function Index() {
 
         {/* Hero & Quick Search */}
         <div className="w-full max-w-2xl flex flex-col items-center text-center">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="w-full relative group mt-2"
-          >
+          <form onSubmit={handleSearchSubmit} className="w-full relative group mt-2">
             <div className="relative flex items-center">
               <Search className="absolute left-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
               <input
@@ -284,7 +293,11 @@ function Index() {
                               src={t.artworkUrl100}
                               alt=""
                               className="h-11 w-11 rounded-lg shrink-0 object-cover border border-border/40"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="h-11 w-11 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>'; }}
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                                (e.target as HTMLImageElement).parentElement!.innerHTML =
+                                  '<div class="h-11 w-11 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>';
+                              }}
                             />
                           ) : (
                             <div className="h-11 w-11 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">
@@ -419,7 +432,13 @@ function Index() {
                             alt=""
                             className="h-12 w-12 rounded-lg object-cover border border-border/30"
                             loading="lazy"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML('afterbegin', '<div class="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>'); }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                              (e.target as HTMLImageElement).parentElement!.insertAdjacentHTML(
+                                "afterbegin",
+                                '<div class="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold text-sm shrink-0">♪</div>',
+                              );
+                            }}
                           />
                           {isTopThree && (
                             <div className="absolute -top-1.5 -left-1.5 h-4 min-w-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center shadow-xs">

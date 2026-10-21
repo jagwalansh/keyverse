@@ -9,108 +9,109 @@ export interface TrendingSong {
   releaseDate?: string;
 }
 
-const STORAGE_KEY_PREFIX = "keyverse_trending_songs_v2";
+const STORAGE_KEY_PREFIX = "keyverse_trending_songs_v3";
 
 export const FALLBACK_TRENDING_SONGS: TrendingSong[] = [
+  {
+    id: 6821859599,
+    trackName: "May God Bless America",
+    artistName: "Jason Bellard, Steve Gruber and the Freedom Project & Real America's Music",
+    artworkUrl100:
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/6a/1b/75/6a1b7593-564d-a442-3ef0-60101f56b9f7/cover_4062851365116.jpg/200x200bb.png",
+    genre: "country",
+    rank: 1,
+    releaseDate: "2026-08-29T05:00:00-07:00",
+  },
+  {
+    id: 6822944296,
+    trackName: "Lies (feat. Lana Del Rey)",
+    artistName: "Zach Bryan & Lana Del Rey",
+    artworkUrl100:
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ea/98/f2/ea98f2b8-5131-29ae-2064-997234ef13bc/093624812647.jpg/200x200bb.png",
+    genre: "country",
+    rank: 2,
+    releaseDate: "2026-10-15T05:00:00-07:00",
+  },
   {
     id: 1844932150,
     trackName: "Choosin' Texas",
     artistName: "Ella Langley",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e2/91/4d/e2914d0a-7f1d-f04c-fbf4-c50b38548838/196873638690.jpg/200x200bb.jpg",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e2/91/4d/e2914d0a-7f1d-f04c-fbf4-c50b38548838/196873638690.jpg/200x200bb.png",
     duration: 198,
     genre: "country",
-    rank: 1,
-  },
-  {
-    id: 1884403093,
-    trackName: "Boston",
-    artistName: "STELLA LEFTY",
-    artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/7c/de/5e/7cde5e7a-612d-9714-d34c-1eb234c85ebb/810129961546.jpg/200x200bb.jpg",
-    duration: 210,
-    genre: "pop",
-    rank: 2,
-  },
-  {
-    id: 6792676860,
-    trackName: "Been By Now",
-    artistName: "Morgan Wallen",
-    artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/9f/8d/52/9f8d52a0-b6d9-d038-327b-4fe58bedce67/26UMGIM94572.rgb.jpg/200x200bb.jpg",
-    duration: 225,
-    genre: "country",
     rank: 3,
+    releaseDate: "2025-10-17T05:00:00-07:00",
   },
   {
-    id: 1838737598,
-    trackName: "WHERE IS MY HUSBAND!",
-    artistName: "RAYE",
+    id: 6822350087,
+    trackName: "What America Is",
+    artistName: "Tom MacDonald",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/69/10/8a/69108a18-55ec-d774-a653-90b2242733db/199538765458.jpg/200x200bb.jpg",
-    duration: 195,
-    genre: "pop",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/58/d9/ef/58d9ef66-be21-954f-8881-44e7cef8cdf4/712132232067_cover.jpg/200x200bb.png",
+    genre: "hip-hop",
     rank: 4,
+    releaseDate: "2026-10-16T05:00:00-07:00",
   },
   {
-    id: 1762656732,
-    trackName: "Die With A Smile",
-    artistName: "Lady Gaga & Bruno Mars",
+    id: 6814997425,
+    trackName: "Patient Zero",
+    artistName: "Taylor Swift",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/ec/3b/22/ec3b22b6-caec-aa7c-87d3-d2d0016e7da5/24UMGIM89622.rgb.jpg/200x200bb.jpg",
-    duration: 251,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a0/dd/fd/a0ddfd72-ee9e-f046-6466-a5dbefc696fa/26UM1IM21436.rgb.jpg/200x200bb.png",
     genre: "pop",
     rank: 5,
+    releaseDate: "2026-09-24T00:00:00-07:00",
   },
   {
-    id: 1752214923,
-    trackName: "Espresso",
-    artistName: "Sabrina Carpenter",
+    id: 6822497774,
+    trackName: "Housewife",
+    artistName: "Tate McRae",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a1/1c/ca/a11ccab6-7d4c-e041-d028-998bcebeb709/24UMGIM61704.rgb.jpg/200x200bb.jpg",
-    duration: 175,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/2b/96/2b/2b962b77-3a04-5650-aefd-37ecfce04b03/196874840146.jpg/200x200bb.png",
     genre: "pop",
     rank: 6,
+    releaseDate: "2026-10-15T05:00:00-07:00",
   },
   {
-    id: 1739659142,
-    trackName: "BIRDS OF A FEATHER",
-    artistName: "Billie Eilish",
+    id: 6822390426,
+    trackName: "expectations",
+    artistName: "Olivia Rodrigo & Chappell Roan",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/92/9f/69/929f69f1-9977-3a44-d674-11f70c852d1b/24UMGIM36186.rgb.jpg/200x200bb.jpg",
-    duration: 210,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d2/3c/b2/d23cb283-5f3e-7433-bc41-86c7d77c4503/26UM1IM29619.rgb.jpg/200x200bb.png",
     genre: "pop",
     rank: 7,
+    releaseDate: "2026-10-16T05:00:00-07:00",
   },
   {
-    id: 1488408568,
-    trackName: "Blinding Lights",
-    artistName: "The Weeknd",
+    id: 6820206129,
+    trackName: "My Years With You",
+    artistName: "RUSTIC DRIFTER",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/a6/6e/bf/a66ebf79-5008-8948-b352-a790fc87446b/19UM1IM04638.rgb.jpg/200x200bb.jpg",
-    duration: 202,
-    genre: "pop",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/cd/92/3f/cd923fbb-21e8-3a9f-fa0f-3c2e47ad4ad1/artwork.jpg/200x200bb.png",
+    genre: "country",
     rank: 8,
+    releaseDate: "2026-10-06T05:00:00-07:00",
   },
   {
-    id: 1615585008,
-    trackName: "As It Was",
-    artistName: "Harry Styles",
+    id: 6813197034,
+    trackName: "FIRESTARTER (feat. Sophie Powers, MIYEON & JEON SOYEON)",
+    artistName: "K/DA, League of Legends Music, i-dle & Mimi Webb",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2a/19/fb/2a19fb85-2f70-9e44-f2a9-82abe679b88e/886449990061.jpg/200x200bb.jpg",
-    duration: 167,
+      "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/93/14/66/9314660a-8ec2-2e26-652b-62c82b14fb80/823375358930_Cover.jpg/200x200bb.png",
     genre: "pop",
     rank: 9,
+    releaseDate: "2026-10-20T05:00:00-07:00",
   },
   {
-    id: 1508562516,
-    trackName: "Heat Waves",
-    artistName: "Glass Animals",
+    id: 6812477290,
+    trackName: "Last Thing You Need",
+    artistName: "Morgan Wallen",
     artworkUrl100:
-      "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/da/8b/77/da8b7731-6f4f-eacf-5e74-8b23389eefa1/20UMGIM03371.rgb.jpg/200x200bb.jpg",
-    duration: 239,
-    genre: "indie",
+      "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/5d/d3/1c/5dd31c9c-1e1c-0bbc-104f-4a42e2bb4c59/075679556424.jpg/200x200bb.png",
+    genre: "country",
     rank: 10,
+    releaseDate: "2026-09-17T00:00:00-07:00",
   },
 ];
 
@@ -121,6 +122,11 @@ export function getCurrentMonthName(): string {
 export function getCurrentMonthKey(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export function isFallbackList(songs?: TrendingSong[]): boolean {
+  if (!Array.isArray(songs) || songs.length < 15) return true;
+  return false;
 }
 
 export function normalizeGenre(rawGenre?: string): string {
@@ -149,7 +155,9 @@ type ItunesFeedEntry = {
   }>;
 };
 
-export function parseItunesFeed(feedData: { feed?: { entry?: ItunesFeedEntry[] } }): TrendingSong[] {
+export function parseItunesFeed(feedData: {
+  feed?: { entry?: ItunesFeedEntry[] };
+}): TrendingSong[] {
   const entries = feedData?.feed?.entry || [];
   if (!Array.isArray(entries)) return [];
 
@@ -194,20 +202,81 @@ export function parseItunesFeed(feedData: { feed?: { entry?: ItunesFeedEntry[] }
   return songs;
 }
 
+export function purgeOldTrendingCaches(): void {
+  if (typeof window === "undefined") return;
+  try {
+    const currentStorageKey = `${STORAGE_KEY_PREFIX}_${getCurrentMonthKey()}`;
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (key && key.startsWith("keyverse_trending_songs_")) {
+        if (key !== currentStorageKey) {
+          keysToRemove.push(key);
+        } else {
+          // If the current key has fallback data, also purge it
+          const val = window.localStorage.getItem(key);
+          if (val) {
+            try {
+              const parsed = JSON.parse(val);
+              if (isFallbackList(parsed.songs)) {
+                keysToRemove.push(key);
+              }
+            } catch {
+              keysToRemove.push(key);
+            }
+          }
+        }
+      }
+    }
+    for (const key of keysToRemove) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore localStorage errors
+  }
+}
+
+export function getCachedTrendingSongs(): TrendingSong[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const storageKey = `${STORAGE_KEY_PREFIX}_${getCurrentMonthKey()}`;
+    const cached = window.localStorage.getItem(storageKey);
+    if (!cached) return null;
+
+    const parsed = JSON.parse(cached);
+    if (!Array.isArray(parsed.songs) || isFallbackList(parsed.songs)) {
+      window.localStorage.removeItem(storageKey);
+      return null;
+    }
+
+    // Cache valid for up to 6 hours
+    const age = Date.now() - (parsed.timestamp || 0);
+    if (age > 6 * 60 * 60 * 1000) {
+      return null;
+    }
+
+    return parsed.songs;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchTrendingSongs(limit = 40): Promise<TrendingSong[]> {
   const currentMonthKey = getCurrentMonthKey();
   const storageKey = `${STORAGE_KEY_PREFIX}_${currentMonthKey}`;
 
-  // 1. Try checking local storage first for instant loading
+  // Clean up any stale or fallback caches from previous months/versions
+  purgeOldTrendingCaches();
+
+  // 1. Check local storage for valid cached songs (< 2 hours old for instant return)
   if (typeof window !== "undefined") {
     try {
       const cached = window.localStorage.getItem(storageKey);
       if (cached) {
         const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed.songs) && parsed.songs.length > 0) {
-          // If cache is less than 24 hours old, return cached data immediately
+        if (Array.isArray(parsed.songs) && !isFallbackList(parsed.songs)) {
           const age = Date.now() - (parsed.timestamp || 0);
-          if (age < 6 * 60 * 60 * 1000) {
+          if (age < 2 * 60 * 60 * 1000) {
             return parsed.songs;
           }
         }
@@ -217,49 +286,58 @@ export async function fetchTrendingSongs(limit = 40): Promise<TrendingSong[]> {
     }
   }
 
-  // 2. Fetch from /api/trending or direct Apple Music Top Songs RSS
+  // 2. Fetch fresh live songs:
+  // Primary attempt: Direct Apple Music Top Songs RSS (runs in client browser, CORS enabled, Akamai CDN edge cached)
   try {
-    let rawData: unknown = null;
-
-    // Try our server API endpoint first
-    try {
-      const apiRes = await fetch(`/api/trending?limit=${limit}`);
-      if (apiRes.ok) {
-        const json = await apiRes.json();
-        if (Array.isArray(json?.songs) && json.songs.length > 0) {
-          saveToCache(storageKey, json.songs);
-          return json.songs;
-        }
-      }
-    } catch {
-      // Fallback to client fetch
-    }
-
-    // Direct RSS fallback
-    const directRes = await fetch(
-      `https://itunes.apple.com/us/rss/topsongs/limit=${limit}/json`,
-    );
+    const directRes = await fetch(`https://itunes.apple.com/us/rss/topsongs/limit=${limit}/json`);
     if (directRes.ok) {
-      rawData = await directRes.json();
-    }
-
-    if (rawData) {
+      const rawData = await directRes.json();
       const parsed = parseItunesFeed(rawData as { feed?: { entry?: ItunesFeedEntry[] } });
-      if (parsed.length > 0) {
+      if (parsed.length >= 15) {
         saveToCache(storageKey, parsed);
         return parsed;
       }
     }
   } catch (err) {
-    console.warn("Failed to fetch fresh trending songs, using fallback list:", err);
+    console.warn("Direct iTunes RSS fetch failed, falling back to /api/trending:", err);
   }
 
-  // 3. Fallback to cached or evergreen songs if network fails
+  // Secondary attempt: Server API proxy /api/trending
+  try {
+    const apiRes = await fetch(`/api/trending?limit=${limit}`);
+    if (apiRes.ok) {
+      const json = await apiRes.json();
+      if (Array.isArray(json?.songs) && !isFallbackList(json.songs)) {
+        saveToCache(storageKey, json.songs);
+        return json.songs;
+      }
+    }
+  } catch (err) {
+    console.warn("Server /api/trending failed:", err);
+  }
+
+  // 3. If live network fetches failed, try returning existing cache even if older
+  if (typeof window !== "undefined") {
+    try {
+      const cached = window.localStorage.getItem(storageKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed.songs) && !isFallbackList(parsed.songs)) {
+          return parsed.songs;
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
+  // 4. Absolute offline fallback - DO NOT cache this to localStorage so it never gets stuck!
   return FALLBACK_TRENDING_SONGS;
 }
 
 function saveToCache(key: string, songs: TrendingSong[]) {
   if (typeof window === "undefined") return;
+  if (isFallbackList(songs)) return; // NEVER cache fallback songs
   try {
     window.localStorage.setItem(
       key,
