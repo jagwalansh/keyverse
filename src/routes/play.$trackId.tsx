@@ -1688,25 +1688,6 @@ function PlayPage() {
                     : "bg-gradient-to-t from-rose-500/35 via-red-500/12 to-transparent shadow-[inset_0_-35px_70px_rgba(244,63,94,0.35)]"
               }`}
             />
-
-            {/* Subtle bottom edge rating accent */}
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none">
-              <span
-                className={`font-mono text-[11px] font-black uppercase tracking-widest px-3.5 py-1 rounded-full border shadow-xl backdrop-blur-md transition-all ${
-                  hitFeedback.type === "perfect"
-                    ? "text-sky-300 bg-sky-950/80 border-sky-400/50 shadow-sky-500/35"
-                    : hitFeedback.type === "good"
-                      ? "text-emerald-300 bg-emerald-950/80 border-emerald-400/50 shadow-emerald-500/35"
-                      : "text-rose-300 bg-rose-950/80 border-rose-500/50 shadow-rose-500/35"
-                }`}
-              >
-                {hitFeedback.type === "perfect"
-                  ? "✦ PERFECT"
-                  : hitFeedback.type === "good"
-                    ? "✓ GOOD"
-                    : "✕ MISS"}
-              </span>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>
